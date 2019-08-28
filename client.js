@@ -36,13 +36,37 @@ mysql_connection.connect( function( error ) {
 });
 
 
+function update_write_ahead_log( ) {
+
+	return new Promise( resolve => {
+		let data = {
+			last_read_index : last_read_index,
+			last_read_message_id : last_read_message_id
+		}
+
+		let update_write_ahead_query = "UPDATE write_ahead_log SET ?";
+		mysql_connection.query( update_write_ahead_query, data, function( error, results ) {
+			if( error ) { //TODO: put some log here to capture the error
+				console.log( error );
+			}
+
+			else {
+				console.log( "[UPDATE WRITE_AHEAD_LOG]: DONE!" );
+			}
+			
+		});
+		resolve();
+	});
+}
+
+
 
 //TODO: put some cron job here to tell it check after some setting minutes
 //TODO: values of the cron job should be part of configuration (read from the database)
 var cron_process = new cron( '*/20 * * * * *', function() {
 	console.log( "[CRON]: checking for pending request..." );
 	let get_requested_messages_query = "SELECT * FROM request WHERE ID >= ?";
-	mysql_connection.query( get_requested_messages_query, last_read_index, function( error, results ) {
+	mysql_connection.query( get_requested_messages_query, last_read_index, async function( error, results ) {
 		
 		if( error ) { //TODO: put some log here to capture the error
 		}
@@ -52,24 +76,35 @@ var cron_process = new cron( '*/20 * * * * *', function() {
 		for( let i in results) {
 			
 			let message_container = results[i].payload; //TODO: database field
+			last_read_message_id = results[i].id;
+			await update_write_ahead_log();
 
-			message = JSON.parse( message );
-
-			let phonenumber = message_container.phonenumber;
-			let message = message_container.message;
-			let service_provider = message_container.service_provider; //TODO: use Bruce's rolls to govern how this works
-
-
-			let args = [ "sms", "send", message, phonenumber, service_provider ];
-			const linux_script_execution = spawnSync( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
-
-			var linux_script_execution_output = linux_script_execution.stdout;
-			var linux_script_execution_return = linux_script_execution.status;
+			message_container = JSON.parse( message_container );
+			
+			//TODO: should continue i from last place message was read
+			for( let i in message_container ) {
+				let phonenumber = message_container[i].phonenumber;
+				let message = message_container[i].message;
+				let service_provider = message_container[i].service_provider; //TODO: use Bruce's rolls to govern how this works
 
 
-			//TODO: use an official logger here
-			console.log( "[LINUX_SCRIPT_EXECUTION_OUTPUT]: ", linux_script_execution_output );
-			console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
+				let args = [ "sms", "send", message, phonenumber, service_provider ]; //service provider not in script, should be modem index... since that can't be known
+				const linux_script_execution = spawnSync( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
+
+				var linux_script_execution_output = linux_script_execution.stdout;
+				var linux_script_execution_return = linux_script_execution.status;
+
+
+				//TODO: use an official logger here
+				console.log( "[LINUX_SCRIPT_EXECUTION_OUTPUT]: ", linux_script_execution_output );
+				console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
+				
+				last_read_index = i;
+				await update_write_ahead_log( );
+			}
+
+			last_read_index = 0;
+			await update_write_ahead_log();
 		}
 	});
 }, null);
