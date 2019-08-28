@@ -9,10 +9,12 @@
  *
  *
  */
+'use strict';
 
 const mysql = require ( 'mysql' );
 const { spawnSync } = require ( 'child_process' );
 const cron = require ( 'cron').CronJob;
+
 
 var last_read_index = 0;
 var last_read_message_id = 0;
@@ -34,53 +36,10 @@ mysql_connection.connect( function( error ) {
 });
 
 
-//write-ahead log is saved on the database -> can be good for further things, but can't see that now
-
-let get_write_ahead_log_query = "SELECT * FROM write_ahead_log";
-mysql_connection.query( get_write_ahead_log_query, function ( error, results ) {
-	if( error ) { //TODO: put some log here to capture the error
-	}
-
-	console.log( `[FETCHING WRITE_AHEAD_LOG]: ${ results.length } found!` );
-
-	//check to make sure nothing is wrong with configurations
-	
-	//TODO: transform this into an installation process
-	if( results.length < 1 ) {
-		//nothing is put here, then put it
-		let insert_default_values = `INSERT INTO write_ahead_log (last_read_index,last_read_message_id) VALUES (${last_read_index}, ${last_read_message_id})`;
-		mysql_connection.query( insert_default_values, function( error, results ) {
-			if( error ) { //TODO: put some log here to capture the error
-				console.log( "[WRITE_AHEAD_LOG_DEFAULT_INSERT ERROR]:\n", error );
-			}
-
-			else {
-				console.log( `[WRITE_AHEAD_LOG]: default values inserted` );
-			}
-		});
-	}
-
-
-	else {
-		for( i in results) {
-			last_read_index = results[i].last_read_index; //TODO: set this to 0 when done reading or by default
-			last_read_message_id = results[i].last_read_message_id;
-		}
-	}
-
-
-	console.log( `[LAST_READ_INDEX]: ${ last_read_index }` );
-	console.log( `[LAST_READ_MESSAGE_ID]: ${ last_read_message_id }` );
-});
-
-
-//after doing all the continuations, it's time to begin the listening
-
 
 //TODO: put some cron job here to tell it check after some setting minutes
 //TODO: values of the cron job should be part of configuration (read from the database)
-
-new cron( '20 * * * * *', function() {
+var cron_process = new cron( '*/20 * * * * *', function() {
 	console.log( "[CRON]: checking for pending request..." );
 	let get_requested_messages_query = "SELECT * FROM request WHERE ID >= ?";
 	mysql_connection.query( get_requested_messages_query, last_read_index, function( error, results ) {
@@ -90,7 +49,7 @@ new cron( '20 * * * * *', function() {
 
 		console.log( `[FETCHING REQUESTED MESSAGES]: ${ results.length } found!` );
 
-		for( i in results) {
+		for( let i in results) {
 			
 			let message_container = results[i].payload; //TODO: database field
 
@@ -113,4 +72,67 @@ new cron( '20 * * * * *', function() {
 			console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
 		}
 	});
-});
+}, null);
+
+//FUNCTION CHECK FOR CONFIGURATIONS
+function check_configurations() {
+
+	return new Promise( resolve => {
+		let get_write_ahead_log_query = "SELECT * FROM write_ahead_log";
+		mysql_connection.query( get_write_ahead_log_query, function ( error, results ) {
+			if( error ) { //TODO: put some log here to capture the error
+			}
+
+			console.log( `[FETCHING WRITE_AHEAD_LOG]: ${ results.length } found!` );
+
+			//check to make sure nothing is wrong with configurations
+			
+			//TODO: transform this into an installation process
+			if( results.length < 1 ) {
+				//nothing is put here, then put it
+				let insert_default_values = `INSERT INTO write_ahead_log (last_read_index,last_read_message_id) VALUES (${last_read_index}, ${last_read_message_id})`;
+				mysql_connection.query( insert_default_values, function( error, results ) {
+					if( error ) { //TODO: put some log here to capture the error
+						console.log( "[WRITE_AHEAD_LOG_DEFAULT_INSERT ERROR]:\n", error );
+					}
+
+					else {
+						console.log( `[WRITE_AHEAD_LOG]: default values inserted` );
+					}
+				});
+			}
+
+
+			else {
+				for( let i in results) {
+					last_read_index = results[i].last_read_index; //TODO: set this to 0 when done reading or by default
+					last_read_message_id = results[i].last_read_message_id;
+				}
+			}
+
+
+			console.log( `[LAST_READ_INDEX]: ${ last_read_index }` );
+			console.log( `[LAST_READ_MESSAGE_ID]: ${ last_read_message_id }` );
+			
+			resolve(true);
+		});
+	});
+
+}
+
+
+//begin with checking configurations
+async function start_script() {
+	console.log("[START SCRIPT]: checking configurations...");
+	
+	let configuration_results = await check_configurations();
+
+	configuration_results ? console.log( "[START SCRIPT]: DONE!" ) : console.log( "[START SCRIPT]: FAILED..." );
+	
+	console.log( "[STATE]: first cron begins after 20 seconds...." );
+//	cron_daemon( "start" );
+	await cron_process.start();
+}
+
+//begin first script
+start_script();
