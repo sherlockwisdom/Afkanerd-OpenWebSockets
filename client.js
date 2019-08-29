@@ -53,15 +53,22 @@ function update_write_ahead_log( ) {
 //TODO: values of the cron job should be part of configuration (read from the database)
 var cron_process = new cron( '*/20 * * * * *', function() {
 	console.log( "[CRON]: checking for pending request..." );
-	let get_requested_messages_query = "SELECT * FROM request WHERE ID >= ?";
-	mysql_connection.query( get_requested_messages_query, LAST_READ_INDEX, async function( error, results ) {
+	let get_requested_messages_query = "SELECT * FROM request WHERE id >= ?";
+	mysql_connection.query( get_requested_messages_query, [LAST_READ_MESSAGE_ID], async function( error, results ) {
 		
 		if( error ) { //TODO: put some log here to capture the error
+			console.log( error );
 		}
 
 		console.log( `[FETCHING REQUESTED MESSAGES]: ${ results.length } found!` );
 
+		let increment = false;
+		if( LAST_READ_INDEX == -1) increment = true;
 		for( let i in results) {
+			if( increment ) {
+				increment = false;
+				continue;
+			}
 			
 			let message_container = results[i].payload; //TODO: database field
 			LAST_READ_MESSAGE_ID = results[i].id;
@@ -70,7 +77,8 @@ var cron_process = new cron( '*/20 * * * * *', function() {
 			message_container = JSON.parse( message_container );
 			
 			//TODO: should continue i from last place message was read
-			for( let i in message_container ) {
+			
+			for( LAST_READ_INDEX in message_container ) {
 				let phonenumber = message_container[i].phonenumber;
 				let message = message_container[i].message;
 				let service_provider = message_container[i].service_provider; //TODO: use Bruce's rolls to govern how this works
@@ -91,7 +99,7 @@ var cron_process = new cron( '*/20 * * * * *', function() {
 				await update_write_ahead_log( );
 			}
 
-			LAST_READ_INDEX = 0;
+			LAST_READ_INDEX = -1;
 			await update_write_ahead_log();
 		}
 	});
@@ -127,15 +135,16 @@ function check_configurations() {
 
 
 			else {
+				console.log( results ) ;
 				for( let i in results) {
-					LAST_READ_INDEX = results[i].LAST_READ_INDEX; //TODO: set this to 0 when done reading or by default
-					LAST_READ_MESSAGE_ID = results[i].LAST_READ_MESSAGE_ID;
+					LAST_READ_INDEX = results[i].last_read_index; //TODO: set this to 0 when done reading or by default
+					LAST_READ_MESSAGE_ID = results[i].last_read_message_id;
 				}
+				console.log( `[LAST_READ_INDEX]: ${ LAST_READ_INDEX }` );
+				console.log( `[LAST_READ_MESSAGE_ID]: ${ LAST_READ_MESSAGE_ID }` );
 			}
 
 
-			console.log( `[LAST_READ_INDEX]: ${ LAST_READ_INDEX }` );
-			console.log( `[LAST_READ_MESSAGE_ID]: ${ LAST_READ_MESSAGE_ID }` );
 			
 			resolve(true);
 		});
