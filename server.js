@@ -1,7 +1,8 @@
 const net = require ( 'net' );
 const globals = require ( './globals/tools.js' );
 const json_socket = require ( 'json-socket' );
-const { spawn } = require ( 'child_process' );
+const { spawnSync, spawn } = require ( 'child_process' );
+const cron = require ( 'cron').CronJob;
 
 'use strict';
 
@@ -13,27 +14,48 @@ var PORT = 8080;
 var RECONNECTION_TIMEOUT = 10000;
 var LINUX_SCRIPT_NAME = "./scripts/modem_information_extraction.sh";
 
+let cron_job = new cron('*/5 * * * * *', function() {
+	
+	console.log( "[SMS DAEMON CHECKING RECEIVED]: started...");
+	let modem_index = 4; //please remove this line, this can only be used when it's definite
+	let args = ["sms", "received", modem_index];
+	const linux_script_execution = spawnSync ( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
+
+	//SHOULD BE THE INDEXES OF MESSAGES COMING IN
+	let linux_script_execution_STDOUT = linux_script_execution.stdout;
+	let linux_script_execution_RETURN = linux_script_execution.status;
+
+	console.log( "[SMS_DAEMON_SCRIPT_TERMINAL_OUTPUT]: ", linux_script_execution_STDOUT );
+	if( linux_script_execution_STDOUT.length < 1 ) {}
+
+	let sms_message_indexes = linux_script_execution_STDOUT.split( '\n' );
+	
+	for( let i in sms_message_indexes ) {
+		if( sms_message_indexes[i].length > 0 ) console.log( '[SMS_DAEMON_SCRIPT]: received message index = ', sms_message_indexes[i] );
+
+		let args = [ "sms", "read_sms", sms_message_indexes[i], modem_index ]
+		const linux_sms_message_execution = spawnSync ( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
+	
+		let sms_message_container_STDOUT = linux_sms_message_execution.stdout;
+		let sms_message_container = sms_message_container_STDOUT.split( '\n' );
+
+		if(sms_message_container.length < 3 || sms_message_container[ 1 ].length < 1 ) {
+			console.log( `[SMS_DAEMON_SCRIPT_TERMINAL_OUTPUT]: skipping message at ${sms_message_indexes[i]}`);
+		}
+		else {
+			let phoneumber = sms_message_container[ 0 ];
+			let message = sms_message_container[ 1 ];
+			let timestamp = sms_message_container[ 2 ];
+
+			console.log( `[SMS_DAEMON_SCRIPT_(SMS_MESSAGE)]: ${message}`);
+		}
+	}
+
+	console.log( "[SMS DAEMON CHECKING RECEIVED]: done...");
+}, null);
+
 function sms_daemon_script() {
-	
-	let args = ["sms", "received"];
-	const linux_script_execution = spawn ( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
-	
-	linux_script_execution.stdout.on( 'data', function ( data ) {
-		console.log( "[DEKU SERVER TERMINAL]: ", data );
-	});
-
-	linux_script_execution.on( 'close' , function ( code ) {
-		console.log( "[DEKU SERVER TERMINAL TERMINATED]: ", code )
-	});
-
-	linux_script_execution.stderr.on( 'data', function ( data ) {
-		console.warn ( "[DEKU SERVER TERMINAL]: ", data );
-	});
-
-	linux_script_execution.on( 'error', function ( error ) {
-		console.warn ( "[DEKU SERVER TERMINAL ERROR]: ", error) 
-	});
-
+	cron_job.start();
 }
 
 
