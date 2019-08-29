@@ -14,6 +14,11 @@ var PORT = 8080;
 var RECONNECTION_TIMEOUT = 10000;
 var LINUX_SCRIPT_NAME = "./scripts/modem_information_extraction.sh";
 
+
+async function log ( data ) {
+
+}
+
 let cron_job = new cron('*/5 * * * * *', function() {
 	
 	console.log( "[SMS DAEMON CHECKING RECEIVED]: started...");
@@ -77,10 +82,17 @@ function listeners ( state , listener_type ) {
 			connection_to_server.on( 'message', function( data ) {
 				try {
 					request = JSON.parse ( data );
+
+					let insert_into_request_query = "INSERT INTO request SET ?";
+					mysql_connection.query( insert_into_request_query, request, function ( error, results) {
+						if( error ) { //TODO: put some message here
+						}
+					});
 				}
 				catch ( error ) {
 					console.log( "[CONNECTION TO SERVER ON MESSAGE]: not a json request..." );
 					console.log( "[CONNECTION TO SERVER ON MESSAGE]: message of type ", typeof data );
+					console.log( error );
 				}
 			});
 
