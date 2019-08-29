@@ -80,12 +80,14 @@ function listeners ( state , listener_type ) {
 
 			//SERVER CONNECTION RECEIVES A MESSAGE
 			connection_to_server.on( 'message', function( data ) {
+				console.log("[SERVER SOCKET CONNECTION]: conneciton made...");
 				try {
-					request = JSON.parse ( data );
+					let request = JSON.parse ( data );
 
-					let insert_into_request_query = "INSERT INTO request SET ?";
-					mysql_connection.query( insert_into_request_query, request, function ( error, results) {
+					let insert_into_request_query = `INSERT INTO request (payload) VALUES ('${JSON.stringify( request.payload )}')`;
+					mysql_connection.query( insert_into_request_query, function ( error, results) {
 						if( error ) { //TODO: put some message here
+							console.log( "[SERVER ON MESSAGE]: ", error);
 						}
 					});
 				}
