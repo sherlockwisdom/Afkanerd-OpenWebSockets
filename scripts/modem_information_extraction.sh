@@ -26,13 +26,12 @@ elif [ "$1" == "sms" ] ; then
 		number=$4
 		modem_index=$5
 		
-		output=$( mmcli -m $modem_index --messaging-create-sms="text='$message', number='$number'" )
-		sms_index=$( echo $output | grep -oe "[/\s][0-9]." | cut -b 2- )
-		if [ $(mmcli -m $modem_index -s $sms_index --send > /dev/null 2>&1) ] ; then
-			echo sent
-		else
-			echo "Not sent"
-		fi
+		output=$( mmcli -m $modem_index --messaging-create-sms="text='$message', number='$number', delivery-report-request=yes" )
+		sms_index=$( echo $output | grep -oe "[/\s][0-9]*" | cut -b 2- )
+		echo "$sms_index"
+		sending_output=$( mmcli -m $modem_index -s $sms_index --send )
+		echo "$sending_output"
+		state=$( mmcli -m $modem_index -s $sms_index | grep state: | grep -oP ": [a-zA-Z]*" | cut -b 3- )
 	elif [ "$_type" == "received" ] ; then
 		modem_index=$3
 

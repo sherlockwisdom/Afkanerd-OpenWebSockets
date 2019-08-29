@@ -51,58 +51,88 @@ function update_write_ahead_log( ) {
 
 //TODO: put some cron job here to tell it check after some setting minutes
 //TODO: values of the cron job should be part of configuration (read from the database)
-var cron_process = new cron( '*/20 * * * * *', function() {
+var cron_process = new cron( '*/5 * * * * *', async function() {
 	console.log( "[CRON]: checking for pending request..." );
-	let get_requested_messages_query = "SELECT * FROM request WHERE id >= ?";
-	mysql_connection.query( get_requested_messages_query, [LAST_READ_MESSAGE_ID], async function( error, results ) {
-		
-		if( error ) { //TODO: put some log here to capture the error
-			console.log( error );
-		}
 
-		console.log( `[FETCHING REQUESTED MESSAGES]: ${ results.length } found!` );
-
-		let increment = false;
-		if( LAST_READ_INDEX == -1) increment = true;
-		for( let i in results) {
-			if( increment ) {
-				increment = false;
-				continue;
-			}
-			
-			let message_container = results[i].payload; //TODO: database field
-			LAST_READ_MESSAGE_ID = results[i].id;
-			await update_write_ahead_log();
-
-			message_container = JSON.parse( message_container );
-			
-			//TODO: should continue i from last place message was read
-			
-			for( LAST_READ_INDEX in message_container ) {
-				let phonenumber = message_container[i].phonenumber;
-				let message = message_container[i].message;
-				let service_provider = message_container[i].service_provider; //TODO: use Bruce's rolls to govern how this works
-
-
-				let args = [ "sms", "send", message, phonenumber, service_provider ]; //service provider not in script, should be modem index... since that can't be known
-				const linux_script_execution = spawnSync( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
-
-				var linux_script_execution_output = linux_script_execution.stdout;
-				var linux_script_execution_return = linux_script_execution.status;
-
-
-				//TODO: use an official logger here
-				console.log( "[LINUX_SCRIPT_EXECUTION_OUTPUT]: ", linux_script_execution_output );
-				console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
+	let check_request = function() {
+		return new Promise ( resolve => {
+			let get_requested_messages_query = "SELECT * FROM request WHERE id >= ?";
+			mysql_connection.query( get_requested_messages_query, [LAST_READ_MESSAGE_ID], async function( error, results ) {
 				
-				LAST_READ_INDEX = i;
-				await update_write_ahead_log( );
-			}
+				if( error ) { //TODO: put some log here to capture the error
+					console.log( error );
+				}
 
-			LAST_READ_INDEX = -1;
-			await update_write_ahead_log();
-		}
-	});
+				console.log( `[CRON]: number of request = ${ results.length } found!` );
+
+				let increment = false;
+				if( LAST_READ_INDEX == -1) {
+					LAST_READ_INDEX = 0;
+					increment = true;
+					console.log( `[CRON JOB]: last index changed to 0` );
+				}
+				
+				for( let i in results) {
+					await update_write_ahead_log();
+					if( increment ) {
+						increment = false;
+						//console.log( `[LINUX_MESSAGE]: Incrementing to next message at ${results[i+1].id}` )
+						if( typeof results[i+1] == "undefined" ) {
+							LAST_READ_INDEX = -1;
+							await update_write_ahead_log();
+							break;
+						}
+						else continue;
+					}
+
+					//ERROR: GDBus.Error:org.freedesktop.ModemManager1.Error.Serial.ResponseTimeout: Serial command timed out = SENT
+					else {
+						
+						console.log(`[CRON]: results index counter ${i} at request ID ${results[i].id}`);
+						let message_container = results[i].payload; //TODO: database field
+						LAST_READ_MESSAGE_ID = results[i].id;
+						await update_write_ahead_log();
+
+						message_container = JSON.parse( message_container );
+						
+						//TODO: should continue i from last place message was read
+						
+						for( let j in message_container ) {
+							console.log(`[STATE]: sending sms ${j} for request ${results[i].id}`);
+							let phonenumber = message_container[j].phonenumber;
+							let message = message_container[j].message;
+							let service_provider = message_container[j].service_provider; //TODO: use Bruce's rolls to govern how this works
+
+
+							let args = [ "sms", "send", message, phonenumber, "5" ]; //service provider not in script, should be modem index... since that can't be known
+							const linux_script_execution = spawnSync( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
+
+							//var linux_script_execution_output = linux_script_execution.stdout;
+							//var linux_script_execution_return = linux_script_execution.status;
+							console.log( linux_script_execution );
+
+
+							//TODO: use an official logger here
+							//console.log( "[LINUX_SCRIPT_EXECUTION_OUTPUT]: ", linux_script_execution_output );
+							//console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
+
+							LAST_READ_INDEX = j;
+							await update_write_ahead_log( );
+						}
+
+					}
+					LAST_READ_INDEX = -1;
+					await update_write_ahead_log();
+					console.log('[CRON]: DONE\n\n');
+				}
+				console.log('[CRON]: sending resolve');
+				resolve(true);
+			});
+		});
+	}
+	cron_process.stop();
+	var state = await check_request();
+	if( state ) cron_process.start();
 }, null);
 
 //FUNCTION CHECK FOR CONFIGURATIONS
@@ -135,7 +165,6 @@ function check_configurations() {
 
 
 			else {
-				console.log( results ) ;
 				for( let i in results) {
 					LAST_READ_INDEX = results[i].last_read_index; //TODO: set this to 0 when done reading or by default
 					LAST_READ_MESSAGE_ID = results[i].last_read_message_id;
