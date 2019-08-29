@@ -30,7 +30,7 @@ let cron_job = new cron('*/5 * * * * *', function() {
 	let linux_script_execution_STDOUT = linux_script_execution.stdout;
 	let linux_script_execution_RETURN = linux_script_execution.status;
 
-	console.log( "[SMS_DAEMON_SCRIPT_TERMINAL_OUTPUT]: ", linux_script_execution_STDOUT );
+	//console.log( "[SMS_DAEMON_SCRIPT_TERMINAL_OUTPUT]: ", linux_script_execution_STDOUT );
 	if( linux_script_execution_STDOUT.length < 1 ) {}
 
 	let sms_message_indexes = linux_script_execution_STDOUT.split( '\n' );
@@ -45,7 +45,7 @@ let cron_job = new cron('*/5 * * * * *', function() {
 		let sms_message_container = sms_message_container_STDOUT.split( '\n' );
 
 		if(sms_message_container.length < 3 || sms_message_container[ 1 ].length < 1 ) {
-			console.log( `[SMS_DAEMON_SCRIPT_TERMINAL_OUTPUT]: skipping message at ${sms_message_indexes[i]}`);
+			//console.log( `[SMS_DAEMON_SCRIPT_TERMINAL_OUTPUT]: skipping message at ${sms_message_indexes[i]}`);
 		}
 		else {
 			let phoneumber = sms_message_container[ 0 ];
@@ -111,7 +111,7 @@ function listeners ( state , listener_type ) {
 				}, RECONNECTION_TIMEOUT);
 			});
 
-			if( typeof listener_type == "undefined" ) sms_daemon_script ();
+			//if( typeof listener_type == "undefined" ) sms_daemon_script ();
 			break;
 	}
 }
