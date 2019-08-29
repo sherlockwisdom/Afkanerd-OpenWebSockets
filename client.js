@@ -4,44 +4,32 @@
  * DEPENDENCIES: 
  * 	MYSQL 
  * 		Database: deku_logs
- * 			write_ahead_log = last_read_index (int, defaults = 0), last_read_message_id (int, defaults = 0) , date (update on change)
+ * 			write_ahead_log = LAST_READ_INDEX (int, defaults = 0), LAST_READ_MESSAGE_ID (int, defaults = 0) , date (update on change)
  *			request = id, payload ( json ) , date ( date on write )
  *
  *
  */
+//TODO: remove all global variables to database configurations
 'use strict';
 
-const mysql = require ( 'mysql' );
 const { spawnSync } = require ( 'child_process' );
 const cron = require ( 'cron').CronJob;
+const globals = require ( './globals/tools.js' );
 
 
-var last_read_index = 0;
-var last_read_message_id = 0;
+
+var mysql_connection = "";
 
 const LINUX_SCRIPT_NAME = "./scripts/modem_information_extraction.sh";
-
-
-//TODO: remove this to processes so information can be shared on git
-var mysql_connection = mysql.createConnection({
-	host : 'localhost',
-	user : 'root',
-	password : 'asshole',
-	database : 'deku_logs'
-});
-
-
-mysql_connection.connect( function( error ) {
-	//TODO: put some log here to capture the error
-});
-
+var LAST_READ_INDEX = 0;
+var LAST_READ_MESSAGE_ID = 0;
 
 function update_write_ahead_log( ) {
 
 	return new Promise( resolve => {
 		let data = {
-			last_read_index : last_read_index,
-			last_read_message_id : last_read_message_id
+			LAST_READ_INDEX : LAST_READ_INDEX,
+			LAST_READ_MESSAGE_ID : LAST_READ_MESSAGE_ID
 		}
 
 		let update_write_ahead_query = "UPDATE write_ahead_log SET ?";
@@ -66,7 +54,7 @@ function update_write_ahead_log( ) {
 var cron_process = new cron( '*/20 * * * * *', function() {
 	console.log( "[CRON]: checking for pending request..." );
 	let get_requested_messages_query = "SELECT * FROM request WHERE ID >= ?";
-	mysql_connection.query( get_requested_messages_query, last_read_index, async function( error, results ) {
+	mysql_connection.query( get_requested_messages_query, LAST_READ_INDEX, async function( error, results ) {
 		
 		if( error ) { //TODO: put some log here to capture the error
 		}
@@ -76,7 +64,7 @@ var cron_process = new cron( '*/20 * * * * *', function() {
 		for( let i in results) {
 			
 			let message_container = results[i].payload; //TODO: database field
-			last_read_message_id = results[i].id;
+			LAST_READ_MESSAGE_ID = results[i].id;
 			await update_write_ahead_log();
 
 			message_container = JSON.parse( message_container );
@@ -99,11 +87,11 @@ var cron_process = new cron( '*/20 * * * * *', function() {
 				console.log( "[LINUX_SCRIPT_EXECUTION_OUTPUT]: ", linux_script_execution_output );
 				console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
 				
-				last_read_index = i;
+				LAST_READ_INDEX = i;
 				await update_write_ahead_log( );
 			}
 
-			last_read_index = 0;
+			LAST_READ_INDEX = 0;
 			await update_write_ahead_log();
 		}
 	});
@@ -125,7 +113,7 @@ function check_configurations() {
 			//TODO: transform this into an installation process
 			if( results.length < 1 ) {
 				//nothing is put here, then put it
-				let insert_default_values = `INSERT INTO write_ahead_log (last_read_index,last_read_message_id) VALUES (${last_read_index}, ${last_read_message_id})`;
+				let insert_default_values = `INSERT INTO write_ahead_log (LAST_READ_INDEX,LAST_READ_MESSAGE_ID) VALUES (${LAST_READ_INDEX}, ${LAST_READ_MESSAGE_ID})`;
 				mysql_connection.query( insert_default_values, function( error, results ) {
 					if( error ) { //TODO: put some log here to capture the error
 						console.log( "[WRITE_AHEAD_LOG_DEFAULT_INSERT ERROR]:\n", error );
@@ -140,14 +128,14 @@ function check_configurations() {
 
 			else {
 				for( let i in results) {
-					last_read_index = results[i].last_read_index; //TODO: set this to 0 when done reading or by default
-					last_read_message_id = results[i].last_read_message_id;
+					LAST_READ_INDEX = results[i].LAST_READ_INDEX; //TODO: set this to 0 when done reading or by default
+					LAST_READ_MESSAGE_ID = results[i].LAST_READ_MESSAGE_ID;
 				}
 			}
 
 
-			console.log( `[LAST_READ_INDEX]: ${ last_read_index }` );
-			console.log( `[LAST_READ_MESSAGE_ID]: ${ last_read_message_id }` );
+			console.log( `[LAST_READ_INDEX]: ${ LAST_READ_INDEX }` );
+			console.log( `[LAST_READ_MESSAGE_ID]: ${ LAST_READ_MESSAGE_ID }` );
 			
 			resolve(true);
 		});
@@ -158,6 +146,14 @@ function check_configurations() {
 
 //begin with checking configurations
 async function start_script() {
+	mysql_connection = await globals.mysql_connection();
+	mysql_connection.connect( function ( error ) {
+		if( error ) { //TODO: put some log here to capture the error
+			console.log("[MYSQL CONNECTION EROR]: ", error);
+			return; //kills script here because important parts can't go undocumented
+		}
+	});
+
 	console.log("[START SCRIPT]: checking configurations...");
 	
 	let configuration_results = await check_configurations();
