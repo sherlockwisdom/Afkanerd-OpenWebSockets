@@ -7,7 +7,7 @@
 
 #check for available modems
 if [ "$1" == "list" ] ; then
-	list=$( mmcli -L | grep -oe "/[0-9*]" | cut -b 2- )
+	list=$( mmcli -L | grep -oe "[0-9]* " | grep -oe [0-9]* )
 	printf "$list"
 elif [ "$1" == "extract" ] ; then
 	modem_index=$2
@@ -16,7 +16,7 @@ elif [ "$1" == "extract" ] ; then
 	#elif [ "$_command" == "sig_qual" ] ; then
 	signal_quality=$( mmcli -m $modem_index 2>&1 | grep "signal quality" | grep -oe "[0-9]*" )
 	#elif [ "$_command" == "op_name" ] ; then
-	operator_name=$( mmcli -m $modem_index | grep "operator name" | grep -oe "'[a-zA-Z]*'" | grep -oe "[a-zA-Z]*" )
+	operator_name=$( mmcli -m $modem_index | grep "operator name" | grep -oP ": ([a-zA-Z]*)" | cut -b 3- )
 	printf "equipment_id:$equipment_id\nsignal_quality:$signal_quality\noperator_name:$operator_name"
 
 elif [ "$1" == "sms" ] ; then
@@ -27,7 +27,7 @@ elif [ "$1" == "sms" ] ; then
 		modem_index=$5
 		
 		output=$( mmcli -m $modem_index --messaging-create-sms="text='$message',number='$number',delivery-report-request='yes'" )
-		sms_index=$( echo $output | grep -oe "[0-9]* (unknown)" | grep -oe "[0-9]*" )
+		sms_index=$( echo $output | grep -oe "[0-9]*$" )
 		sending_output=$( mmcli -m $modem_index -s $sms_index --send )
 		printf "$sending_output"
 		#state=$( mmcli -m $modem_index -s $sms_index | grep state: | grep -oP ": [a-zA-Z]*" | cut -b 3- )
@@ -45,9 +45,10 @@ elif [ "$1" == "sms" ] ; then
 		message_index=$3
 
 		message_number=$( mmcli -m $modem_index --sms $message_index| grep number: | grep -oP "[+0-9]*" )
-		message_text=$( mmcli -m $modem_index --sms $message_index | grep text: | grep -oP "'[a-zA-Z0-9\W :_<=?]*'" | grep -oe "[a-zA-Z0-9\W :_<=?]*" )
+		message_text=$( mmcli -m $modem_index --sms $message_index | grep text | grep -oP ": [a-zA-Z0-9\W :_<=?]*" | cut -b 3- )
 		timestamp=$( mmcli -m $modem_index --sms $message_index | grep timestamp: | grep -oP ": [a-zA-Z0-9\W]*" | cut -b 3- ) 
 		printf "$message_number\n$message_text\n$timestamp"
+		#print "$message_number\n$message_text"
 	elif [ "$_type" == "delete" ]; then
 		modem_index=$4
 		message_index=$3
