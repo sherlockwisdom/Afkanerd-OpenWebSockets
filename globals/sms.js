@@ -4,6 +4,7 @@ const { spawnSync, spawn } = require ('child_process');
 
 const PATH_TO_SCRIPT = "../scripts/modem_information_extraction.sh";
 
+//TODO: set event listener checking for changes in modem and creating events
 class Modem{
 	constructor( index ) {
 		this.index = typeof index == "undefined" ? "-1" : index;

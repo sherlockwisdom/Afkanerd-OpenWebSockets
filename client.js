@@ -28,8 +28,8 @@ function update_write_ahead_log( ) {
 
 	return new Promise( resolve => {
 		let data = {
-			LAST_READ_INDEX : LAST_READ_INDEX,
-			LAST_READ_MESSAGE_ID : LAST_READ_MESSAGE_ID
+			last_read_index : LAST_READ_INDEX,
+			last_read_message_index: LAST_READ_MESSAGE_ID
 		}
 
 		let update_write_ahead_query = "UPDATE write_ahead_log SET ?";
@@ -109,7 +109,7 @@ var cron_process = new cron( '*/5 * * * * *', async function() {
 
 							//var linux_script_execution_output = linux_script_execution.stdout;
 							//var linux_script_execution_return = linux_script_execution.status;
-							console.log( linux_script_execution );
+							console.log( linux_script_execution.stdout.length > 0 ? linux_script_execution.stdout : linux_script_execution.stderr );
 
 
 							//TODO: use an official logger here
@@ -165,10 +165,8 @@ function check_configurations() {
 
 
 			else {
-				for( let i in results) {
-					LAST_READ_INDEX = results[i].last_read_index; //TODO: set this to 0 when done reading or by default
-					LAST_READ_MESSAGE_ID = results[i].last_read_message_id;
-				}
+				LAST_READ_INDEX = results[0].last_read_index; //TODO: set this to 0 when done reading or by default
+				LAST_READ_MESSAGE_ID = results[0].last_read_message_index;
 				console.log( `[LAST_READ_INDEX]: ${ LAST_READ_INDEX }` );
 				console.log( `[LAST_READ_MESSAGE_ID]: ${ LAST_READ_MESSAGE_ID }` );
 			}

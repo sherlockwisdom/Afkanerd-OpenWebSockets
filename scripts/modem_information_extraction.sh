@@ -16,8 +16,8 @@ elif [ "$1" == "extract" ] ; then
 	#elif [ "$_command" == "sig_qual" ] ; then
 	signal_quality=$( mmcli -m $modem_index 2>&1 | grep "signal quality" | grep -oe "[0-9]*" )
 	#elif [ "$_command" == "op_name" ] ; then
-	operator_name=$( mmcli -m 8 | grep "operator name" | grep -oe ": [a-zA-Z]*" | grep -oe "[a-zA-Z]*" )
-	printf "equipment_id:$equipment_id\nsignal_quality:$signal_quality\noperator_name$operator_name"
+	operator_name=$( mmcli -m $modem_index | grep "operator name" | grep -oe "'[a-zA-Z]*'" | grep -oe "[a-zA-Z]*" )
+	printf "equipment_id:$equipment_id\nsignal_quality:$signal_quality\noperator_name:$operator_name"
 
 elif [ "$1" == "sms" ] ; then
 	_type=$2
@@ -45,7 +45,7 @@ elif [ "$1" == "sms" ] ; then
 		message_index=$3
 
 		message_number=$( mmcli -m $modem_index --sms $message_index| grep number: | grep -oP "[+0-9]*" )
-		message_text=$( mmcli -m $modem_index --sms $message_index | grep text: | grep -oP ": [a-zA-Z0-9\W :_<=?]*" | cut -b 3- )
+		message_text=$( mmcli -m $modem_index --sms $message_index | grep text: | grep -oP "'[a-zA-Z0-9\W :_<=?]*'" | grep -oe "[a-zA-Z0-9\W :_<=?]*" )
 		timestamp=$( mmcli -m $modem_index --sms $message_index | grep timestamp: | grep -oP ": [a-zA-Z0-9\W]*" | cut -b 3- ) 
 		printf "$message_number\n$message_text\n$timestamp"
 	elif [ "$_type" == "delete" ]; then
