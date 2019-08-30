@@ -24,14 +24,13 @@ class Modem{
 		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
 		
 		let info = std_out.stdout.split( '\n' );
-		let info_container = []
+		let info_container = {};
 		for( let i in info ) {
 			let key = info[i].split(':')[0];
 			let value = info[i].split(':')[1];
 
 			let container = { }
-			container[key] = value;
-			info_container.push( container );
+			info_container[key] = value;
 		}
 		return info_container;
 	}
