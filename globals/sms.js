@@ -85,7 +85,7 @@ class Modem{
 
 
 	send_sms( message, phonenumber ) {
-		let args = [ "sms", "send", message, phonenumber, this.modem_index ];
+		let args = [ "sms", "send", message, phonenumber, this.index ];
 		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
 		
 		return std_out.stdout.length < 1 ? std_out.stderr : std_out.stdout;
@@ -99,5 +99,6 @@ let modems = new Modem().get_modems();
 
 for(let i in modems) {
 	console.log( modems[i].get_info() );
+	console.log( modems[i].send_sms( new Date(), "652156811" ) )
 	console.log('\n');
 }
