@@ -50,39 +50,54 @@ class Modem{
 	get_info() {
 		return {
 			index : this.index,
-			info : this.get_modem()
+			info : this.get_modem(),
+			sms : this.get_sms()
 		}
+	}
+
+	get_sms_indexes( ) {
+		
+		let args = [ "sms", "all", this.index ];
+		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
+		
+		return std_out.stdout.split( '\n' );
+	}
+
+
+	get_sms( ) {
+
+		let sms_indexes = this.get_sms_indexes();
+		let container_list = {}
+		for(let i in sms_indexes ) {
+			
+			let args = [ "sms", "read_sms", sms_indexes[i], this.modem_index ];
+			let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
+			std_out = std_out.stdout.split( '\n' );
+			
+			//let container = {}
+			//for(let j in std_out) container[j] = std_out[j];
+
+			container_list[i] = JSON.parse ( JSON.stringify( std_out) );
+		}
+		
+		return container_list;
+	}
+
+
+	send_sms( message, phonenumber ) {
+		let args = [ "sms", "send", message, phonenumber, this.modem_index ];
+		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
+		
+		return std_out.stdout.length < 1 ? std_out.stderr : std_out.stdout;
 	}
 }
 
 
 
-function get_sms_indexes( modem_index ) {
-	
-	let args = [ "sms", "all", modem_index ];
-	let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
-	
-	return std_out.stdout.split( '\n' );
-}
-
-
-function get_sms( modem_index, index ) {
-
-	let args = [ "sms", "read_sms", index, modem_index ];
-	let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
-	std_out = std_out.stdout.split( '\n' );
-	
-	return std_out;
-}
-
-
-function send_sms( modem_index, message, phonenumber ) {
-	let args = [ "sms", "send", message, phonenumber, modem_index ];
-	let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
-	
-	return std_out.stdout.length < 1 ? std_out.stderr : std_out.stdout;
-}
 
 let modems = new Modem().get_modems();
 
-for(let i in modems) console.log( modems[i].get_info() );
+for(let i in modems) {
+	console.log( modems[i].get_info() );
+	console.log('\n');
+}
