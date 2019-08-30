@@ -151,7 +151,7 @@ function check_configurations() {
 			//TODO: transform this into an installation process
 			if( results.length < 1 ) {
 				//nothing is put here, then put it
-				let insert_default_values = `INSERT INTO write_ahead_log (LAST_READ_INDEX,LAST_READ_MESSAGE_ID) VALUES (${LAST_READ_INDEX}, ${LAST_READ_MESSAGE_ID})`;
+				let insert_default_values = `INSERT INTO write_ahead_log (last_read_index,last_read_message_index) VALUES (${LAST_READ_INDEX}, ${LAST_READ_MESSAGE_ID})`;
 				mysql_connection.query( insert_default_values, function( error, results ) {
 					if( error ) { //TODO: put some log here to capture the error
 						console.log( "[WRITE_AHEAD_LOG_DEFAULT_INSERT ERROR]:\n", error );
