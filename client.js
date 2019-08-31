@@ -16,8 +16,6 @@ const { spawnSync } = require ( 'child_process' );
 const cron = require ( 'cron').CronJob;
 const globals = require ( './globals/tools.js' );
 
-
-
 var mysql_connection = "";
 
 const LINUX_SCRIPT_NAME = "./scripts/modem_information_extraction.sh";
@@ -29,7 +27,7 @@ function update_write_ahead_log( ) {
 	return new Promise( resolve => {
 		let data = {
 			last_read_index : LAST_READ_INDEX,
-			last_read_message_index: LAST_READ_MESSAGE_ID
+			last_read_message_id: LAST_READ_MESSAGE_ID
 		}
 
 		let update_write_ahead_query = "UPDATE write_ahead_log SET ?";
@@ -87,38 +85,32 @@ var cron_process = new cron( '*/5 * * * * *', async function() {
 
 					//ERROR: GDBus.Error:org.freedesktop.ModemManager1.Error.Serial.ResponseTimeout: Serial command timed out = SENT
 					else {
-						
-						console.log(`[CRON]: results index counter ${i} at request ID ${results[i].id}`);
-						let message_container = results[i].payload; //TODO: database field
-						LAST_READ_MESSAGE_ID = results[i].id;
-						await update_write_ahead_log();
+						let type = results[i].type;
+						switch( type ) {
+							case "terminal":
+								console.log( "[GOING TO DO SOME TERMINAL WORKS]" )
+							break;
 
-						message_container = JSON.parse( message_container );
-						
-						//TODO: should continue i from last place message was read
-						
-						for( let j in message_container ) {
-							console.log(`[STATE]: sending sms ${j} for request ${results[i].id}`);
-							let phonenumber = message_container[j].phonenumber;
-							let message = message_container[j].message;
-							let service_provider = message_container[j].service_provider; //TODO: use Bruce's rolls to govern how this works
+							case "sms":
+								//TODO: make sure it exist before continuing
+								let message_container = results[i].payload; //TODO: database field
+								LAST_READ_MESSAGE_ID = results[i].id;
+								await update_write_ahead_log();
 
-
-							let args = [ "sms", "send", message, phonenumber, "5" ]; //service provider not in script, should be modem index... since that can't be known
-							const linux_script_execution = spawnSync( LINUX_SCRIPT_NAME, args, { "encoding" : "utf8" } );
-
-							//var linux_script_execution_output = linux_script_execution.stdout;
-							//var linux_script_execution_return = linux_script_execution.status;
-							console.log( linux_script_execution.stdout.length > 0 ? linux_script_execution.stdout : linux_script_execution.stderr );
-
-
-							//TODO: use an official logger here
-							//console.log( "[LINUX_SCRIPT_EXECUTION_OUTPUT]: ", linux_script_execution_output );
-							//console.log( "[LINUX_SCRIPT_EXECUTION_RETURN]: ", linux_script_execution_return );
-
-							LAST_READ_INDEX = j;
-							await update_write_ahead_log( );
+								message_container = JSON.parse( message_container );
+								
+								for(let i in message_container) {
+									let phonenumber = message_container[i].phonenumber;
+									let message = message_container[i].message;
+									let service_provider = message_container[i].service_provider;
+									let sms_status = await sms.send_sms ( /*sms_message, phonenumber */ );
+									
+									if( sms_status ) await update_write_ahead_log();
+									else await log_for_retry();
+								}
+							break;
 						}
+						
 
 					}
 					LAST_READ_INDEX = -1;
@@ -166,7 +158,7 @@ function check_configurations() {
 
 			else {
 				LAST_READ_INDEX = results[0].last_read_index; //TODO: set this to 0 when done reading or by default
-				LAST_READ_MESSAGE_ID = results[0].last_read_message_index;
+				LAST_READ_MESSAGE_ID = results[0].last_read_message_id;
 				console.log( `[LAST_READ_INDEX]: ${ LAST_READ_INDEX }` );
 				console.log( `[LAST_READ_MESSAGE_ID]: ${ LAST_READ_MESSAGE_ID }` );
 			}
