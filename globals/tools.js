@@ -1,4 +1,5 @@
 const mysql = require ( 'mysql' );
+const queue = require ( './queue' );
 module.exports = {
 	//TODO: remove this to processes so information can be shared on git
 	mysql_connection : function() {

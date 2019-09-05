@@ -22,7 +22,7 @@ class Persist {
 			//let CONTAINER =[{element: JSON.stringify( this.elementContainer )}];
 			this.mysqlConnection.query( INSERT_QUERY, [this.elementContainer], ( error, results)=> {
 				if(error) {
-					console.log("queue:persist() => ", error.message);
+					console.log("persist:persist() => ", error.message);
 					reject();
 				}
 
@@ -43,7 +43,7 @@ class Persist {
 			let FETCH_QUERY = "SELECT element FROM Queue";
 			this.mysqlConnection.query(FETCH_QUERY, (error, results)=> {
 				if(error) {
-					console.log("queue:load() => ", error.message);
+					console.log("persist:load() => ", error.message);
 					reject();
 				}
 
@@ -88,10 +88,14 @@ class Queue extends Persist {
 	//TODO: Add a state which changes with every change to this.elementContainer
 	//TODO: On save, checks if state ids are the same unless --force is added
 	//TODO: On load, checks if state ids are the same unless --force is added
-	constructor( mysqlConnection ) {
+	//TODO: Add version controlling methods to this (brain-storming needed);
+	 constructor( mysqlConnection ) {
 		super( mysqlConnection );
 		this.elementContainer = [];
 		this.mysqlConnection = mysqlConnection;
+		
+		//Get's everything from persistence
+		this.load();
 	}
 
 	insert ( element ) {
@@ -131,21 +135,27 @@ class Queue extends Persist {
 		this.elementContainer = [];
 	}
 
-	async hardEmpty() {
-		await this.clearPersist();
-	}
 
 	async save() {
 		this.insertForPersist(this.elementContainer);
 		await this.persist();
 	}
 
-	async load() {
+	async append() {
 		let e = await this.getPersist();
 		for(let i in e) e[i] = [JSON.stringify( e[i].element )];
 		this.elementContainer = this.elementContainer.length > 0 ? this.elementContainer.concat(e) : e;
 	}
 
+	async load() {
+		this.empty();
+		this.append();
+	}
+
+	// Every with hard effects the persistent layer
+	async hardEmpty() {
+		await this.clearPersist();
+	}
 }
 
 
