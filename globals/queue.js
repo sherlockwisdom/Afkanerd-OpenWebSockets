@@ -84,6 +84,10 @@ class Persist {
 
 module.exports = 
 class Queue extends Persist {
+
+	//TODO: Add a state which changes with every change to this.elementContainer
+	//TODO: On save, checks if state ids are the same unless --force is added
+	//TODO: On load, checks if state ids are the same unless --force is added
 	constructor( mysqlConnection ) {
 		super( mysqlConnection );
 		this.elementContainer = [];
@@ -214,5 +218,5 @@ function test( mysqlConnection ) {
 }
 
 
-mysqlConnection( test );
+//mysqlConnection( test );
 
