@@ -34,50 +34,6 @@ class SocketButler {
 		});
 	}
 
-	request(message, clientToken) {
-		return new Promise( async (resolve,reject) => {
-			try{
-				let clientSockets = await this.findClientSockets( clientToken );
-				if(clientSockets.length == 0) {
-					throw new Error("no client found");
-					reject();
-				}
-				if(clientSockets.length > 1) {
-					let requestType = message.type;
-					for(let i in clientSockets)
-						if(clientSockets[i].primaryType == requestType){ 
-							clientSockets[i].sendMessage(message);
-							resolve();
-						}
-				} 
-
-				else {
-					clientSockets[0].sendMessage(message);
-					resolve();
-				}
-			}
-			catch(error) {
-				console.log("SocketButler:request:error=> ", error.message);
-				reject();
-			}
-		});
-	}
-
-	storePendingClient( message, clientToken) {
-		//if(pendingMessageContainer
-		pendingMessageContainer[clientToken].insert( message );
-	}
-
-	async forward(message, clientToken) {
-		try {
-			let responds = this.request(message, clientToken);
-		}
-		catch(error) {
-			console.log("SocketButler:forward:error=> ", error.message);
-			//this.stateQueue.hardInsert( error );
-			this.storePendingClient( message, clientToken);
-		}
-	}
 }
 
 
