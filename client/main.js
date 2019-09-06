@@ -12,8 +12,8 @@ var socket = new JsonSocket(new Socket.Socket());
 
 let startScript = async ()=>{
 	let mysqlConnection = await mysql.mysql_connection();
-	var smsMessageQueue = new Queue(mysqlConnection, "11111");
-	var stateMessageQueue = new Queue(mysqlConnection, "11111");
+	var smsMessageQueue = new Queue(mysqlConnection, "11111", "sms_message");
+	var stateMessageQueue = new Queue(mysqlConnection, "11111", "error_logs");
 
 	let options = {
 		host : 'localhost',
