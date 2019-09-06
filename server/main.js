@@ -1,24 +1,31 @@
 const SocketButler = require('./socket-butler.js');
+const Tools = require('./../globals/tools.js');
 
 'use strict';
 
 async function main() {
 
-
-	var socketButler = new SocketButler;
+	let mysqlConnection = await Tools.mysql_connection();
+	var socketButler = new SocketButler(mysqlConnection);
 	await socketButler.start();
 
 
 	let mostImportantRequest = {
 		type : "forward",
 		clientToken : "12345",
-		UUID : "0000",
+		clientUUID : "0000",
 		payload : {
 			type : "git",
 			payload : ["pull", "origin", "master"]
 		}
 	}
+
 	socketButler.forward(mostImportantRequest);
+
+	socketButler.on('new client', ()=>{
+		console.log('main:event:socket-butler:new-client');
+		socketButler.forward(mostImportantRequest);
+	});
 }
 
 

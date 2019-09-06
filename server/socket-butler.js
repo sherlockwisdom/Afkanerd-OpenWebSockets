@@ -1,12 +1,14 @@
 const JsonSocket = require('json-socket');
 const Queue = require ('./../globals/queue.js');
+const Event = require('events');
 'use strict';
 
 
 module.exports = 
-class SocketButler {
+class SocketButler extends Event {
 //for you see, I'm simply one hell of a butler
-	constructor() {
+	constructor( mysqlConnection ) {
+		super();
 		const Socket = require ('net');
 		this.socketContainer = [];
 		this.pendingClientConnect = {};
@@ -15,6 +17,7 @@ class SocketButler {
 			port : "8080",
 			host : "localhost"
 		}
+		this.queue = new Queue(mysqlConnection);
 	}
 
 	start() {
@@ -41,7 +44,7 @@ class SocketButler {
 										console.log("socket:on:message=> socket authentication token:", jsData.clientToken);
 										socketClient.clientToken = jsData.clientToken;
 										socketClient.UUID = jsData.UUID;
-										socketButler.addClientSocket(socketClient);
+										this.addClientSocket(socketClient);
 										console.log("socket:on:message=> number of client sockets:", this.size());
 									}
 								break;
@@ -74,6 +77,7 @@ class SocketButler {
 
 	addClientSocket(socket) {
 		this.socketContainer.push( socket );
+		this.emit('new client');
 	}
 
 	removeClientSocket(socketUUID, clientToken) {
@@ -91,9 +95,40 @@ class SocketButler {
 		});
 	}
 
+	findClientSocket(clientToken, clientUUID) {
+		for(let i=0;i<this.socketContainer.length;++i) {
+			let socket = this.socketContainer[i];
+			if(socket.UUID == clientUUID && socket.clientToken == clientToken)
+				return socket;
+		}
+		throw new Error("socket not found");
+	}
+
 
 	async forward( request ) {
 		console.log("socket-butler:forward=> new request:", request);
+		if(!request.hasOwnProperty("clientToken") || !request.hasOwnProperty("clientUUID") ) {
+			console.log("socket-butler:forward=> not a valid request");
+			return;
+		}
+
+		else {
+			let clientToken = request.clientToken;
+			let clientUUID = request.clientUUID;
+			let payload = request.payload;
+			
+			try {
+				let socket = this.findClientSocket(clientToken, clientUUID);
+				socket.sendMessage( payload );
+			}
+			catch(error) {
+				console.log("socket-butler:forward:error=>", error.message);
+				this.queue.insert(request);
+				return false;
+				//TODO: Store this content for when client comes online after verifying the client truly exist
+			}
+
+		}
 	}
 
 }

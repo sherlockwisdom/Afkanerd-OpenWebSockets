@@ -88,22 +88,13 @@ class Queue extends Persist {
 	//TODO: On save, checks if state ids are the same unless --force is added
 	//TODO: On load, checks if state ids are the same unless --force is added
 	//TODO: Add version controlling methods to this (brain-storming needed);
-	 constructor( mysqlConnection, access_token, message_type ) {
+	 constructor( mysqlConnection ) {
 		super( mysqlConnection );
 		this.elementContainer = [];
-		this.accessToken = access_token;
-		this.messageType = message_type;
-		//Get's everything from persistence
-		//this.load();
-		this.configurePersist();
-	}
-
-	async configurePersist() {
-		//this.mysqlConnection = await this.getConnection();
 	}
 
 	insert ( element ) {
-		let e = [JSON.stringify(element), this.accessToken, this.messageType];
+		let e = [JSON.stringify(element)];
 		this.elementContainer.push( e );
 	}
 
@@ -147,11 +138,8 @@ class Queue extends Persist {
 
 	async append() {
 		let e = await this.getPersist();
-		for(let i in e) e[i] = [JSON.stringify( e[i].element ), e.access_token, e.message_type];
-		//this.elementContainer = this.elementContainer.length > 0 ? this.elementContainer.concat(e) : e;
-		//console.log("append=>", this.elementContainer.length);
+		for(let i in e) e[i] = [JSON.stringify( e[i].element )];
 		this.elementContainer = this.elementContainer.concat(e);
-		//console.log("append=>", this.elementContainer.length);
 	}
 
 	async load() {
@@ -167,7 +155,7 @@ class Queue extends Persist {
 	async hardInsert( element ) {
 		//element = [element, this.accessToken];
 		//console.log(JSON.stringify(element));
-		let e = [JSON.stringify(element), this.accessToken, this.messageType];
+		let e = [JSON.stringify(element)];
 		this.insertForPersist( [e] );
 		await this.persist();
 	}

@@ -1,4 +1,3 @@
-const Queue = require ('./../globals/queue.js');
 const Tools = require('./../globals/tools.js')
 const Socket = require ('net');
 const JsonSocket = require('json-socket');
@@ -24,13 +23,10 @@ let startScript = async ( sebastian )=>{
 	}
 
 	let mysqlConnection = await Tools.mysql_connection();
-	var smsMessageQueue = new Queue(mysqlConnection, "11111", "sms_message");
-	var stateMessageQueue = new Queue(mysqlConnection, "11111", "error_logs");
 
 	startSocketConnection();
 	socket.on('error', async ( error ) => {
 		console.log("socket.error=> [", error.code, "]", error.message);
-		await stateMessageQueue.hardInsert( error )
 
 		switch( error.code ) {
 			case 'ENOENT':
@@ -52,11 +48,11 @@ let startScript = async ( sebastian )=>{
 
 
 	socket.on('message', (data ) => {
+		console.log("socket.message=> new message:",data);
 		try {
 			if(data.type == "sms") {
 				let payload = data.payload;
 				console.log("socket.message=> request for sms message received");
-				smsMessageQueue.insert(payload);
 				console.log(data);
 			}
 		}
