@@ -17,7 +17,7 @@ class Persist {
 		}
 
 		return new Promise( ( resolve, reject)=> {
-			let INSERT_QUERY = "INSERT INTO Queue (element, client_token, message_type) VALUES ?"
+			let INSERT_QUERY = "INSERT INTO Queue (element) VALUES ?"
 			//let CONTAINER =[{element: JSON.stringify( this.elementContainer )}];
 			this.mysqlConnection.query( INSERT_QUERY, [this.elementContainer], ( error, results)=> {
 				if(error) {
@@ -39,7 +39,7 @@ class Persist {
 		}
 
 		return new Promise( (resolve, reject) => {
-			let FETCH_QUERY = "SELECT element, client_token, message_type FROM Queue";
+			let FETCH_QUERY = "SELECT element FROM Queue";
 			this.mysqlConnection.query(FETCH_QUERY, (error, results)=> {
 				if(error) {
 					console.log("persist:load() => ", error.message);

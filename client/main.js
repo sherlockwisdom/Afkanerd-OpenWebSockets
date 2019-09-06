@@ -2,7 +2,11 @@ const Tools = require('./../globals/tools.js')
 const Socket = require ('net');
 const JsonSocket = require('json-socket');
 const Sebastian = require('./sebastian.js');
+const { spawn, spawnSync,fork } = require('child_process');
 'use strict';
+
+//TODO: start pm2 manually and keep restarting using name in app
+//TODO: start pm2 with app and keep restarting it
 
 
 let startScript = async ( sebastian )=>{
@@ -50,10 +54,39 @@ let startScript = async ( sebastian )=>{
 	socket.on('message', (data ) => {
 		console.log("socket.message=> new message:",data);
 		try {
-			if(data.type == "sms") {
-				let payload = data.payload;
-				console.log("socket.message=> request for sms message received");
-				console.log(data);
+			if(typeof data.type !== undefined) {
+				switch( data.type ) {
+					case "terminal":
+						console.log("socket.message=> running a config command");
+						let terminalType = data.payload.terminalType;
+						switch( terminalType ) {
+							case "update":
+								console.log("socket.message.terminal=> received command for update");
+								sebastian.update();
+							break;
+
+							case "reload":
+								console.log("socket.message.reload=> received command for reload");
+							break;
+						}
+					break;
+
+					case "sms":
+					break;
+
+					default:
+						console.log("socket.message=> running default state for:", data.type);
+						let options = {
+							detached: true,
+							stdio : ['inherit', 'inherit', 'inherit']
+						}
+						const newProcess = spawn(data.type, data.payload, options);
+						newProcess.unref();
+					break;
+				}
+			}
+			else {
+				throw new Error("unknown request type");
 			}
 		}
 		catch(error) {

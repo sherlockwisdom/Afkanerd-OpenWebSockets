@@ -106,7 +106,7 @@ class SocketButler extends Event {
 
 
 	async forward( request ) {
-		console.log("socket-butler:forward=> new request:", request);
+		//console.log("socket-butler:forward=> new request:", request);
 		if(!request.hasOwnProperty("clientToken") || !request.hasOwnProperty("clientUUID") ) {
 			console.log("socket-butler:forward=> not a valid request");
 			return;

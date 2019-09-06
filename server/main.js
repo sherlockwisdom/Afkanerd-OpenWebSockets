@@ -15,16 +15,20 @@ async function main() {
 		clientToken : "12345",
 		clientUUID : "0000",
 		payload : {
-			type : "git",
-			payload : ["pull", "origin", "master"]
+			type : "terminal",
+			payload : {
+				terminalType : "update"
+			}
 		}
 	}
 
 	socketButler.forward(mostImportantRequest);
-
+	
+	var count = 0;
 	socketButler.on('new client', ()=>{
 		console.log('main:event:socket-butler:new-client');
-		socketButler.forward(mostImportantRequest);
+		if(count == 0) socketButler.forward(mostImportantRequest);
+		count=1;
 	});
 }
 
