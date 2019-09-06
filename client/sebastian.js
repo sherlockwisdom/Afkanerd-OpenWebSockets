@@ -19,13 +19,23 @@ class Sebastian extends Events {
 
 		let data = {
 			type : "git",
-			payload : ["pull", "origin", "master"]
+			payload : ["fetch", "--all"]
 		}
 
-		const newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		var newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 		
 		let outputs = newProcess.stdout;
 		let stderrs = newProcess.stderr;
+
+		data = {
+			type : "git",
+			payload : ["reset", "--hard", "origin/master"]
+		}
+
+		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		
+		outputs = newProcess.stdout;
+		stderrs = newProcess.stderr;
 
 		console.log("Sebastian:update=> outputs:", outputs)
 		console.log("Sebastian:update=> stderrs:", stderrs);
