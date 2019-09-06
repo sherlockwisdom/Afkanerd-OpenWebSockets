@@ -42,14 +42,6 @@ class Sebastian extends Events {
 
 		this.pm2.connect(()=>{
 			
-			/*this.pm2.gracefulReload("all", (err, proc)=> {
-				if( error ) {
-					console.log("Sebastian:update:error=>", err.message);
-				}
-				else {
-					console.log("Sebastian:update:xxx=>", proc.name);
-				}
-			})*/
 
 			this.pm2.restart("all", (err, list) => {
 				console.log(list);
@@ -59,8 +51,3 @@ class Sebastian extends Events {
 
 }
 
-/*
-const Sebastian = require('./sebastian.js');
-var sebastian = new Sebastian();
-sebastian.update();
-*/
