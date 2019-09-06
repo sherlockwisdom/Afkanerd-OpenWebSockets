@@ -29,13 +29,7 @@ let startScript = async ()=>{
 
 	socket.on('error', async ( error ) => {
 		console.log("socket.error=> ", error.message);
-		let jsError = {}
-		jsError["error_source"] = "socket.on.error"
-		jsError["error_message"] = error.message
-		/*	error_code : error.code,
-			error_syscall : error.syscall
-		}*/
-		await stateMessageQueue.hardInsert( jsError )
+		await stateMessageQueue.hardInsert( error )
 
 		switch( error.code ) {
 			case 'ENOENT':
@@ -65,13 +59,17 @@ let startScript = async ()=>{
 				let payload = data.payload;
 				console.log("socket.message=> request for sms message received");
 				smsMessageQueue.insert(payload);
+				appManager.appRequest( data );
+				if(appRequest.isApp()) appRequest.queue( data );
+				else {
+					//TODO: something in the line of back to sender or log for back habits...nah log it!
+					stateMessageQueue.hardInsert(data);
+				}
 				//TODO: check out something to do here to stop multiple messages from requesting the modem at once
 			}
 		}
 		catch(error) {}
 	})
 }
-
-
 
 startScript();
