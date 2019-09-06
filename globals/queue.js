@@ -1,10 +1,9 @@
-const mysql = require('./tools');
+const mysql = require('./tools.js');
 
 class Persist {
 	constructor( mysqlConnection ) {
 		this.mysqlConnection = mysqlConnection;
 	}
-
 
 	insertForPersist( elements ) {
 		this.elementContainer = elements;
@@ -18,7 +17,7 @@ class Persist {
 		}
 
 		return new Promise( ( resolve, reject)=> {
-			let INSERT_QUERY = "INSERT INTO Queue (element) VALUES ?"
+			let INSERT_QUERY = "INSERT INTO Queue (element, client_token, message_type) VALUES ?"
 			//let CONTAINER =[{element: JSON.stringify( this.elementContainer )}];
 			this.mysqlConnection.query( INSERT_QUERY, [this.elementContainer], ( error, results)=> {
 				if(error) {
@@ -40,7 +39,7 @@ class Persist {
 		}
 
 		return new Promise( (resolve, reject) => {
-			let FETCH_QUERY = "SELECT element FROM Queue";
+			let FETCH_QUERY = "SELECT element, client_token, message_type FROM Queue";
 			this.mysqlConnection.query(FETCH_QUERY, (error, results)=> {
 				if(error) {
 					console.log("persist:load() => ", error.message);
@@ -89,17 +88,22 @@ class Queue extends Persist {
 	//TODO: On save, checks if state ids are the same unless --force is added
 	//TODO: On load, checks if state ids are the same unless --force is added
 	//TODO: Add version controlling methods to this (brain-storming needed);
-	 constructor( mysqlConnection ) {
+	 constructor( mysqlConnection, access_token, message_type ) {
 		super( mysqlConnection );
 		this.elementContainer = [];
-		this.mysqlConnection = mysqlConnection;
-		
+		this.accessToken = access_token;
+		this.messageType = message_type;
 		//Get's everything from persistence
-		this.load();
+		//this.load();
+		this.configurePersist();
+	}
+
+	async configurePersist() {
+		//this.mysqlConnection = await this.getConnection();
 	}
 
 	insert ( element ) {
-		let e = [JSON.stringify(element)];
+		let e = [JSON.stringify(element), this.accessToken, this.messageType];
 		this.elementContainer.push( e );
 	}
 
@@ -143,8 +147,11 @@ class Queue extends Persist {
 
 	async append() {
 		let e = await this.getPersist();
-		for(let i in e) e[i] = [JSON.stringify( e[i].element )];
-		this.elementContainer = this.elementContainer.length > 0 ? this.elementContainer.concat(e) : e;
+		for(let i in e) e[i] = [JSON.stringify( e[i].element ), e.access_token, e.message_type];
+		//this.elementContainer = this.elementContainer.length > 0 ? this.elementContainer.concat(e) : e;
+		//console.log("append=>", this.elementContainer.length);
+		this.elementContainer = this.elementContainer.concat(e);
+		//console.log("append=>", this.elementContainer.length);
 	}
 
 	async load() {
@@ -155,6 +162,14 @@ class Queue extends Persist {
 	// Every with hard effects the persistent layer
 	async hardEmpty() {
 		await this.clearPersist();
+	}
+
+	async hardInsert( element ) {
+		//element = [element, this.accessToken];
+		//console.log(JSON.stringify(element));
+		let e = [JSON.stringify(element), this.accessToken, this.messageType];
+		this.insertForPersist( [e] );
+		await this.persist();
 	}
 }
 
@@ -170,7 +185,7 @@ function test( mysqlConnection ) {
 
 	let q = require('./queue');
 	let assert = require('assert');
-	q = new q(mysqlConnection);
+	q = new q(mysqlConnection, "12345", "developers_test");
 	let chalk = require('chalk');
 
 	let q_insert = new Promise( function(resolve) {
@@ -200,7 +215,7 @@ function test( mysqlConnection ) {
 			console.log(chalk.green("Testing=>"), "load()");
 			await q.load();
 			persistResults = await tPersist.getPersist();
-			assert.strictEqual(q.size(), 2000);
+			assert.strictEqual(q.size(), 1000);
 			assert.strictEqual(persistResults.length, 1000);
 
 
