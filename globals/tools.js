@@ -12,6 +12,15 @@ module.exports = {
 			});
 			resolve(mysql_connection);
 		});
-	}
+	},
 
+	sleep : function() {
+		return new Promise( resolve => {
+			console.log("tools.sleep=> going to sleep now...");
+			setTimeout(()=>{
+				console.log("tools.sleep=> awake now...");
+				resolve();
+			}, 5000);
+		});
+	}
 };
