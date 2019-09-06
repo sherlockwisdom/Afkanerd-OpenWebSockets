@@ -124,6 +124,7 @@ class SocketButler extends Event {
 			catch(error) {
 				console.log("socket-butler:forward:error=>", error.message);
 				this.queue.insert(request);
+				console.log("socket-butler:foward=> queue size:", this.queue.size());
 				return false;
 				//TODO: Store this content for when client comes online after verifying the client truly exist
 			}

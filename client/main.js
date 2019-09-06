@@ -37,7 +37,7 @@ let startScript = async ( sebastian )=>{
 				console.log("socket.error=> server doesn't seem to be running, check port or call devs");
 				await Tools.sleep();
 				socket = null; //This is murder!!
-				sebastian.emit("event", "safemenow!!");
+				sebastian.emit("safemenow!", sebastian);
 				return;
 			break;
 
@@ -70,7 +70,7 @@ let startScript = async ( sebastian )=>{
 			case false:
 				console.log("socket.close=> was murdered by the server.... call Sherlock (Holmes)");
 				socket = null;
-				sebastian.emit("event", "safemenow!!");
+				sebastian.emit("safemenow!", sebastian);
 			break;
 
 			default:
@@ -82,6 +82,5 @@ let startScript = async ( sebastian )=>{
 
 var sebastian = new Sebastian;
 startScript(sebastian);
-sebastian.watch("safemenow!!", startScript);
-
+sebastian.on("safemenow!", startScript);
 //TODO: Add important things to process file
