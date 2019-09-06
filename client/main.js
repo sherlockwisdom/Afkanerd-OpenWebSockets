@@ -2,31 +2,12 @@ const Queue = require ('./../globals/queue.js');
 const Tools = require('./../globals/tools.js')
 const Socket = require ('net');
 const JsonSocket = require('json-socket');
-const Events = require('events');
-
+const Sebastian = require('./sebastian.js');
 'use strict';
-
-class Sebastian extends Events {
-	constructor() {
-		super();
-		this.eventList = {}
-		this.on('event', this.execute);
-	}
-
-	execute(eventName) {
-		console.log("(-_-) Ciel: ", eventName, " Sebastian: yes master!");
-		this.eventList[eventName](this)
-	}
-
-	watch(eventName, eventFunction) {
-		this.eventList[eventName] = eventFunction
-	}
-}
-
-//Let's begin, le dance macabre
 
 
 let startScript = async ( sebastian )=>{
+//Let's begin, le dance macabre
 	var socket = new JsonSocket(new Socket.Socket());
 
 	var startSocketConnection = ()=> {
@@ -38,7 +19,7 @@ let startScript = async ( sebastian )=>{
 
 		socket.connect(options, function(){
 			console.log("socket.connect=> connected..."); 
-			socket.sendMessage({type:"auth", token:"12345"});
+			socket.sendMessage({type:"auth", clientToken:"12345", UUID:"0000"});
 		});
 	}
 
@@ -72,22 +53,16 @@ let startScript = async ( sebastian )=>{
 
 	socket.on('message', (data ) => {
 		try {
-			let jsData = JSON.parse(data);
-			
 			if(data.type == "sms") {
 				let payload = data.payload;
 				console.log("socket.message=> request for sms message received");
 				smsMessageQueue.insert(payload);
-				/*appManager.appRequest( data );
-				if(appRequest.isApp()) appRequest.queue( data );
-				else {
-					//TODO: something in the line of back to sender or log for back habits...nah log it!
-					stateMessageQueue.hardInsert(data);
-				}*/
-				//TODO: check out something to do here to stop multiple messages from requesting the modem at once
+				console.log(data);
 			}
 		}
-		catch(error) {}
+		catch(error) {
+			console.log("socket.message.error=> ", error.message);
+		}
 	})
 
 	socket.on('close', async ( hadError )=> {
@@ -112,3 +87,5 @@ let startScript = async ( sebastian )=>{
 var sebastian = new Sebastian;
 startScript(sebastian);
 sebastian.watch("safemenow!!", startScript);
+
+//TODO: Add important things to process file
