@@ -84,12 +84,12 @@ class Modem{
 		return container_list;
 	}
 
-
 	send_sms( message, phonenumber ) {
-		let args = [ "sms", "send", message, phonenumber, this.index ];
-		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
-		
-		return std_out.stdout.length < 1 ? std_out.stderr : std_out.stdout;
+		return new Promise( (resolve, reject)=> {
+			let args = [ "sms", "send", message, phonenumber, this.index ];
+			let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
+			resolve( std_out.stdout.length < 1 ? std_out.stderr : std_out.stdout );
+		});
 	}
 }
 

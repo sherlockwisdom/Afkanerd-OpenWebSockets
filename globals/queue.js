@@ -99,8 +99,7 @@ class Queue extends Persist {
 	}
 
 	back() {
-		let e = this.pop();
-		return e.pop();
+		return this.elementContainer[this.elementContainer.length - 1];
 	}
 
 	//Return first element and removes from array
@@ -122,8 +121,7 @@ class Queue extends Persist {
 	}
 
 	next() {
-		let e = this.shift();
-		return e.pop();
+		return this.elementContainer[0];
 	}
 
 	empty() {
