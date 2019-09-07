@@ -96,13 +96,18 @@ class Modem extends Events {
 
 
 	sshSend(message, phonenumber) {
-		return new Promise((resolve)=> {
+		return new Promise((resolve, reject)=> {
 			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
 			let args = ["-t", phonenumber, message];
-			const vadafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
-			let output = vodafoneRouterOutput.stdout;
-			let error = vodafoneRouterOUtput.stderr;
-			resolve( output );
+			try {
+				const vadafoneRouterOutput = spawnSync("_no_valid_command", args, {"encoding" : "utf8"});
+				let output = vodafoneRouterOutput.stdout;
+				let error = vodafoneRouterOUtput.stderr;
+				resolve( output );
+			}
+			catch( error ) {
+				reject("Modem.sshSend.error=> ", error.message);
+			}
 		});
 	}
 
@@ -138,7 +143,11 @@ class SMS extends Modem{
 		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend */
 
 		this.toggleForwarderState(forward, "busy");
-		this.execEnv = await this.forwardBindings[forwarder](request.message, request.phonenumber);
+		this.forwardBindings[forwarder](request.message, request.phonenumber).then(( resolve )=>{
+			console.log("SMS.deQueueFor=>", resolve);
+		}).catch(( reject )=>{
+			console.log("SMS.deQueueFor.error=>", reject);
+		});
 		this.toggleForwarderState(forward, "!busy");
 		//this.emit("event", "new request", group);
 	}
@@ -156,6 +165,7 @@ class SMS extends Modem{
 	}
 
 	sendSMS(message, phonenumber) {
+		//TODO: Assumption which I can live with, there are only 2 modems and this modems have to handle the workload
 		return new Promise( async (resolve, reject )=> {
 			let request = {phonenumber: phonenumber, message : message };
 			//let's sanitize the input
@@ -170,11 +180,26 @@ class SMS extends Modem{
 			else {
 				//console.log("SMS:sendSMS=> ack group:", group)
 				this.queueFor(group, request);
-				await this.queue.hardInsert( request );
+				//await this.queue.hardInsert( request );
 				resolve("SMS.sendSMS=> done.");
 			}
 
 			reject();
+		});
+	}
+
+	sendBulkSMS( request) {
+		return new Promise(async(resolve, reject)=> {
+			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
+			for(let i in request) {
+				console.log("SMS.sendBulkSMS=> sending message: %d of %d",i,request.length);
+				this.sendSMS(request[i].message, request[i].phonenumber).then((resolve)=>{ 
+					console.log(resolve) 
+				}).catch((reject)=>{ 
+					console.log(reject)
+				});
+			}
+			resolve("SMS.sendBulkSMS=> done.");
 		});
 	}
 }
@@ -203,7 +228,7 @@ try {
 
 	sms.on("sms.ready", ()=>{
 		console.log("sms ready...");
-		sms.sendSMS(data[0].message, data[0].phonenumber).then((resolve)=>{
+		sms.sendBulkSMS( data ).then((resolve)=>{
 			console.log(resolve);
 		}).catch((reject)=>{ console.log(reject)})
 		/*sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
