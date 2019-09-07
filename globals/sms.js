@@ -1,7 +1,7 @@
 //TODO: number of modems
 const Events = require('events');
 const { spawnSync, spawn } = require ('child_process');
-
+const Queue = require('./queue.js');
 
 
 //TODO: SOC
@@ -23,7 +23,6 @@ class Modem {
 	getRequestGroup( value ) {
 		var groups = this.rules.group;
 		for(let n in groups) {
-			console.log(n);
 			let group = groups[n];
 
 			for(let i=0;i<Object.keys(value).length;++i) {
@@ -54,6 +53,8 @@ class SMS {
 		this.groupBindings = {}
 		this.groupBindings["SSH"] = this.sshSend;
 		this.groupBindings["MMCLI"] = this.mmcliSend;
+		this.queueGroupContainer = {};
+		for(let i in this.rules) this.queueGroupContainer[i] = new Queue();
 	}
 
 	sshSend(message, phonenumber) {
@@ -70,13 +71,19 @@ class SMS {
 		});
 	}
 
+	queueFor(group, request) {
+		this.queueGroupContainer[ group ].insert(request);
+	}
+
 	sendSMS(message, phonenumber) {
 		return new Promise( async (resolve)=> {
 			let request = {phonenumber: phonenumber, message : message };
 			console.log("sms:sendSMS=> requesting", request);
 			let group = this.modem.getRequestGroup(request)
-			let output = await this.groupBindings[this.rules[group]](message, phonenumber);
-			resolve( output );
+			this.queueFor(group, request);
+			//let output = await this.groupBindings[this.rules[group]](message, phonenumber);
+			//resolve( output );
+			resolve("done");
 		});
 	}
 }

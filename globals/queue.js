@@ -2,7 +2,15 @@ const mysql = require('./tools.js');
 
 class Persist {
 	constructor( mysqlConnection ) {
+		if(this.mysqConnection === undefined) {
+			this.getConnection();
+		}
+		else
 		this.mysqlConnection = mysqlConnection;
+	}
+
+	async getConnection() {
+		this.mysqlConnection = await mysql.mysql_connection()
 	}
 
 	insertForPersist( elements ) {
