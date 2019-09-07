@@ -42,6 +42,9 @@ class Modem extends Events {
 		}
 	}
 
+	probe() {
+	}
+
 }
 class SMS {
 	constructor( ) {
@@ -55,7 +58,18 @@ class SMS {
 		this.groupBindings["SSH"] = this.sshSend;
 		this.groupBindings["MMCLI"] = this.mmcliSend;
 		this.queueGroupContainer = {};
-		for(let i in this.rules) this.queueGroupContainer[i] = new Queue();
+
+		this.initializeQueues().then(()=>{
+			console.log("Done initializing...");
+		});
+
+	}
+
+	initializeQueues() {
+		return new Promise( resolve=> {
+			for(let i in this.rules) this.queueGroupContainer[i] = new Queue();
+			resolve();
+		});
 	}
 
 	sshSend(message, phonenumber) {
@@ -72,9 +86,15 @@ class SMS {
 		});
 	}
 
+	deQueueFor(group) {
+		console.log("SMS.deQueue=> removing from queue:", group);
+		console.log(this.groupGroupContainer);
+		//let request = this.queueGroupContainer[group].next()
+		//this.execEnv = this.groupBindings[this.rules[group]](request.message, request.phonenumber);
+	}
+
 	queueFor(group, request) {
 		this.queueGroupContainer[ group ].insert(request);
-		this.modem.emit('new request', group);
 	}
 
 	queueLog() {
@@ -120,7 +140,7 @@ let data = [
 let assert = require('assert');
 try {
 	var sms = new SMS;
-	sms.sendSMS(data[0].message, data[0].phonenmber);
+	sms.sendSMS(data[0].message, data[0].phonenumber);
 	sms.sendSMS(data[0].message, data[0].phonenumber);
 	sms.queueLog();
 }
