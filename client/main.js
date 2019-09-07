@@ -73,6 +73,10 @@ let startScript = async ( sebastian )=>{
 
 					case "sms":
 						console.log("socket.message=> SMS requested...");
+						/* let sms = new SMS;
+						sms.on('sms.ready', ()=>{
+						})
+						*/
 					break;
 
 					default:

@@ -9,8 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "chalk": "^2.4.2",
     "cron": "^1.7.1",
+    "express": "^4.17.1",
+    "express-json": "^1.0.0",
     "json-socket": "^0.3.0",
     "mysql": "^2.17.1",
     "nodegit": "^0.25.1",
