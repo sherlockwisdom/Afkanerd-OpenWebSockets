@@ -46,10 +46,10 @@ class Modem extends Events {
 	}
 
 }
-class SMS extends Modem{
+class SMS {
 	constructor( ) {
 		//TODO: read files to get this rules
-		super();
+		this.modem = new Modem;
 		this.rules = {
 			"MTN" : "SSH",
 			"ORANGE" : "MMCLI"
@@ -115,7 +115,7 @@ class SMS extends Modem{
 					return;
 				}
 			console.log("sms:sendSMS=> requesting", request);
-			let group = this.getRequestGroup(request)
+			let group = this.modem.getRequestGroup(request)
 			this.queueFor(group, request);
 			//let output = await this.groupBindings[this.rules[group]](message, phonenumber);
 			//resolve( output );
