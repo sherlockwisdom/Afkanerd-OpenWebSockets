@@ -98,7 +98,11 @@ class Modem extends Events {
 	sshSend(message, phonenumber) {
 		return new Promise((resolve)=> {
 			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
-			resolve("SMS.sshSend.demo.output");
+			let args = ["-t", phonenumber, message];
+			const vadafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
+			let output = vodafoneRouterOutput.stdout;
+			let error = vodafoneRouterOUtput.stderr;
+			resolve( output );
 		});
 	}
 
@@ -166,6 +170,7 @@ class SMS extends Modem{
 			else {
 				//console.log("SMS:sendSMS=> ack group:", group)
 				this.queueFor(group, request);
+				await this.queue.hardInsert( request );
 				resolve("SMS.sendSMS=> done.");
 			}
 

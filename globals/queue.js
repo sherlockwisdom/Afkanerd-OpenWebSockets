@@ -2,7 +2,8 @@ const mysql = require('./tools.js');
 
 class Persist {
 	constructor( mysqlConnection ) {
-		if(this.mysqConnection === undefined) {
+		if(typeof mysqlConnection == "undefined") {
+			console.log("Persist.constructor=> no myqlConnection provided...");
 			this.getConnection();
 		}
 		else
@@ -179,7 +180,7 @@ function test( mysqlConnection ) {
 
 	let q = require('./queue');
 	let assert = require('assert');
-	q = new q(mysqlConnection, "12345", "developers_test");
+	q = new q(mysqlConnection);
 	let chalk = require('chalk');
 
 	let q_insert = new Promise( function(resolve) {
