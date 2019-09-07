@@ -21,21 +21,66 @@ class Modem {
 	}
 
 	getRequestGroup( value ) {
-		let groups = this.rules.group;
-		for(let i in groups) {
-			let group = groups[i];
-			for(i in value ) {
-				if(group.determiners.hasOwnProperty(i)) {
-					let determinerRegex = group.determiners[i];
+		var groups = this.rules.group;
+		for(let n in groups) {
+			console.log(n);
+			let group = groups[n];
+
+			for(let i=0;i<Object.keys(value).length;++i) {
+				let key = Object.keys(value)[i];
+				let isDeterminer = group.determiners.hasOwnProperty(key);
+				
+				if( isDeterminer ) {
+					let determinerRegex = group.determiners.key;
 					let regex = RegExp(determinerRegex);
-					if( regex.test(value[i]) ) 
+					if( regex.test(value[i]) ) { 
 						return group.name;
+					}
+					
 				}
 			}
 		}
 	}
 
 }
+class SMS {
+	constructor( ) {
+		//TODO: read files to get this rules
+		this.modem = new Modem;
+		this.rules = {
+			"MTN" : "SSH",
+			"ORANGE" : "MMCLI"
+		}
+		this.groupBindings = {}
+		this.groupBindings["SSH"] = this.sshSend;
+		this.groupBindings["MMCLI"] = this.mmcliSend;
+	}
+
+	sshSend(message, phonenumber) {
+		return new Promise((resolve)=> {
+			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
+			resolve("SMS.sshSend.demo.output");
+		});
+	}
+
+	mmcliSend(message, phonenumber) {
+		return new Promise((resolve)=> {
+			console.log("SMS.mmcliSend=> sending message details:",message,phonenumber);
+			resolve("SMS.mmcliSend.demo.output");
+		});
+	}
+
+	sendSMS(message, phonenumber) {
+		return new Promise( async (resolve)=> {
+			let request = {phonenumber: phonenumber, message : message };
+			console.log("sms:sendSMS=> requesting", request);
+			let group = this.modem.getRequestGroup(request)
+			let output = await this.groupBindings[this.rules[group]](message, phonenumber);
+			resolve( output );
+		});
+	}
+}
+
 
 let modems = new Modem;
 let data = [
@@ -50,12 +95,13 @@ let data = [
 ]
 
 let assert = require('assert');
-var type = modems.getRequestGroup(data[0]);
 try {
-	assert.strictEqual(type, "MTN");
+	var sms = new SMS;
+	sms.sendSMS(data[0].message, data[0].phonenumber);
 }
 catch(error) {
 	console.log(error.message)
 }
 
 //TODO: which modem group does this message relate to?
+//TODO: which modems in that group execute this command
