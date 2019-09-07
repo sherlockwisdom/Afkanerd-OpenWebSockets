@@ -19,7 +19,19 @@ class Modem extends Events {
 		super();
 		this.fs = require('fs');
 		this.rules = JSON.parse(this.fs.readFileSync('modem-rules.json', 'utf8'));
+
+		this.groupForwarder = {
+			"MTN" : "SSH",
+			"ORANGE" : "MMCLI"
+		}
+		this.groupBindings = {}
+		this.groupBindings["SSH"] = this.sshSend;
+		this.groupBindings["MMCLI"] = this.mmcliSend;
+
+
+		//this.on("new request", this.requestJob);
 	}
+
 
 	getRequestGroup( value ) {
 		var groups = this.rules.group;
@@ -42,35 +54,6 @@ class Modem extends Events {
 		}
 	}
 
-	probe() {
-	}
-
-}
-class SMS extends Modem{
-	constructor( ) {
-		//TODO: read files to get this rules
-		super();
-		this.rules = {
-			"MTN" : "SSH",
-			"ORANGE" : "MMCLI"
-		}
-		this.groupBindings = {}
-		this.groupBindings["SSH"] = this.sshSend;
-		this.groupBindings["MMCLI"] = this.mmcliSend;
-		this.queueGroupContainer = {};
-
-		this.initializeQueues().then(()=>{
-			console.log("Done initializing...");
-		});
-
-	}
-
-	initializeQueues() {
-		return new Promise( resolve=> {
-			for(let i in this.rules) this.queueGroupContainer[i] = new Queue();
-			resolve();
-		});
-	}
 
 	sshSend(message, phonenumber) {
 		return new Promise((resolve)=> {
@@ -86,15 +69,38 @@ class SMS extends Modem{
 		});
 	}
 
+	probe() {
+	}
+
+}
+class SMS extends Modem{
+	constructor( ) {
+		//TODO: read files to get this rules
+		super();
+		this.groupQueueContainer = {}
+		this.initializeQueues().then(()=>{
+			console.log("Done initializing...");
+		});
+	}
+
+	initializeQueues() {
+		return new Promise( resolve=> {
+			for(let i in this.groupForwarders) this.queueGroupContainer[i] = new Queue();
+			resolve();
+		});
+	}
+
 	deQueueFor(group) {
 		console.log("SMS.deQueue=> removing from queue:", group);
-		console.log(this.groupGroupContainer);
-		//let request = this.queueGroupContainer[group].next()
+		console.log(this.groupQueueContainer);
+		//let request = this.groupQueueContainer[group].next()
 		//this.execEnv = this.groupBindings[this.rules[group]](request.message, request.phonenumber);
 	}
 
 	queueFor(group, request) {
-		this.queueGroupContainer[ group ].insert(request);
+		console.log( this.groupQueueContainer );
+		//this.queueGroupContainer[ group ].insert(request);
+		this.emit("new request", group);
 	}
 
 	queueLog() {
