@@ -1,51 +1,62 @@
 //TODO: number of modems
-
+const Events = require('events');
 const { spawnSync, spawn } = require ('child_process');
 
 const PATH_TO_SCRIPT = "../scripts/modem_information_extraction.sh";
 
 //TODO: set event listener checking for changes in modem and creating events
-class Modem{
+
+class HardwareAbstractionLayer extends Events {
+	constructor() {
+		super()
+	}
+
+	getUSBModems() {}
+
+	getSSHModems() {}
+
+	getModemsFromPaht( path ) {}
+
+	getModemState() {}
+}
+
+class Modem extends Events {
 	constructor( index ) {
+		super();
 		this.index = typeof index == "undefined" ? "-1" : index;
+		this.tools = require("./../globals/tools.js");
+		this.enlistedPaths = {
+			"MTN" : "SSH",
+			"ORANGE": "USB"
+		}
 	}
 
 	is_modem() { return this.index != -1; }
 
-	
 	get_modem_indexes() {
 		let args = [ "list" ];
 		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } )
 		return std_out.stdout.split( '\n' );
 	}
 
-	get_modem( ) {
+	getModems( ) {
 		
-		let args = [ "extract", this.index ];
-		let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
-		
-		let info = std_out.stdout.split( '\n' );
-		let info_container = {};
-		for( let i in info ) {
-			let key = info[i].split(':')[0];
-			let value = info[i].split(':')[1];
-
-			let container = { }
-			info_container[key] = value;
-		}
-		return info_container;
-	}
-
-	get_modems() {
+		return
+		new Promise( resolve=> {
+			let args = [ "extract", this.index ];
+			let std_out = spawnSync (PATH_TO_SCRIPT, args, { "encoding" : "utf8" } );
 			
-		let modem_containers = [];
-		let modem_indexes = this.get_modem_indexes();
-		for( let i in modem_indexes) {
-			//console.log( modem_indexes[i] );
-			modem_containers.push ( new Modem ( modem_indexes[i] ) )
-		}
-		
-		return modem_containers;
+			let info = std_out.stdout.split( '\n' );
+			let info_container = {};
+			for( let i in info ) {
+				let key = info[i].split(':')[0];
+				let value = info[i].split(':')[1];
+
+				let container = { }
+				info_container[key] = value;
+			}
+			resolve( info_container );
+		});
 	}
 
 	get_info() {
@@ -91,15 +102,74 @@ class Modem{
 			resolve( std_out.stdout.length < 1 ? std_out.stderr : std_out.stdout );
 		});
 	}
+
+	modemRouter( group ) {
+		return
+		new Promise( async (resolve) => {
+			//get path to check ( group )
+			this.path = this.enlistedPaths[ group ];
+			console.log("modem:modemRouter=> path for group: ", path);
+
+			//get modems at that path
+			switch (path ) {
+				case "USB":
+					let modems = await getModems();
+					console.log ("modems:modemRouter=> list of usb modems", modems);
+					resolve( modems );
+				break;
+
+				case "SSH":
+					console.log("modems::modemRouter=> going all SSH on you" );
+					resolve( "SSH MODEMS COMING SOON...");
+				break;
+
+				default:
+					throw new Error("invalid modem router paht");
+				break;
+			}
+		});
+	}
+
+	async requestSMS( data ) {
+		console.log("Modem::requestSMS=> new SMS request made...");
+		//deduce required hardware
+		if( !data instanceof Array ) {
+			
+			this.emit("failed", new Error("invalid data type"));
+		}
+
+		else {
+			for(let i in data ) {
+				let request = data[i];
+				let phonenumber = request.phonenumber;
+				let message = request.message;
+				try {
+					let serviceProvider = this.tools.getCMServiceProviders( phonenumber );
+					console.log("modem:requestSMS=> service provider: ", serviceProvider);
+					//only 2 types of modems (SSH and USB, third = miracle)
+					let modem = await this.modemRouter( serviceProvider );
+					console.log("modem:requestSMS=> modemRouter: ", modem);
+					//modem.sendSMS ( message, phonenumber );
+				}
+				catch( error ) {
+					console.log("modem:requestSMS:error=>", error.message);
+				}
+			}
+		}
+	}
 }
 
+let modems = new Modem;
+let data = [
+	{
+		phonenumber : "652156811",
+		message : new Date()
+	},
+	{
+		phonenumber : "0000000",
+		message : new Date()
+	}
+]
+modems.requestSMS( data );
 
-
-
-let modems = new Modem().get_modems();
-
-for(let i in modems) {
-	console.log( modems[i].get_info() );
-	console.log( modems[i].send_sms( new Date(), "652156811" ) )
-	console.log('\n');
-}
+modems.on("sent", ( data )=> { console.log("sms::test::results=> ", data) })
