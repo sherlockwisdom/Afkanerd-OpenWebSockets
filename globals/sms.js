@@ -29,12 +29,16 @@ class Modem extends Events {
 		this.forwardBindings = {}
 		this.forwardBindings["SSH"] = this.sshSend;
 		this.forwardBindings["MMCLI"] = this.mmcliSend;
+		this.state = {
+			"SSH" : "!busy",
+			"MMCLI" : "!busy"
+		}
 
 		this.on("event", (type, group)=>{
 			switch(type) {
 				case "new request":
 					let forwarder = this.groupForwarders[group];
-					if(this.stateOf(forwarder) != "busy") {
+					if(this.stateOfForwarder(forwarder) != "busy") {
 						this.emit("need_job", this.forwardBindings[forwarder]);
 					}
 					else {
@@ -44,18 +48,9 @@ class Modem extends Events {
 				break;
 			}
 		})
-		this.on("ssh_done", ()=>{
-			console.log("Should request for more ssh...");
-			this.emit("need_job", this.forwardBindings["SSH"]);
-		})
-
-		this.on("mmcli_done", ()=> {
-			console.log("Should request for more mmcli...");
-			this.emit("need_job", this.forwardBindings["MMCLI"]);
-		})
 	}
 
-	stateOf( forwarder ) {
+	stateOfForwarder( forwarder ) {
 		return "busy"
 	}
 
@@ -81,20 +76,38 @@ class Modem extends Events {
 		}
 	}
 
+	toggleForwarderState(forwarder, state) {
+		switch(state) {
+			case true:
+				this.state[forwarder] = "busy";
+			break;
 
-	sshSend(message, phonenumber) {
+			case false:
+				this.state[forwarder] = "!busy";
+			break;
+
+			default:
+				throw new Error("modem:toggerForwarderState=> invalid state toggle");
+			break;
+		}
+	}
+
+
+	sshSend(message, phonenumber, forwarder) {
 		return new Promise((resolve)=> {
+			this.toggleForwarderState(forwarder, true);
 			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
-			this.emit("ssh_done");
 			resolve("SMS.sshSend.demo.output");
+			this.toggleForwarderState(forwarder, false);
 		});
 	}
 
 	mmcliSend(message, phonenumber) {
 		return new Promise((resolve)=> {
+			this.toggleForwarderState(forwarder, true);
 			console.log("SMS.mmcliSend=> sending message details:",message,phonenumber);
-			this.emit("mmcli_done");
 			resolve("SMS.mmcliSend.demo.output");
+			this.toggleForwarderState(forwarder, false);
 		});
 	}
 }
@@ -114,9 +127,13 @@ class SMS extends Modem{
 		});
 	}
 
-	deQueueFor(group) {
+	async deQueueFor(group) {
 		let request = this.groupQueueContainer[group].next()
-		this.execEnv = this.forwardBindings[this.groupForwarders[group]](request.message, request.phonenumber);
+		let forwarder = this.groupForwarders[group]; //SSH or MMCLI
+		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend
+
+		this.execEnv = await forward(request.message, request.phonenumber, forwarder);
+		//this.emit("event", "new request", group);
 	}
 
 	queueFor(group, request) {
