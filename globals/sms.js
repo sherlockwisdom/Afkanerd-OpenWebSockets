@@ -14,22 +14,49 @@ ROUTE:
 
 */
 
+'use strict'
+
 class Modem extends Events {
 	constructor () {
 		super();
 		this.fs = require('fs');
 		this.rules = JSON.parse(this.fs.readFileSync('modem-rules.json', 'utf8'));
 
-		this.groupForwarder = {
+		this.groupForwarders = {
 			"MTN" : "SSH",
 			"ORANGE" : "MMCLI"
 		}
-		this.groupBindings = {}
-		this.groupBindings["SSH"] = this.sshSend;
-		this.groupBindings["MMCLI"] = this.mmcliSend;
+		this.forwardBindings = {}
+		this.forwardBindings["SSH"] = this.sshSend;
+		this.forwardBindings["MMCLI"] = this.mmcliSend;
 
+		this.on("event", (type, group)=>{
+			switch(type) {
+				case "new request":
+					let forwarder = this.groupForwarders[group];
+					if(this.stateOf(forwarder) != "busy") {
+						this.emit("need_job", this.forwardBindings[forwarder]);
+					}
+					else {
+						console.log("Modem:event:new_request=> state = busy");
+						break;
+					}
+				break;
+			}
+		})
+		this.on("ssh_done", ()=>{
+			console.log("Should request for more ssh...");
+			this.emit("need_job", this.forwardBindings["SSH"]);
+		})
 
-		//this.on("new request", this.requestJob);
+		this.on("mmcli_done", ()=> {
+			console.log("Should request for more mmcli...");
+			this.emit("need_job", this.forwardBindings["MMCLI"]);
+		})
+	}
+
+	stateOf( forwarder ) {
+		return "busy"
 	}
 
 
@@ -58,6 +85,7 @@ class Modem extends Events {
 	sshSend(message, phonenumber) {
 		return new Promise((resolve)=> {
 			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
+			this.emit("ssh_done");
 			resolve("SMS.sshSend.demo.output");
 		});
 	}
@@ -65,13 +93,10 @@ class Modem extends Events {
 	mmcliSend(message, phonenumber) {
 		return new Promise((resolve)=> {
 			console.log("SMS.mmcliSend=> sending message details:",message,phonenumber);
+			this.emit("mmcli_done");
 			resolve("SMS.mmcliSend.demo.output");
 		});
 	}
-
-	probe() {
-	}
-
 }
 class SMS extends Modem{
 	constructor( ) {
@@ -79,33 +104,27 @@ class SMS extends Modem{
 		super();
 		this.groupQueueContainer = {}
 		this.initializeQueues().then(()=>{
-			console.log("Done initializing...");
 		});
 	}
 
 	initializeQueues() {
 		return new Promise( resolve=> {
-			for(let i in this.groupForwarders) this.queueGroupContainer[i] = new Queue();
+			for(let i in this.groupForwarders) this.groupQueueContainer[i] = new Queue();
 			resolve();
 		});
 	}
 
 	deQueueFor(group) {
-		console.log("SMS.deQueue=> removing from queue:", group);
-		console.log(this.groupQueueContainer);
-		//let request = this.groupQueueContainer[group].next()
-		//this.execEnv = this.groupBindings[this.rules[group]](request.message, request.phonenumber);
+		let request = this.groupQueueContainer[group].next()
+		this.execEnv = this.forwardBindings[this.groupForwarders[group]](request.message, request.phonenumber);
 	}
 
 	queueFor(group, request) {
-		console.log( this.groupQueueContainer );
-		//this.queueGroupContainer[ group ].insert(request);
-		this.emit("new request", group);
+		this.groupQueueContainer[group].insert(request);
+		this.emit("event", "new request", group);
 	}
 
 	queueLog() {
-		//console.log(this.queueGroupContainer );
-		console.log("sms.queueLog=> Queue log----------");
 		for(let i in this.queueGroupContainer) {
 			console.log(i, this.queueGroupContainer[i].size());
 		}
@@ -120,11 +139,8 @@ class SMS extends Modem{
 					reject(new Error("invalid request"))
 					return;
 				}
-			console.log("sms:sendSMS=> requesting", request);
 			let group = this.getRequestGroup(request)
 			this.queueFor(group, request);
-			//let output = await this.groupBindings[this.rules[group]](message, phonenumber);
-			//resolve( output );
 			resolve("done");
 		});
 	}
