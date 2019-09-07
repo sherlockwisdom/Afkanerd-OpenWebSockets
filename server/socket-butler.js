@@ -18,6 +18,9 @@ class SocketButler extends Event {
 			host : "localhost"
 		}
 		this.queue = new Queue(mysqlConnection);
+		this.start().then((resolve)=>{
+			this.emit('butler.ready');
+		});
 	}
 
 	start() {
@@ -105,11 +108,11 @@ class SocketButler extends Event {
 	}
 
 
-	async forward( request ) {
+	forward( request ) {
 		//console.log("socket-butler:forward=> new request:", request);
-		if(!request.hasOwnProperty("clientToken") || !request.hasOwnProperty("clientUUID") ) {
+		if(!request.hasOwnProperty("clientToken") && !request.hasOwnProperty("clientUUID") ) {
 			console.log("socket-butler:forward=> not a valid request");
-			return;
+			throw new Error("not a valid request");
 		}
 
 		else {
@@ -125,9 +128,10 @@ class SocketButler extends Event {
 				console.log("socket-butler:forward:error=>", error.message);
 				this.queue.insert(request);
 				console.log("socket-butler:foward=> queue size:", this.queue.size());
-				return false;
 				//TODO: Store this content for when client comes online after verifying the client truly exist
 			}
+
+			return true;
 
 		}
 	}

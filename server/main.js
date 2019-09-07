@@ -1,39 +1,80 @@
 const SocketButler = require('./socket-butler.js');
 const Tools = require('./../globals/tools.js');
-
+const express = require('express');
+const bodyParser = require('body-parser')
 'use strict';
+let mysqlConnection = Tools.mysql_connection();
+var socketButler = new SocketButler(mysqlConnection);
+var app = express()
 
-async function main() {
+app.use(bodyParser.json());
+app.post('/v1/sms', function(req, res){
+	let body = req.body;
+	console.log(body);
 
-	let mysqlConnection = await Tools.mysql_connection();
-	var socketButler = new SocketButler(mysqlConnection);
-	await socketButler.start();
-
-
-	let mostImportantRequest = {
-		type : "forward",
-		clientToken : "12345",
-		clientUUID : "0000",
-		payload : {
-			type : "terminal",
-			payload : {
-				terminalType : "update"
+	if(!body.hasOwnProperty("access_token")){
+		res.status(401);
+		res.end();
+	}
+	else if(!body.hasOwnProperty("payload")) {
+		res.status(400);
+		res.end()
+	}
+	else {
+		try {
+			let token = body.token;
+			let payload = body.payload;
+			try{
+				socketButler.forward(payload)
+				res.status(200);
 			}
+			catch(error) {
+				res.status(400);
+			}
+
+			res.end();
+		}
+		catch(error) {
+			res.status(400);
+			res.send(error.message);
 		}
 	}
+})
 
-	socketButler.forward(mostImportantRequest);
-	
-	var count = 0;
-	socketButler.on('new client', ()=>{
-		console.log('main:event:socket-butler:new-client');
-		if(count == 0) socketButler.forward(mostImportantRequest);
-		count=1;
+async function execSocketFunctionalities() {
+	socketButler.on('butler.ready', ()=>{
+		console.log(arguments.callee.name+"=> butler is called!");
+		let mostImportantRequest = {
+			type : "forward",
+			clientToken : "12345",
+			clientUUID : "0000",
+			payload : {
+				type : "sms",
+				payload : {
+					terminalType : "update"
+				}
+			}
+		}
+
+		socketButler.forward(mostImportantRequest);
+		
+		var count = 0;
+		socketButler.on('new client', ()=>{
+			console.log('main:event:socket-butler:new-client');
+			if(count == 0) socketButler.forward(mostImportantRequest);
+			count=1;
+		});
 	});
 }
 
+let options = {
+	port : 3000
+}
 
-main();
+app.listen(options, ()=>{
+	console.log("api.listen=> listening on port %d", options.port);
+});
+//execSocketFunctionalities();
 
 
 
