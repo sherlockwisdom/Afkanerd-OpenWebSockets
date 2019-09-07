@@ -1,0 +1,16 @@
+{
+	"group" : [
+		{
+			"name" : "MTN",
+			"determiners" : {
+				"phonenumber" : "^6[58][024]"
+			}
+		},
+		{
+			"name" : "ORANGE",
+			"determiners" : {
+				"phonenumber" : "^6[5][59]"
+			}
+		}
+	]
+}
