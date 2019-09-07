@@ -112,9 +112,11 @@ class Modem extends Events {
 class SMS extends Modem{
 	constructor( ) {
 		//TODO: read files to get this rules
+		//TODO: in case of update and hard reload... how to get continue memory
 		super();
 		this.groupQueueContainer = {}
 		this.initializeQueues().then(()=>{
+			this.emit("sms.ready");
 		});
 
 		this.on("need_job", this.deQueueFor);
@@ -129,7 +131,6 @@ class SMS extends Modem{
 
 	async deQueueFor( forwarder, group ) {
 		let request = this.groupQueueContainer[group].next()
-		console.log(request);
 		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend */
 
 		this.toggleForwarderState(forward, "busy");
@@ -139,7 +140,7 @@ class SMS extends Modem{
 	}
 
 	queueFor(group, request) {
-		console.log("SMS:queueFor=>", group);
+		//console.log("SMS:queueFor=>", group);
 		this.groupQueueContainer[group].insert(request);
 		this.emit("event", "new request", group);
 	}
@@ -156,16 +157,16 @@ class SMS extends Modem{
 			//let's sanitize the input
 			for(let i in request)
 				if(i=== undefined || request[i] === undefined){
-					reject("invalid request")
+					reject("SMS.sendSMS=> invalid request")
 				}
 			let group = this.getRequestGroup(request)
 			if(typeof group == "undefined") {
-				reject("invalid group")
+				reject("SMS.sendSMS=> invalid group")
 			}
 			else {
 				//console.log("SMS:sendSMS=> ack group:", group)
 				this.queueFor(group, request);
-				resolve("done");
+				resolve("SMS.sendSMS=> done.");
 			}
 
 			reject();
@@ -194,13 +195,17 @@ let data = [
 let assert = require('assert');
 try {
 	var sms = new SMS;
-	sms.sendSMS(data[0].message, data[0].phonenumber).then((resolve)=>{
-		console.log(resolve);
-	}).catch((reject)=>{ console.log(reject)})
-	sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
-		console.log(resolve);
-	}).catch((reject)=>{ console.log(reject)})
-	sms.queueLog();
+
+	sms.on("sms.ready", ()=>{
+		console.log("sms ready...");
+		sms.sendSMS(data[0].message, data[0].phonenumber).then((resolve)=>{
+			console.log(resolve);
+		}).catch((reject)=>{ console.log(reject)})
+		/*sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
+			console.log(resolve);
+		}).catch((reject)=>{ console.log(reject)}) */
+		sms.queueLog();
+	});
 }
 catch(error) {
 	console.log(error.message)
