@@ -14,8 +14,9 @@ ROUTE:
 
 */
 
-class Modem {
+class Modem extends Events {
 	constructor () {
+		super();
 		this.fs = require('fs');
 		this.rules = JSON.parse(this.fs.readFileSync('modem-rules.json', 'utf8'));
 	}
@@ -73,11 +74,26 @@ class SMS {
 
 	queueFor(group, request) {
 		this.queueGroupContainer[ group ].insert(request);
+		this.modem.emit('new request', group);
+	}
+
+	queueLog() {
+		//console.log(this.queueGroupContainer );
+		console.log("sms.queueLog=> Queue log----------");
+		for(let i in this.queueGroupContainer) {
+			console.log(i, this.queueGroupContainer[i].size());
+		}
 	}
 
 	sendSMS(message, phonenumber) {
-		return new Promise( async (resolve)=> {
+		return new Promise( async (resolve, reject )=> {
 			let request = {phonenumber: phonenumber, message : message };
+			//let's sanitize the input
+			for(let i in request)
+				if(i=== undefined || request[i] === undefined){
+					reject(new Error("invalid request"))
+					return;
+				}
 			console.log("sms:sendSMS=> requesting", request);
 			let group = this.modem.getRequestGroup(request)
 			this.queueFor(group, request);
@@ -104,7 +120,9 @@ let data = [
 let assert = require('assert');
 try {
 	var sms = new SMS;
+	sms.sendSMS(data[0].message, data[0].phonenmber);
 	sms.sendSMS(data[0].message, data[0].phonenumber);
+	sms.queueLog();
 }
 catch(error) {
 	console.log(error.message)
