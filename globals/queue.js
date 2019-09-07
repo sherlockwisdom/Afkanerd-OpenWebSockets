@@ -107,7 +107,7 @@ class Queue extends Persist {
 	}
 
 	back() {
-		return this.elementContainer[this.elementContainer.length - 1];
+		return JSON.parse( this.elementContainer[this.elementContainer.length - 1][0] );
 	}
 
 	//Return first element and removes from array
@@ -129,7 +129,7 @@ class Queue extends Persist {
 	}
 
 	next() {
-		return this.elementContainer[0];
+		return JSON.parse( this.elementContainer[0][0] );
 	}
 
 	empty() {

@@ -38,11 +38,12 @@ class Modem extends Events {
 			switch(type) {
 				case "new request":
 					let forwarder = this.groupForwarders[group];
-					if(this.stateOfForwarder(forwarder) != "busy") {
-						this.emit("need_job", this.forwardBindings[forwarder]);
+					if(this.stateOfForwarder(forwarder) == "!busy") {
+						//console.log("Modem:event:new_request=> state= !busy")
+						this.emit("need_job", forwarder, group);
 					}
-					else {
-						console.log("Modem:event:new_request=> state = busy");
+					else if(this.stateOfForwarder(forwarder) == "busdy") {
+						//console.log("Modem:event:new_request=> state = busy");
 						break;
 					}
 				break;
@@ -51,7 +52,7 @@ class Modem extends Events {
 	}
 
 	stateOfForwarder( forwarder ) {
-		return "busy"
+		return this.state[forwarder]
 	}
 
 
@@ -65,9 +66,9 @@ class Modem extends Events {
 				let isDeterminer = group.determiners.hasOwnProperty(key);
 				
 				if( isDeterminer ) {
-					let determinerRegex = group.determiners.key;
+					let determinerRegex = group.determiners[key]
 					let regex = RegExp(determinerRegex);
-					if( regex.test(value[i]) ) { 
+					if( regex.test(value[key]) ) { 
 						return group.name;
 					}
 					
@@ -78,36 +79,33 @@ class Modem extends Events {
 
 	toggleForwarderState(forwarder, state) {
 		switch(state) {
-			case true:
+			case "busy":
 				this.state[forwarder] = "busy";
 			break;
 
-			case false:
+			case "!busy":
 				this.state[forwarder] = "!busy";
 			break;
 
 			default:
+				this.state[forwarder] = this.state[forwarder] == "busy" ? "!busy" : "busy"
 				throw new Error("modem:toggerForwarderState=> invalid state toggle");
 			break;
 		}
 	}
 
 
-	sshSend(message, phonenumber, forwarder) {
+	sshSend(message, phonenumber) {
 		return new Promise((resolve)=> {
-			this.toggleForwarderState(forwarder, true);
 			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
 			resolve("SMS.sshSend.demo.output");
-			this.toggleForwarderState(forwarder, false);
 		});
 	}
 
 	mmcliSend(message, phonenumber) {
 		return new Promise((resolve)=> {
-			this.toggleForwarderState(forwarder, true);
 			console.log("SMS.mmcliSend=> sending message details:",message,phonenumber);
 			resolve("SMS.mmcliSend.demo.output");
-			this.toggleForwarderState(forwarder, false);
 		});
 	}
 }
@@ -118,6 +116,8 @@ class SMS extends Modem{
 		this.groupQueueContainer = {}
 		this.initializeQueues().then(()=>{
 		});
+
+		this.on("need_job", this.deQueueFor);
 	}
 
 	initializeQueues() {
@@ -127,16 +127,19 @@ class SMS extends Modem{
 		});
 	}
 
-	async deQueueFor(group) {
+	async deQueueFor( forwarder, group ) {
 		let request = this.groupQueueContainer[group].next()
-		let forwarder = this.groupForwarders[group]; //SSH or MMCLI
-		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend
+		console.log(request);
+		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend */
 
-		this.execEnv = await forward(request.message, request.phonenumber, forwarder);
+		this.toggleForwarderState(forward, "busy");
+		this.execEnv = await this.forwardBindings[forwarder](request.message, request.phonenumber);
+		this.toggleForwarderState(forward, "!busy");
 		//this.emit("event", "new request", group);
 	}
 
 	queueFor(group, request) {
+		console.log("SMS:queueFor=>", group);
 		this.groupQueueContainer[group].insert(request);
 		this.emit("event", "new request", group);
 	}
@@ -153,12 +156,19 @@ class SMS extends Modem{
 			//let's sanitize the input
 			for(let i in request)
 				if(i=== undefined || request[i] === undefined){
-					reject(new Error("invalid request"))
-					return;
+					reject("invalid request")
 				}
 			let group = this.getRequestGroup(request)
-			this.queueFor(group, request);
-			resolve("done");
+			if(typeof group == "undefined") {
+				reject("invalid group")
+			}
+			else {
+				//console.log("SMS:sendSMS=> ack group:", group)
+				this.queueFor(group, request);
+				resolve("done");
+			}
+
+			reject();
 		});
 	}
 }
@@ -172,6 +182,10 @@ let data = [
 		message : new Date()
 	},
 	{
+		phonenumber : "659156811",
+		message : new Date()
+	},
+	{
 		phonenumber : "0000000",
 		message : new Date()
 	}
@@ -180,8 +194,12 @@ let data = [
 let assert = require('assert');
 try {
 	var sms = new SMS;
-	sms.sendSMS(data[0].message, data[0].phonenumber);
-	sms.sendSMS(data[0].message, data[0].phonenumber);
+	sms.sendSMS(data[0].message, data[0].phonenumber).then((resolve)=>{
+		console.log(resolve);
+	}).catch((reject)=>{ console.log(reject)})
+	sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
+		console.log(resolve);
+	}).catch((reject)=>{ console.log(reject)})
 	sms.queueLog();
 }
 catch(error) {
