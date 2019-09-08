@@ -22,7 +22,7 @@ app.post('/v1/sms', function(req, res){
 	}
 	else {
 		try {
-			let token = body.token;
+			let token = body.access_token;
 			let payload = body.payload;
 			try{
 				socketButler.forward(payload)
