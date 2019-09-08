@@ -22,7 +22,7 @@ let startScript = async ( sebastian )=>{
 	var startSocketConnection = ()=> {
 		console.log('state=> starting socket connection....');
 		const options = {
-			host : TCP_HOST_NAME
+			host : TCP_HOST_NAME,
 			port : TCP_HOST_PORT
 		}
 
@@ -54,6 +54,13 @@ let startScript = async ( sebastian )=>{
 				sebastian.emit("safemenow!", sebastian);
 				return;
 			break;
+
+			case 'EADDRNOTAVAIL':
+				console.log("socket.error=> most probably running from a mac laptop or why don't you have localhost??");
+				await Tools.sleep();
+				socket = null;
+				//sebastian.emit("safemenow!", sebastian);
+				return
 
 			default:
 			break;
