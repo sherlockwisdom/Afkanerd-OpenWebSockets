@@ -32,8 +32,8 @@ let startScript = async ( sebastian )=>{
 			socket.sendMessage({
 				type:"auth", 
 				clientToken:CLIENT_TOKEN, 
-				uuid:CLIENT_UUID,
-				app_type:APP_TYPE
+				UUID:CLIENT_UUID,
+				appType:APP_TYPE
 			});
 		});
 	}

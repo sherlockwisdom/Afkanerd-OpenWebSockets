@@ -28,14 +28,19 @@ class SocketButler extends Event {
 	}
 
 	async deQueue(clientToken, clientUUID) {
-		console.log("socket.deQueue=> client with token(%d) uuid(%d)", clientToken, clientUUID);
-		let clientRequests = this.socketQueueContainer[clientToken][clientUUID];
-		for(let i in clientRequests) {
-			let requestQueue = clientRequests[i];
-			while(typeof requestQueue.next() != "undefined" || typeof requestQueue.next() !== "undefined") {
-				this.forward(requestQueue.next());
+		console.log("socket.deQueue=> client with token(%s) uuid(%s)", clientToken, clientUUID);
+		if(!this.socketQueueContainer.hasOwnProperty(clientToken) || !this.socketQueueContainer[clientToken].hasOwnProperty(clientUUID)) {
+			console.log("socket.enQueue=> creating new queue for client (%s)", clientToken);
+			this.socketQueueContainer[clientToken] = {}
+			this.socketQueueContainer[clientToken][clientUUID] = "";
+			this.socketQueueContainer[clientToken][clientUUID] = new Queue(this.mysqlConnection)
+		}
+		else {
+			let clientRequests = this.socketQueueContainer[clientToken][clientUUID];
+			while(typeof clientRequests.getNext() != "undefined" || typeof clientRequests.getNext() === undefined) {
+				this.forward(clientRequests.next());
 			}
-			requestQueue.empty();
+			clientRequests.empty();
 		}
 	}
 
@@ -66,8 +71,9 @@ class SocketButler extends Event {
 								case "auth":
 								case "Auth":
 								case "AUTH":
-									if(!jsData.hasOwnProperty("UUID") || !jsData.hasOwnProperty("clientToken")) {
+									if(!jsData.hasOwnProperty("UUID") || !jsData.hasOwnProperty("clientToken") || !jsData.hasOwnProperty("appType")) {
 										console.log("socket:on:message=> not a valid socket client");
+										console.log(jsData);
 										socket.end();
 										throw new Error("invalid client");
 										return;
@@ -75,8 +81,8 @@ class SocketButler extends Event {
 									else {
 										console.log("socket:on:message=> socket authentication token:", jsData.clientToken);
 										socketClient.clientToken = jsData.clientToken;
-										socketClient.UUID = jsData.UUID;
-										socketClient.appType = jsDate.app_type;
+										socketClient.clientUUID = jsData.UUID;
+										socketClient.appType = jsData.appType;
 										this.addClientSocket(socketClient);
 										console.log("socket:on:message=> number of client sockets:", this.size());
 									}
@@ -94,7 +100,7 @@ class SocketButler extends Event {
 
 					socketClient.on("close",async ()=>{
 						console.log("socket:on:disconnect=> a socket just disconnected");
-						await this.removeClientSocket(socketClient.UUID, socketClient.clientToken)
+						await this.removeClientSocket(socketClient.clientUUID, socketClient.clientToken)
 						console.log("socket:on:close=> number of client sockets:", this.size());
 					})
 
@@ -117,8 +123,8 @@ class SocketButler extends Event {
 		return new Promise( resolve => {
 			for(let i=0;i<this.socketContainer.length;++i) {
 				let socket = this.socketContainer[i];
-				console.log("remove::client::checking=>", socketUUID, " against ", socket.UUID, "at index: ", i);
-				if(socket.UUID == socketUUID && socket.clientToken == clientToken){
+				console.log("socket-butler.removeClientSocket=>", socketUUID, " against ", socket.clientUUID, "at index: ", i);
+				if(socket.clientUUID == socketUUID && socket.clientToken == clientToken){
 					socket.end();
 					this.socketContainer.splice(i, 1);
 					--i;
@@ -129,9 +135,11 @@ class SocketButler extends Event {
 	}
 
 	findClientSocket(clientToken, clientUUID) {
+		console.log("socket-butler:findClientSocket=> finding (%s) - (%s)", clientToken, clientUUID);
 		for(let i=0;i<this.socketContainer.length;++i) {
 			let socket = this.socketContainer[i];
-			if(socket.UUID == clientUUID && socket.clientToken == clientToken)
+			console.log(socket.clientUUID, socket.clientToken);
+			if(socket.clientUUID == clientUUID && socket.clientToken == clientToken)
 				return socket;
 		}
 		throw new Error("socket not found");
