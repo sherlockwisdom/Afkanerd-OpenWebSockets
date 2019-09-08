@@ -109,9 +109,9 @@ class SocketButler extends Event {
 	}
 
 
-	forward( request ) {
+	forward( request ) { //the payload from the request being made
 		//console.log("socket-butler:forward=> new request:", request);
-		if(!request.hasOwnProperty("clientToken") && !request.hasOwnProperty("clientUUID") ) {
+		if(!request.hasOwnProperty("payload") && !request.hasOwnProperty("appType") && !request.hasOwnProperty("clientToken") && !request.hasOwnProperty("clientUUID") ) {
 			console.log("socket-butler:forward=> not a valid request");
 			throw new Error("not a valid request");
 		}
