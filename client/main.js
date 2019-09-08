@@ -3,11 +3,17 @@ const Socket = require ('net');
 const JsonSocket = require('json-socket');
 const Sebastian = require('./sebastian.js');
 const { spawn, spawnSync,fork } = require('child_process');
+require('dotenv').config({path: 'whoami.env'})
 'use strict';
 
 //TODO: start pm2 manually and keep restarting using name in app
 //TODO: start pm2 with app and keep restarting it
 
+
+const TCP_HOST_NAME = process.env.TCP_HOST_NAME;
+const TCP_HOST_PORT = process.env.TCP_HOST_PORT;
+const CLIENT_TOKEN = process.env.CLIENT_TOKEN;
+const CLIENT_UUID = process.env.CLIENT_UUID;
 
 let startScript = async ( sebastian )=>{
 //Let's begin, le dance macabre
@@ -16,13 +22,17 @@ let startScript = async ( sebastian )=>{
 	var startSocketConnection = ()=> {
 		console.log('state=> starting socket connection....');
 		const options = {
-			host : '127.0.0.1',
-			port : '8080'
+			host : TCP_HOST_NAME
+			port : TCP_HOST_PORT
 		}
 
 		socket.connect(options, function(){
 			console.log("socket.connect=> connected..."); 
-			socket.sendMessage({type:"auth", clientToken:"12345", UUID:"0000"});
+			socket.sendMessage({
+				type:"auth", 
+				clientToken:CLIENT_TOKEN, 
+				UUID:CLIENT_UUID
+			});
 		});
 	}
 
