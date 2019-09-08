@@ -110,33 +110,37 @@ class SocketButler extends Event {
 
 
 	forward( request ) { //the payload from the request being made
-		//console.log("socket-butler:forward=> new request:", request);
-		if(!request.hasOwnProperty("payload") && !request.hasOwnProperty("appType") && !request.hasOwnProperty("clientToken") && !request.hasOwnProperty("clientUUID") ) {
+		console.log("socket-butler:forward=> new request:", request);
+		if(!request.hasOwnProperty("appType") || !request.hasOwnProperty("payload") || !request.hasOwnProperty("clientUUID") ) {
 			console.log("socket-butler:forward=> not a valid request");
 			throw new Error("not a valid request");
 		}
-
+  
 		else {
 			let clientToken = request.clientToken;
 			let clientUUID = request.clientUUID;
-			let appType = request.appType;
 			let payload = request.payload;
-			
+			let appType = request.appType;
 			try {
-				let socket = this.findClientSocket(clientToken, clientUUID);
-				if(socket.appType == appType ) socket.sendMessage( payload );
-				else {
-					console.log("socket-butler:forward=> found socket, but not matching appType");
-					throw new Error("not matching appType");
+				try {
+					let socket = this.findClientSocket(clientToken, clientUUID);
+					if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
+					else {
+						console.log("socket-butler:forward=> found socket, but not matching appType");
+						this.queue.insert(request);
+						let error = new Error("socket not receipient to type of app");
+						error.code = 501;
+						throw error;
+					}
+				}
+				catch( error ) {
+					this.queue.insert(request);
+					console.log("socket-butler:forward=> socket not connected...");
+					error.code = 501;
+					throw error;
 				}
 			}
-			catch(error) {
-				console.log("socket-butler:forward:error=>", error.message);
-				this.queue.insert(request);
-				console.log("socket-butler:foward=> queue size:", this.queue.size());
-				//TODO: Store this content for when client comes online after verifying the client truly exist
-			}
-
+			catch(error) { throw error; }
 			return true;
 
 		}

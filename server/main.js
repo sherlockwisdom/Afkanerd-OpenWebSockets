@@ -24,12 +24,20 @@ app.post('/v1/sms', function(req, res){
 		try {
 			let token = body.access_token;
 			let payload = body.payload;
+			payload.clientToken = token;
 			try{
 				socketButler.forward(payload)
 				res.status(200);
 			}
 			catch(error) {
-				res.status(400);
+				switch(error.code) {
+					case 501:
+						res.status(501)
+					break;
+					default:
+						res.status(400);
+					break;
+				}
 			}
 
 			res.end();
