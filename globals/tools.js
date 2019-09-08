@@ -34,12 +34,17 @@ module.exports = {
 		if(number[0] == '6' && number[1] == '5') {
 			switch( number[2]) {
 				case '0':
+				case '1':
 				case '2':
+				case '3':
 				case '4':
 					return "MTN";
 				break;
 
 				case '5':
+				case '6':
+				case '7':
+				case '8':
 				case '9':
 					return "ORANGE";
 				break;
@@ -50,7 +55,8 @@ module.exports = {
 
 			}
 		}
-		else if(number[0] == "6" && number[1] == "8") return "MTN";
+		else if(number[0] == "6" && (number[1] == "8" || number[1] == "7")) return "MTN";
+		else if(number[0] == "6" && number[1] == "9") return "ORANGE";
 		else if(number[0] == "6" && number[1] == "6") return "NEXTEL";
 		else throw new Error("cannot determine number type");
 	}
