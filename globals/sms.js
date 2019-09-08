@@ -99,9 +99,10 @@ class Modem extends Events {
 	sshSend(message, phonenumber) {
 		return new Promise((resolve, reject)=> {
 			console.log("Modem.sshSend=> sending message details:",message,phonenumber);
-			let args = ["-t", phonenumber, message];
+			let args = ["-t", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
+			//let args = ["-t", "root@192.168.1.1", "ls /"]
 			try {
-				const vodafoneRouterOutput = spawnSync("ls", args, {"encoding" : "utf8"});
+				const vodafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
 				let output = vodafoneRouterOutput.stdout;
 				let error = vodafoneRouterOutput.stderr;
 				console.log("Modem.sshSend=> output(%s) error(%s)", output, error);
@@ -248,7 +249,7 @@ try {
 		/*sms.sendBulkSMS( data ).then((resolve)=>{
 			console.log(resolve);
 		}).catch((reject)=>{ console.log(reject)})*/
-		sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
+		sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
 			console.log(resolve);
 		}).catch((reject)=>{ console.log(reject)}) 
 		sms.queueLog();
