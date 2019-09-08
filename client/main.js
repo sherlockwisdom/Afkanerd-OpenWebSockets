@@ -14,6 +14,7 @@ const TCP_HOST_NAME = process.env.TCP_HOST_NAME;
 const TCP_HOST_PORT = process.env.TCP_HOST_PORT;
 const CLIENT_TOKEN = process.env.CLIENT_TOKEN;
 const CLIENT_UUID = process.env.CLIENT_UUID;
+const APP_TYPE = process.env.APP_TYPE
 
 let startScript = async ( sebastian )=>{
 //Let's begin, le dance macabre
@@ -31,7 +32,8 @@ let startScript = async ( sebastian )=>{
 			socket.sendMessage({
 				type:"auth", 
 				clientToken:CLIENT_TOKEN, 
-				UUID:CLIENT_UUID
+				uuid:CLIENT_UUID,
+				app_type:APP_TYPE
 			});
 		});
 	}
