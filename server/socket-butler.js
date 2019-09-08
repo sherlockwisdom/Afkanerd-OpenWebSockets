@@ -16,7 +16,7 @@ class SocketButler extends Event {
 		this.pendingClientConnect = {};
 		this.socket = new Socket.Server();
 		this.socketConnectionOptions = {
-			port : "8080"
+			port : 8080
 			//host : "localhost"
 		}
 		this.queue = new Queue(this.mysqlConnection);
