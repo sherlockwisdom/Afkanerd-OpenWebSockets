@@ -115,6 +115,10 @@ class SocketButler extends Event {
 			console.log("socket-butler:forward=> not a valid request");
 			throw new Error("not a valid request");
 		}
+		if(request.payload.length == 0 || Object.keys(request.payload).length == 0) {
+			console.log("socket-butler:forward=> payload should not be empty!");
+			throw new Error("payload should not be empty");
+		}
   
 		else {
 			let clientToken = request.clientToken;
