@@ -10,7 +10,7 @@ var app = express()
 app.use(bodyParser.json());
 app.post('/v1/sms', function(req, res){
 	let body = req.body;
-	console.log(body);
+	//console.log(body);
 
 	if(!body.hasOwnProperty("access_token")){
 		res.status(401);

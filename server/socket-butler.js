@@ -9,7 +9,9 @@ class SocketButler extends Event {
 //for you see, I'm simply one hell of a butler
 	constructor( mysqlConnection ) {
 		super();
+		this.mysqlConnection = mysqlConnection;
 		const Socket = require ('net');
+		this.socketQueueContainer = {}
 		this.socketContainer = [];
 		this.pendingClientConnect = {};
 		this.socket = new Socket.Server();
@@ -17,10 +19,37 @@ class SocketButler extends Event {
 			port : "8080",
 			host : "localhost"
 		}
-		this.queue = new Queue(mysqlConnection);
+		this.queue = new Queue(this.mysqlConnection);
 		this.start().then((resolve)=>{
 			this.emit('butler.ready');
 		});
+
+		this.on('new client', this.deQueue);
+	}
+
+	async deQueue(clientToken, clientUUID) {
+		console.log("socket.deQueue=> client with token(%d) uuid(%d)", clientToken, clientUUID);
+		let clientRequests = this.socketQueueContainer[clientToken][clientUUID];
+		for(let i in clientRequests) {
+			let requestQueue = clientRequests[i];
+			while(typeof requestQueue.next() != "undefined" || typeof requestQueue.next() !== "undefined") {
+				this.forward(requestQueue.next());
+			}
+			requestQueue.empty();
+		}
+	}
+
+	enQueue(clientToken, clientUUID, request) {
+		console.log("socket.enQueue=> enqueing client token(%s) uuid(%s)", clientToken, clientUUID);
+		if(!this.socketQueueContainer.hasOwnProperty(clientToken) || !this.socketQueueContainer[clientToken].hasOwnProperty(clientUUID)) {
+			console.log("socket.enQueue=> creating new queue for client (%s)", clientToken);
+			this.socketQueueContainer[clientToken] = {}
+			this.socketQueueContainer[clientToken][clientUUID] = "";
+			this.socketQueueContainer[clientToken][clientUUID] = new Queue(this.mysqlConnection)
+		}
+		this.socketQueueContainer[clientToken][clientUUID].insert(request);
+		console.log(this.socketQueueContainer)
+		console.log(this.socketQueueContainer[clientToken][clientUUID].size());
 	}
 
 	start() {
@@ -81,7 +110,7 @@ class SocketButler extends Event {
 
 	addClientSocket(socket) {
 		this.socketContainer.push( socket );
-		this.emit('new client');
+		this.emit('new client', socket.clientToken, socket.clientUUID);
 	}
 
 	removeClientSocket(socketUUID, clientToken) {
@@ -110,7 +139,7 @@ class SocketButler extends Event {
 
 
 	forward( request ) { //the payload from the request being made
-		console.log("socket-butler:forward=> new request:", request);
+		//console.log("socket-butler:forward=> new request:", request);
 		if(!request.hasOwnProperty("appType") || !request.hasOwnProperty("payload") || !request.hasOwnProperty("clientUUID") ) {
 			console.log("socket-butler:forward=> not a valid request");
 			throw new Error("not a valid request");
@@ -131,14 +160,14 @@ class SocketButler extends Event {
 					if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
 					else {
 						console.log("socket-butler:forward=> found socket, but not matching appType");
-						this.queue.insert(request);
+						this.enQueue(clientToken, clientUUID, request);
 						let error = new Error("socket not receipient to type of app");
 						error.code = 501;
 						throw error;
 					}
 				}
 				catch( error ) {
-					this.queue.insert(request);
+					this.enQueue(clientToken, clientUUID, request);
 					console.log("socket-butler:forward=> socket not connected...");
 					error.code = 501;
 					throw error;
