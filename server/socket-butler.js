@@ -47,6 +47,7 @@ class SocketButler extends Event {
 										console.log("socket:on:message=> socket authentication token:", jsData.clientToken);
 										socketClient.clientToken = jsData.clientToken;
 										socketClient.UUID = jsData.UUID;
+										socketClient.appType = jsDate.app_type;
 										this.addClientSocket(socketClient);
 										console.log("socket:on:message=> number of client sockets:", this.size());
 									}
@@ -118,11 +119,16 @@ class SocketButler extends Event {
 		else {
 			let clientToken = request.clientToken;
 			let clientUUID = request.clientUUID;
+			let appType = request.appType;
 			let payload = request.payload;
 			
 			try {
 				let socket = this.findClientSocket(clientToken, clientUUID);
-				socket.sendMessage( payload );
+				if(socket.appType == appType ) socket.sendMessage( payload );
+				else {
+					console.log("socket-butler:forward=> found socket, but not matching appType");
+					throw new Error("not matching appType");
+				}
 			}
 			catch(error) {
 				console.log("socket-butler:forward:error=>", error.message);
