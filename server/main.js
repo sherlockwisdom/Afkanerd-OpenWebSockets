@@ -46,6 +46,7 @@ app.post('/v1/sms', function(req, res){
 			res.status(400);
 			res.send(error.message);
 		}
+		res.end();
 	}
 })
 
