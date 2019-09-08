@@ -3,7 +3,6 @@ const Events = require('events');
 const { spawnSync, spawn } = require ('child_process');
 const Queue = require('./queue.js');
 
-
 //TODO: SOC
 /* 
 - Multiple hardwares on a single machine -> route sms message to modem
@@ -19,12 +18,14 @@ ROUTE:
 class Modem extends Events {
 	constructor () {
 		super();
+		this.tools = require('./tools.js');
 		this.fs = require('fs');
 		this.rules = JSON.parse(this.fs.readFileSync('modem-rules.json', 'utf8'));
 
 		this.groupForwarders = {
 			"MTN" : "SSH",
-			"ORANGE" : "MMCLI"
+			"ORANGE" : "MMCLI",
+			"NEXTEL" : "MMCLI"
 		}
 		this.forwardBindings = {}
 		this.forwardBindings["SSH"] = this.sshSend;
@@ -97,24 +98,40 @@ class Modem extends Events {
 
 	sshSend(message, phonenumber) {
 		return new Promise((resolve, reject)=> {
-			console.log("SMS.sshSend=> sending message details:",message,phonenumber);
+			console.log("Modem.sshSend=> sending message details:",message,phonenumber);
 			let args = ["-t", phonenumber, message];
 			try {
-				const vadafoneRouterOutput = spawnSync("_no_valid_command", args, {"encoding" : "utf8"});
+				const vodafoneRouterOutput = spawnSync("ls", args, {"encoding" : "utf8"});
 				let output = vodafoneRouterOutput.stdout;
-				let error = vodafoneRouterOUtput.stderr;
-				resolve( output );
+				let error = vodafoneRouterOutput.stderr;
+				console.log("Modem.sshSend=> output(%s) error(%s)", output, error);
+				require('./tools.js').sleep().then(()=>{
+					resolve( output );
+				});
 			}
 			catch( error ) {
-				reject("Modem.sshSend.error=> ", error.message);
+				reject("Modem.sshSend.error=> " + error.message);
 			}
 		});
 	}
 
-	mmcliSend(message, phonenumber) {
-		return new Promise((resolve)=> {
-			console.log("SMS.mmcliSend=> sending message details:",message,phonenumber);
-			resolve("SMS.mmcliSend.demo.output");
+	mmcliSend(message, phonenumber, group) {
+		return new Promise((resolve, reject)=> {
+			console.log("Modem.mmcliSend=> sending message details:",message,phonenumber);
+			let args = ["--send", "--number", phonenumber, "--message", message, "--group", group]
+			try{
+				const mmcliModemOutput = spawnSync("afsms", args, {"encoding": "utf8"})
+				let output = mmcliModemOutput.stdout;
+				let error = mmcliModemOutput.stderr;
+				console.log("Modem.mmcliSend=> output(%s) error(%s)", output, error);
+				require('./tools.js').sleep().then(()=>{
+					resolve( output );
+				});
+				resolve("Modem.mmcliSend.demo.output");
+			}
+			catch( error ) {
+				reject("Modem.mmcliSend.error=>"+error.message);
+			}
 		});
 	}
 }
@@ -143,7 +160,7 @@ class SMS extends Modem{
 		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend */
 
 		this.toggleForwarderState(forward, "busy");
-		this.forwardBindings[forwarder](request.message, request.phonenumber).then(( resolve )=>{
+		this.forwardBindings[forwarder](request.message, request.phonenumber, group).then(( resolve )=>{
 			console.log("SMS.deQueueFor=>", resolve);
 		}).catch(( reject )=>{
 			console.log("SMS.deQueueFor.error=>", reject);
@@ -173,7 +190,7 @@ class SMS extends Modem{
 				if(i=== undefined || request[i] === undefined){
 					reject("SMS.sendSMS=> invalid request")
 				}
-			let group = this.getRequestGroup(request)
+			let group = this.tools.getCMServiceProviders(phonenumber)
 			if(typeof group == "undefined") {
 				reject("SMS.sendSMS=> invalid group")
 			}
@@ -209,15 +226,15 @@ class SMS extends Modem{
 let modems = new Modem;
 let data = [
 	{
-		phonenumber : "652156811",
-		message : new Date()
+		phonenumber : "652156811", //MTN
+		message : new Date().toLocaleString()
 	},
 	{
-		phonenumber : "659156811",
-		message : new Date()
+		phonenumber : "696011944", //ORANGE
+		message : new Date().toLocaleString()
 	},
 	{
-		phonenumber : "0000000",
+		phonenumber : "0000000", //ERROR
 		message : new Date()
 	}
 ]
@@ -228,12 +245,12 @@ try {
 
 	sms.on("sms.ready", ()=>{
 		console.log("sms ready...");
-		sms.sendBulkSMS( data ).then((resolve)=>{
+		/*sms.sendBulkSMS( data ).then((resolve)=>{
 			console.log(resolve);
-		}).catch((reject)=>{ console.log(reject)})
-		/*sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
+		}).catch((reject)=>{ console.log(reject)})*/
+		sms.sendSMS(data[1].message, data[1].phonenumber).then((resolve)=>{
 			console.log(resolve);
-		}).catch((reject)=>{ console.log(reject)}) */
+		}).catch((reject)=>{ console.log(reject)}) 
 		sms.queueLog();
 	});
 }
