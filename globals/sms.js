@@ -20,7 +20,7 @@ class Modem extends Events {
 		super();
 		this.tools = require('./tools.js');
 		this.fs = require('fs');
-		this.rules = JSON.parse(this.fs.readFileSync('modem-rules.json', 'utf8'));
+		//this.rules = JSON.parse(this.fs.readFileSync('modem-rules.json', 'utf8'));
 
 		this.groupForwarders = {
 			"MTN" : "SSH",
@@ -136,6 +136,8 @@ class Modem extends Events {
 		});
 	}
 }
+
+module.exports =
 class SMS extends Modem{
 	constructor( ) {
 		//TODO: read files to get this rules
@@ -184,26 +186,22 @@ class SMS extends Modem{
 
 	sendSMS(message, phonenumber) {
 		//TODO: Assumption which I can live with, there are only 2 modems and this modems have to handle the workload
-		return new Promise( async (resolve, reject )=> {
-			let request = {phonenumber: phonenumber, message : message };
-			//let's sanitize the input
-			for(let i in request)
-				if(i=== undefined || request[i] === undefined){
-					reject("SMS.sendSMS=> invalid request")
-				}
-			let group = this.tools.getCMServiceProviders(phonenumber)
-			if(typeof group == "undefined") {
-				reject("SMS.sendSMS=> invalid group")
+		let request = {phonenumber: phonenumber, message : message };
+		//let's sanitize the input
+		for(let i in request)
+			if(i=== undefined || request[i] === undefined){
+				reject("SMS.sendSMS=> invalid request")
 			}
-			else {
-				//console.log("SMS:sendSMS=> ack group:", group)
-				this.queueFor(group, request);
-				//await this.queue.hardInsert( request );
-				resolve("SMS.sendSMS=> done.");
-			}
-
-			reject();
-		});
+		let group = this.tools.getCMServiceProviders(phonenumber)
+		if(typeof group == "undefined") {
+			//reject("SMS.sendSMS=> invalid group")
+		}
+		else {
+			//console.log("SMS:sendSMS=> ack group:", group)
+			this.queueFor(group, request);
+			//await this.queue.hardInsert( request );
+			//resolve("SMS.sendSMS=> done.");
+		}
 	}
 
 	sendBulkSMS( request) {
@@ -211,11 +209,12 @@ class SMS extends Modem{
 			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
 			for(let i in request) {
 				console.log("SMS.sendBulkSMS=> sending message: %d of %d",i,request.length);
-				this.sendSMS(request[i].message, request[i].phonenumber).then((resolve)=>{ 
+				this.sendSMS(request[i].message, request[i].phonenumber)
+				/*.then((resolve)=>{ 
 					console.log(resolve) 
 				}).catch((reject)=>{ 
 					console.log(reject)
-				});
+				});*/
 			}
 			resolve("SMS.sendBulkSMS=> done.");
 		});
@@ -223,20 +222,24 @@ class SMS extends Modem{
 }
 
 //TODO: Each modem is bound to a sender and it manages it sender
-
+/*
 let modems = new Modem;
 let data = [
+	{
+		phonenumber : "676850491", //MTN
+		message : new Date().toLocaleString()
+	},
 	{
 		phonenumber : "652156811", //MTN
 		message : new Date().toLocaleString()
 	},
 	{
-		phonenumber : "696011944", //ORANGE
+		phonenumber : "691979004", //ORANGE
 		message : new Date().toLocaleString()
 	},
 	{
-		phonenumber : "0000000", //ERROR
-		message : new Date()
+		phonenumber : "698403801", //ORANGE
+		message : new Date().toLocaleString()
 	}
 ]
 
@@ -246,18 +249,19 @@ try {
 
 	sms.on("sms.ready", ()=>{
 		console.log("sms ready...");
-		/*sms.sendBulkSMS( data ).then((resolve)=>{
+		sms.sendBulkSMS( data ).then((resolve)=>{
 			console.log(resolve);
-		}).catch((reject)=>{ console.log(reject)})*/
-		sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
+		}).catch((reject)=>{ console.log(reject)})
+		/*sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
 			console.log(resolve);
-		}).catch((reject)=>{ console.log(reject)}) 
+		}).catch((reject)=>{ console.log(reject)})
 		sms.queueLog();
 	});
 }
 catch(error) {
 	console.log(error.message)
 }
+*/
 
 //TODO: which modem group does this message relate to?
 //TODO: which modems in that group execute this command

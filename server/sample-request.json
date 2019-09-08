@@ -1,0 +1,30 @@
+{
+	"name" : "sherlock",
+	"access_token" : "SAMPLE_ACCESS_TOKEN",
+	"payload" : {
+		"clientUUID" : "SAMPLE_ACCESS_UUID",
+		"payload" : {
+			"type" : "sms",
+			"payload" : [
+				 {
+				 	"phonenumber" : "676850491",
+				 	"message" : "00000"
+        		},
+        		{
+                	"phonenumber" : "652156811",
+                	"message" : "000000"
+		        },
+		        {
+	                "phonenumber" : "691979004",
+	                "message" : "000000"
+		        },
+		        {
+	                "phonenumber" : "698403801",
+	                "message" : "000000"
+		        }
+
+			]
+		},
+		"appType" : "sms"
+	}
+}

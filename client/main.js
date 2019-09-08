@@ -3,6 +3,7 @@ const Socket = require ('net');
 const JsonSocket = require('json-socket');
 const Sebastian = require('./sebastian.js');
 const { spawn, spawnSync,fork } = require('child_process');
+const SMS = require('./../globals/sms.js');
 require('dotenv').config({path: 'whoami.env'})
 'use strict';
 
@@ -92,6 +93,11 @@ let startScript = async ( sebastian )=>{
 
 					case "sms":
 						console.log("socket.message=> SMS requested...");
+						//const SMS = require('./../globals/sms.js');
+						var sms = new SMS;
+						sms.on('sms.ready',()=>{
+							sms.sendBulkSMS(data.payload);
+						})
 						/* let sms = new SMS;
 						sms.on('sms.ready', ()=>{
 						})
