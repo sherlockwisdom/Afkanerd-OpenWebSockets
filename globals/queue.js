@@ -11,7 +11,7 @@ class Persist {
 	}
 
 	async getConnection() {
-		this.mysqlConnection = await mysql.mysql_connection()
+		//this.mysqlConnection = await mysql.mysql_connection()
 	}
 
 	insertForPersist( elements ) {

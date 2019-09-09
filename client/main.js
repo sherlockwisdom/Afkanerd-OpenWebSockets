@@ -72,7 +72,7 @@ let startScript = async ( sebastian )=>{
 
 
 	socket.on('message', (data ) => {
-		console.log("socket.message=> new message:",data);
+		console.log("socket.message=> new message...");
 		try {
 			if(typeof data.type !== undefined) {
 				switch( data.type ) {
