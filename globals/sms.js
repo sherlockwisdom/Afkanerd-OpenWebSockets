@@ -40,17 +40,7 @@ class Modem extends Events {
 					case "new request":
 						let group = this.tools.getCMServiceProviders(request.phonenumber);
 						let forwarderName = this.groupForwarders[group];
-						this.queueForForwarder(forwarderName, request);
-
-
-						/*if(this.stateOfForwarder(forwarder) == "!busy") {
-							console.log("Modem:event:new_request=> state= !busy")
-							this.emit("need_job", forwarder, group);
-						}
-						else if(this.stateOfForwarder(forwarder) == "busy") {
-							console.log("Modem:event:new_request=> state = busy");
-							break;
-						}*/
+						this.queueForForwarder(forwarderName, request, group);
 						console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
 					break;
 				}
@@ -67,12 +57,12 @@ class Modem extends Events {
 		this.forwarderState[forwarderName] = "!busy";
 	}
 
-	queueForForwarder(forwarderName, request) {
+	queueForForwarder(forwarderName, request, group) {
 		this.forwarderQueue[forwarderName].insert(request);
-		this.emit("new queue", forwarderName);
+		this.emit("new queue", forwarderName, group);
 	}
 
-	async deQueueForForwarder(forwarderName) {
+	async deQueueForForwarder(forwarderName, group) {
 		switch( this.forwarderState[forwarderName] ) {
 			case "busy":
 				console.log("Modem.deQueueForForwarder=> request made but (%s) is busy", forwarderName);
@@ -83,7 +73,7 @@ class Modem extends Events {
 					let request = this.forwarderQueue[forwarderName].next();
 					if(request !== undefined) {
 						this.forwarderState[forwarderName] = "busy";
-						await this.forwardBindings[forwarderName](request.message, request.phonenumber);
+						await this.forwardBindings[forwarderName](request.message, request.phonenumber, group);
 					}
 					else {
 						console.log("Modem.deQueueForForwarder=> queue done.");
@@ -200,7 +190,7 @@ class Modem extends Events {
 				const mmcliModemOutput = spawnSync("afsms", args, {"encoding": "utf8"})
 				let output = mmcliModemOutput.stdout;
 				let error = mmcliModemOutput.stderr;
-				console.log("Modem.mmcliSend=> output(%s) error(%s)", output, error);
+				//console.log("Modem.mmcliSend=> output(%s) error(%s)", output, error);
 				require('./tools.js').sleep().then(()=>{
 					resolve( output );
 				});
@@ -280,11 +270,12 @@ class SMS extends Modem{
 	}
 
 	sendBulkSMS( request) {
+		//console.log(request);
 		return new Promise(async(resolve, reject)=> {
 			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
 			for(let i in request) {
 				console.log("SMS.sendBulkSMS=> sending message: %d of %d",i,request.length);
-				this.sendSMS(request[i].message, request[i].phonenumber)
+				request[i].hasOwnProperty("number") ? this.sendSMS(request[i].message, request[i].number) : this.sendSMS(request[i].message, request[i].phonenumber)
 				/*.then((resolve)=>{ 
 					console.log(resolve) 
 				}).catch((reject)=>{ 

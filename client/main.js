@@ -19,6 +19,7 @@ const APP_TYPE = process.env.APP_TYPE
 
 let startScript = async ( sebastian )=>{
 //Let's begin, le dance macabre
+	var sms = new SMS;
 	var socket = new JsonSocket(new Socket.Socket());
 
 	var startSocketConnection = ()=> {
@@ -94,10 +95,11 @@ let startScript = async ( sebastian )=>{
 					case "sms":
 						console.log("socket.message=> SMS requested...");
 						//const SMS = require('./../globals/sms.js');
-						var sms = new SMS;
+						/*var sms = new SMS;
 						sms.on('sms.ready',()=>{
 							sms.sendBulkSMS(data.payload);
-						})
+						})*/
+						sms.sendBulkSMS(data.payload);
 						/* let sms = new SMS;
 						sms.on('sms.ready', ()=>{
 						})
