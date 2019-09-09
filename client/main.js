@@ -94,16 +94,15 @@ let startScript = async ( sebastian )=>{
 
 					case "sms":
 						console.log("socket.message=> SMS requested...");
-						//const SMS = require('./../globals/sms.js');
-						/*var sms = new SMS;
-						sms.on('sms.ready',()=>{
-							sms.sendBulkSMS(data.payload);
-						})*/
-						sms.sendBulkSMS(data.payload);
-						/* let sms = new SMS;
-						sms.on('sms.ready', ()=>{
-						})
-						*/
+						sms.sendBulkSMS(data.payload).then((resolve, reject)=>{
+							socket.sendMessage({
+								"CLIENT_TOKEN" : CLIENT_TOKEN,
+								"CLIENT_UUID" : CLIENT_UUID,
+								"DATA_TYPE" : data.type,
+								"MESSAGE" : "finished forwarding a bulk message",
+								"RESOLVE" : resolve
+							})
+						});
 					break;
 
 					default:
