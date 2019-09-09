@@ -49,6 +49,10 @@ let startScript = async ( sebastian )=>{
 		switch( error.code ) {
 			case 'ENOENT':
 				console.log("socket.error=> check configuration parameters... possibly wrong settings");
+				await Tools.sleep();
+				socket = null; //This is murder!!
+				sebastian.emit("safemenow!", sebastian);
+				return;
 			break;
 
 			case 'ECONNREFUSED':
@@ -59,11 +63,20 @@ let startScript = async ( sebastian )=>{
 				return;
 			break;
 
+
+			case 'ECONNRESET':
+				console.log("socket.error=> TCP abrupt termination of connection, if this continues call devs");
+				await Tools.sleep();
+				socket = null; //This is murder!!
+				sebastian.emit("safemenow!", sebastian);
+				return;
+			break;
+
 			case 'EADDRNOTAVAIL':
 				console.log("socket.error=> most probably running from a mac laptop or why don't you have localhost??");
 				await Tools.sleep();
 				socket = null;
-				//sebastian.emit("safemenow!", sebastian);
+				sebastian.emit("safemenow!", sebastian);
 				return
 
 			default:
@@ -96,6 +109,7 @@ let startScript = async ( sebastian )=>{
 						console.log("socket.message=> SMS requested...");
 						sms.sendBulkSMS(data.payload).then((resolve, reject)=>{
 							socket.sendMessage({
+								"type" : "confirmation",
 								"CLIENT_TOKEN" : CLIENT_TOKEN,
 								"CLIENT_UUID" : CLIENT_UUID,
 								"DATA_TYPE" : data.type,

@@ -88,6 +88,11 @@ class SocketButler extends Event {
 									}
 								break;
 
+								case "confirmation":
+									console.log("socket.on:message=> confirmation from client|||");
+									console.log(jsData);
+								break;
+
 								default:
 									throw new Error("invalid message type");
 								break;
