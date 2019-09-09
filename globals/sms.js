@@ -337,7 +337,7 @@ try {
 catch(error) {
 	console.log(error.message)
 }
-
+*/
 
 //TODO: which modem group does this message relate to?
 //TODO: which modems in that group execute this command
