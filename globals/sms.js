@@ -267,7 +267,7 @@ class SMS extends Modem{
 		//let's sanitize the input
 		for(let i in request)
 			if(i=== undefined || request[i] === undefined){
-				reject("SMS.sendSMS=> invalid request")
+				return("SMS.sendSMS=> invalid request")
 			}
 		let group = this.tools.getCMServiceProviders(phonenumber)
 		if(typeof group == "undefined") {
