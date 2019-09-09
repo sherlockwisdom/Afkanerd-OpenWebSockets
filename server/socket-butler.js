@@ -63,6 +63,7 @@ class SocketButler extends Event {
 				console.log("socket.listen=> listening on port ", this.socketConnectionOptions.port);
 				this.socket.on('connection', ( socketClient )=>{
 					console.log("socket.connection=> new connection made");
+					socketClient.setKeepAlive(true, 5000);
 					socketClient = new JsonSocket ( socketClient );
 
 					socketClient.on("message", ( jsData )=>{
