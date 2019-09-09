@@ -37,6 +37,9 @@ let startScript = async ( sebastian )=>{
 				UUID:CLIENT_UUID,
 				appType:APP_TYPE
 			});
+			socket.setKeepAlive({
+				enable : true
+			});
 		});
 	}
 
@@ -80,6 +83,8 @@ let startScript = async ( sebastian )=>{
 				return
 
 			default:
+				socket = null;
+				sebastian.emit("safemenow!", sebastian);
 			break;
 		}
 	});
