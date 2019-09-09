@@ -37,9 +37,7 @@ let startScript = async ( sebastian )=>{
 				UUID:CLIENT_UUID,
 				appType:APP_TYPE
 			});
-			socket.setKeepAlive({
-				enable : true
-			});
+			socket.setKeepAlive(true, 5000);
 		});
 	}
 
