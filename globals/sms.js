@@ -28,29 +28,82 @@ class Modem extends Events {
 			"NEXTEL" : "MMCLI"
 		}
 		this.forwardBindings = {}
-		this.forwardBindings["SSH"] = this.sshSend;
-		this.forwardBindings["MMCLI"] = this.mmcliSend;
-		this.state = {
-			"SSH" : "!busy",
-			"MMCLI" : "!busy"
-		}
+		this.forwarderState = {};
+		this.forwarderQueue = {};
 
-		this.on("event", (type, group)=>{
-			switch(type) {
-				case "new request":
-					let forwarder = this.groupForwarders[group];
-					if(this.stateOfForwarder(forwarder) == "!busy") {
-						//console.log("Modem:event:new_request=> state= !busy")
-						this.emit("need_job", forwarder, group);
-					}
-					else if(this.stateOfForwarder(forwarder) == "busdy") {
-						//console.log("Modem:event:new_request=> state = busy");
-						break;
-					}
-				break;
-			}
+		this.bindForwarders("SSH", this.sshSend);
+		this.bindForwarders("MMCLI", this.mmcliSend);
+
+		this.on("event", (type, request)=>{
+			setImmediate(()=> {
+				switch(type) {
+					case "new request":
+						let group = this.tools.getCMServiceProviders(request.phonenumber);
+						let forwarderName = this.groupForwarders[group];
+						this.queueForForwarder(forwarderName, request);
+
+
+						/*if(this.stateOfForwarder(forwarder) == "!busy") {
+							console.log("Modem:event:new_request=> state= !busy")
+							this.emit("need_job", forwarder, group);
+						}
+						else if(this.stateOfForwarder(forwarder) == "busy") {
+							console.log("Modem:event:new_request=> state = busy");
+							break;
+						}*/
+						console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
+					break;
+				}
+			});
 		})
+
+		this.on("done", this.deQueueForForwarder);
+		this.on("new queue", this.deQueueForForwarder);
 	}
+
+	bindForwarders(forwarderName, forwarderFunction) {
+		this.forwardBindings[forwarderName] = forwarderFunction;
+		this.forwarderQueue[forwarderName] = new Queue();
+		this.forwarderState[forwarderName] = "!busy";
+	}
+
+	queueForForwarder(forwarderName, request) {
+		this.forwarderQueue[forwarderName].insert(request);
+		this.emit("new queue", forwarderName);
+	}
+
+	async deQueueForForwarder(forwarderName) {
+		switch( this.forwarderState[forwarderName] ) {
+			case "busy":
+				console.log("Modem.deQueueForForwarder=> request made but (%s) is busy", forwarderName);
+			break;
+
+			case "!busy":
+				try {
+					let request = this.forwarderQueue[forwarderName].next();
+					if(request !== undefined) {
+						this.forwarderState[forwarderName] = "busy";
+						await this.forwardBindings[forwarderName](request.message, request.phonenumber);
+					}
+					else {
+						console.log("Modem.deQueueForForwarder=> queue done.");
+						return true;
+					}
+				}
+				catch( error ) {
+					this.forwarderState[forwarderName] = "!busy";
+					console.log("Modem.deQueueForForwarder:error=>", error.message);
+				}
+				this.forwarderState[forwarderName] = "!busy";
+				this.emit("done", forwarderName);
+			break;
+
+			default:
+				console.log("Modem.deQueue=> shit is happening here, unknown state of forwarder");
+			break;
+		}
+	}
+		
 
 	stateOfForwarder( forwarder ) {
 		return this.state[forwarder]
@@ -98,10 +151,21 @@ class Modem extends Events {
 
 	sshSend(message, phonenumber) {
 		return new Promise((resolve, reject)=> {
-			console.log("Modem.sshSend=> sending message details:",message,phonenumber);
-			let args = ["-T", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
-			//let args = ["-t", "root@192.168.1.1", "ls /"]
+			console.log("modem.sshSend at [%s]",new Date().toLocaleString());
+			//console.log("Modem.sshSend=> sending message details:",message,phonenumber);
 			try {
+				// XXX: this line here is for testing, it waits 10 seconds and then resolves, can simulate sending SMS, uncomment when needed
+				/*
+				let testFunction = new Promise((resolve)=> {
+					require('./tools.js').sleep().then(()=>{
+						resolve('done');
+					})
+				})
+				testFunction.then(()=> { resolve("done sleeping thread") });
+				*/	
+
+				//XXX: this is the actual program, can work with the above line, but rather not
+				let args = ["-T", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
 				const vodafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
 				let output = vodafoneRouterOutput.stdout;
 				let error = vodafoneRouterOutput.stderr;
@@ -118,9 +182,21 @@ class Modem extends Events {
 
 	mmcliSend(message, phonenumber, group) {
 		return new Promise((resolve, reject)=> {
-			console.log("Modem.mmcliSend=> sending message details:",message,phonenumber);
-			let args = ["--send", "--number", phonenumber, "--message", message, "--group", group]
+			console.log("modem.mmcliSend at [%s]",new Date().toLocaleString());
+			//console.log("Modem.mmcliSend=> sending message details:",message,phonenumber);
 			try{
+				/* XXX: this line here is for testing, it waits 10 seconds and then resolves, can simulate sending SMS, uncomment when needed
+
+				let testFunction = new Promise((resolve)=> {
+					require('./tools.js').sleep().then(()=>{
+						resolve('done');
+					})
+				})
+				testFunction.then(()=> { resolve("done sleeping thread") });
+				*/
+
+				//XXX: this is the actual program, can work with the above line, but rather not
+				let args = ["--send", "--number", phonenumber, "--message", message, "--group", group]
 				const mmcliModemOutput = spawnSync("afsms", args, {"encoding": "utf8"})
 				let output = mmcliModemOutput.stdout;
 				let error = mmcliModemOutput.stderr;
@@ -128,7 +204,6 @@ class Modem extends Events {
 				require('./tools.js').sleep().then(()=>{
 					resolve( output );
 				});
-				resolve("Modem.mmcliSend.demo.output");
 			}
 			catch( error ) {
 				reject("Modem.mmcliSend.error=>"+error.message);
@@ -158,17 +233,18 @@ class SMS extends Modem{
 		});
 	}
 
-	async deQueueFor( forwarder, group ) {
+	deQueueFor( forwarder, group ) {
 		let request = this.groupQueueContainer[group].next()
 		let forward = this.forwardBindings[forwarder]; //sshSend or mmcliSend */
 
 		this.toggleForwarderState(forward, "busy");
 		this.forwardBindings[forwarder](request.message, request.phonenumber, group).then(( resolve )=>{
 			console.log("SMS.deQueueFor=>", resolve);
+			this.toggleForwarderState(forward, "!busy");
 		}).catch(( reject )=>{
 			console.log("SMS.deQueueFor.error=>", reject);
+			this.toggleForwarderState(forward, "!busy");
 		});
-		this.toggleForwarderState(forward, "!busy");
 		//this.emit("event", "new request", group);
 	}
 
@@ -176,6 +252,7 @@ class SMS extends Modem{
 		//console.log("SMS:queueFor=>", group);
 		this.groupQueueContainer[group].insert(request);
 		this.emit("event", "new request", group);
+		console.log("SMS.queueFor=> done queueing...");
 	}
 
 	queueLog() {
@@ -197,10 +274,8 @@ class SMS extends Modem{
 			//reject("SMS.sendSMS=> invalid group")
 		}
 		else {
-			//console.log("SMS:sendSMS=> ack group:", group)
-			this.queueFor(group, request);
-			//await this.queue.hardInsert( request );
-			//resolve("SMS.sendSMS=> done.");
+			//this.queueFor(group, request);
+			this.emit("event", "new request", request);
 		}
 	}
 
@@ -245,6 +320,7 @@ let data = [
 
 let assert = require('assert');
 try {
+	const SMS = require('./sms.js');
 	var sms = new SMS;
 
 	sms.on("sms.ready", ()=>{
@@ -261,7 +337,7 @@ try {
 catch(error) {
 	console.log(error.message)
 }
-*/
+
 
 //TODO: which modem group does this message relate to?
 //TODO: which modems in that group execute this command
