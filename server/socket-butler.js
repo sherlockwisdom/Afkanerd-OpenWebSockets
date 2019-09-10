@@ -175,12 +175,22 @@ class SocketButler extends Event {
 					let sockets = this.findClientSocket(clientToken, clientUUID);
 					for(let i in sockets) {
 						let socket = sockets[i];
-						if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
+						if(!socket.isClosed()) {
+							if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
+							else {
+								console.log("socket-butler:forward=> found socket, but not matching appType");
+								this.enQueue(clientToken, clientUUID, request);
+								let error = new Error("socket not receipient to type of app");
+								error.code = 501;
+								throw error;
+							}
+						}
 						else {
-							console.log("socket-butler:forward=> found socket, but not matching appType");
-							this.enQueue(clientToken, clientUUID, request);
-							let error = new Error("socket not receipient to type of app");
-							error.code = 501;
+							console.log("socket-butler:foward=> socket is available but not connected, seems it failed throwing a disconnect event when it left");
+							this.removeClientSocket(clientUUID, clientToken);
+							//this.enQueue(clientToken, clientUUID, request);
+							let error = new Error("socket not connected....");
+							error.code=501;
 							throw error;
 						}
 					}
