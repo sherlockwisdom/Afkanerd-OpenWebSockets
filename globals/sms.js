@@ -145,22 +145,22 @@ class Modem extends Events {
 			//console.group("Modem.sshSend=> sending message details:",message,phonenumber);
 			try {
 				// XXX: this line here is for testing, it waits 10 seconds and then resolves, can simulate sending SMS, uncomment when needed
-				let testFunction = new Promise((resolve)=> {
+				/*let testFunction = new Promise((resolve)=> {
 					require('./tools.js').sleep().then(()=>{
 						resolve('done');
 					})
 				})
-				testFunction.then(()=> { resolve("done sleeping thread") });	
+				testFunction.then(()=> { resolve("done sleeping thread") }); */	
 
 				//XXX: this is the actual program, can work with the above line, but rather not
-				/*let args = ["-T", "-o", "ConnectTimeout=7", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
+				let args = ["-T", "-o", "ConnectTimeout=7", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
 				const vodafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
 				let output = vodafoneRouterOutput.stdout;
 				let error = vodafoneRouterOutput.stderr;
 				console.group("Modem.sshSend=> output(%s) error(%s)", output, error);
 				require('./tools.js').sleep().then(()=>{
 					resolve( output );
-				});*/
+				});
 			}
 			catch( error ) {
 				reject("Modem.sshSend.error=> " + error.message);
