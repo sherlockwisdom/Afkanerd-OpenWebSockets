@@ -153,7 +153,7 @@ class Modem extends Events {
 				testFunction.then(()=> { resolve("done sleeping thread") }); */	
 
 				//XXX: this is the actual program, can work with the above line, but rather not
-				let args = ["-T", "-o", "ConnectTimeout=7", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
+				let args = ["-T", "-o", "ConnectTimeout=20", "root@192.168.1.1", `sendsms '${phonenumber}' '${message}'`];
 				const vodafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
 				let output = vodafoneRouterOutput.stdout;
 				let error = vodafoneRouterOutput.stderr;
