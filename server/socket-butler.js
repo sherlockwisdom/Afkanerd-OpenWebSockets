@@ -122,6 +122,7 @@ class SocketButler extends Event {
 
 	addClientSocket(socket) {
 		this.socketContainer.push( socket );
+		console.log("socket-butler:addClientSocket=> adding client with token (%s) and UUID (%s)", socket.clientToken, socket.clientUUID);
 		this.emit('new client', socket.clientToken, socket.clientUUID);
 	}
 

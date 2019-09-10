@@ -54,23 +54,35 @@ async function execSocketFunctionalities() {
 	socketButler.on('butler.ready', ()=>{
 		console.log(arguments.callee.name+"=> butler is called!");
 		let mostImportantRequest = {
-			type : "forward",
-			clientToken : "12345",
-			clientUUID : "0000",
-			payload : {
-				type : "sms",
-				payload : {
-					terminalType : "update"
-				}
+			"name" : "sherlock",
+			"access_token" : "SAMPLE_ACCESS_TOKEN",
+			"payload" : {
+				"clientToken" : "SAMPLE_ACCESS_TOKEN",
+				"clientUUID" : "SAMPLE_ACCESS_UUID",
+				"payload" : {
+					"type" : "sms",
+					"payload" : [
+						{
+							"phonenumber" : "652156811",
+							"message" : "000000"
+						},
+
+						{
+							"phonenumber" : "652156811",
+							"message" : "000000"
+						}
+					]
+				},
+				"appType" : "sms"
 			}
 		}
 
-		socketButler.forward(mostImportantRequest);
+		//socketButler.forward(mostImportantRequest);
 		
 		var count = 0;
 		socketButler.on('new client', ()=>{
 			console.log('main:event:socket-butler:new-client');
-			if(count == 0) socketButler.forward(mostImportantRequest);
+			if(count == 0) socketButler.forward(mostImportantRequest.payload);
 			count=1;
 		});
 	});
