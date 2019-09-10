@@ -142,13 +142,15 @@ class SocketButler extends Event {
 
 	findClientSocket(clientToken, clientUUID) {
 		console.log("socket-butler:findClientSocket=> finding (%s) - (%s)", clientToken, clientUUID);
+		let socketContainer = []
 		for(let i=0;i<this.socketContainer.length;++i) {
 			let socket = this.socketContainer[i];
 			console.log(socket.clientUUID, socket.clientToken);
 			if(socket.clientUUID == clientUUID && socket.clientToken == clientToken)
-				return socket;
+				socketList.push(socket);
 		}
-		throw new Error("socket not found");
+		if(socketContainer.length < 1) throw new Error("socket not found");
+		else return socketContainer;
 	}
 
 
@@ -170,14 +172,17 @@ class SocketButler extends Event {
 			let appType = request.appType;
 			try {
 				try {
-					let socket = this.findClientSocket(clientToken, clientUUID);
-					if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
-					else {
-						console.log("socket-butler:forward=> found socket, but not matching appType");
-						this.enQueue(clientToken, clientUUID, request);
-						let error = new Error("socket not receipient to type of app");
-						error.code = 501;
-						throw error;
+					let sockets = this.findClientSocket(clientToken, clientUUID);
+					for(let i in sockets) {
+						let socket = sockets[i];
+						if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
+						else {
+							console.log("socket-butler:forward=> found socket, but not matching appType");
+							this.enQueue(clientToken, clientUUID, request);
+							let error = new Error("socket not receipient to type of app");
+							error.code = 501;
+							throw error;
+						}
 					}
 				}
 				catch( error ) {
