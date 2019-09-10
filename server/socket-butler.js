@@ -176,7 +176,16 @@ class SocketButler extends Event {
 					for(let i in sockets) {
 						let socket = sockets[i];
 						if(!socket.isClosed()) {
-							if(typeof appType != "undefined" && socket.appType == appType ) socket.sendMessage( payload );
+							if(typeof appType != "undefined" && socket.appType == appType ) {
+								socket.sendMessage( payload, (error)=>{
+									if(error) {
+										console.log("socket-butler:forwarder:error=>", error.message);
+										throw error;
+									}
+									else
+									console.log("socket-butler:forwarder=> request made successfully!");
+								});
+							}
 							else {
 								console.log("socket-butler:forward=> found socket, but not matching appType");
 								this.enQueue(clientToken, clientUUID, request);
