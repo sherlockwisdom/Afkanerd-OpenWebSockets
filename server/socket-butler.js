@@ -147,7 +147,7 @@ class SocketButler extends Event {
 			let socket = this.socketContainer[i];
 			console.log(socket.clientUUID, socket.clientToken);
 			if(socket.clientUUID == clientUUID && socket.clientToken == clientToken)
-				socketList.push(socket);
+				socketContainer.push(socket);
 		}
 		if(socketContainer.length < 1) throw new Error("socket not found");
 		else return socketContainer;
