@@ -41,7 +41,7 @@ class Modem extends Events {
 						let group = this.tools.getCMServiceProviders(request.phonenumber);
 						let forwarderName = this.groupForwarders[group];
 						this.queueForForwarder(forwarderName, request, group);
-						console.group("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
+						console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
 					break;
 				}
 			});
@@ -65,7 +65,7 @@ class Modem extends Events {
 	async deQueueForForwarder(forwarderName, group) {
 		switch( this.forwarderState[forwarderName] ) {
 			case "busy":
-				console.group("Modem.deQueueForForwarder=> request made but (%s) is busy", forwarderName);
+				console.log("Modem.deQueueForForwarder=> request made but (%s) is busy", forwarderName);
 			break;
 
 			case "!busy":
@@ -76,20 +76,20 @@ class Modem extends Events {
 						await this.forwardBindings[forwarderName](request.message, request.phonenumber, group);
 					}
 					else {
-						console.group("Modem.deQueueForForwarder=> queue done.");
+						console.log("Modem.deQueueForForwarder=> queue done.");
 						return true;
 					}
 				}
 				catch( error ) {
 					this.forwarderState[forwarderName] = "!busy";
-					console.group("Modem.deQueueForForwarder:error=>", error.message);
+					console.log("Modem.deQueueForForwarder:error=>", error.message);
 				}
 				this.forwarderState[forwarderName] = "!busy";
 				this.emit("done", forwarderName);
 			break;
 
 			default:
-				console.group("Modem.deQueue=> shit is happening here, unknown state of forwarder");
+				console.log("Modem.deQueue=> shit is happening here, unknown state of forwarder");
 			break;
 		}
 	}
@@ -141,8 +141,8 @@ class Modem extends Events {
 
 	sshSend(message, phonenumber) {
 		return new Promise((resolve, reject)=> {
-			console.group("modem.sshSend at [%s]",new Date().toLocaleString() );
-			//console.group("Modem.sshSend=> sending message details:",message,phonenumber);
+			console.log("modem.sshSend at [%s]",new Date().toLocaleString() );
+			//console.log("Modem.sshSend=> sending message details:",message,phonenumber);
 			try {
 				// XXX: this line here is for testing, it waits 10 seconds and then resolves, can simulate sending SMS, uncomment when needed
 				/*let testFunction = new Promise((resolve)=> {
@@ -157,7 +157,7 @@ class Modem extends Events {
 				const vodafoneRouterOutput = spawnSync("ssh", args, {"encoding" : "utf8"});
 				let output = vodafoneRouterOutput.stdout;
 				let error = vodafoneRouterOutput.stderr;
-				console.group("Modem.sshSend=> output(%s) error(%s)", output, error);
+				console.log("Modem.sshSend=> output(%s) error(%s)", output, error);
 				require('./tools.js').sleep().then(()=>{
 					resolve( output );
 				});
@@ -170,8 +170,8 @@ class Modem extends Events {
 
 	mmcliSend(message, phonenumber, group) {
 		return new Promise((resolve, reject)=> {
-			console.group("modem.mmcliSend at [%s]",new Date().toLocaleString());
-			//console.group("Modem.mmcliSend=> sending message details:",message,phonenumber);
+			console.log("modem.mmcliSend at [%s]",new Date().toLocaleString());
+			//console.log("Modem.mmcliSend=> sending message details:",message,phonenumber);
 			try{
 				/* XXX: this line here is for testing, it waits 10 seconds and then resolves, can simulate sending SMS, uncomment when needed
 
@@ -188,7 +188,7 @@ class Modem extends Events {
 				const mmcliModemOutput = spawnSync("afsms", args, {"encoding": "utf8"})
 				let output = mmcliModemOutput.stdout;
 				let error = mmcliModemOutput.stderr;
-				//console.group("Modem.mmcliSend=> output(%s) error(%s)", output, error);
+				//console.log("Modem.mmcliSend=> output(%s) error(%s)", output, error);
 				require('./tools.js').sleep().then(()=>{
 					resolve( output );
 				});
@@ -227,26 +227,26 @@ class SMS extends Modem{
 
 		this.toggleForwarderState(forward, "busy");
 		this.forwardBindings[forwarder](request.message, request.phonenumber, group).then(( resolve )=>{
-			console.group("SMS.deQueueFor=>", resolve);
+			console.log("SMS.deQueueFor=>", resolve);
 			this.toggleForwarderState(forward, "!busy");
 		}).catch(( reject )=>{
-			console.group("SMS.deQueueFor.error=>", reject);
+			console.log("SMS.deQueueFor.error=>", reject);
 			this.toggleForwarderState(forward, "!busy");
 		});
 		//this.emit("event", "new request", group);
 	}
 
 	queueFor(group, request) {
-		//console.group("SMS:queueFor=>", group);
+		//console.log("SMS:queueFor=>", group);
 		this.groupQueueContainer[group].insert(request);
 		this.emit("event", "new request", group);
 		console.end();
-		console.group("SMS.queueFor=> done queueing...");
+		console.log("SMS.queueFor=> done queueing...");
 	}
 
 	queueLog() {
 		for(let i in this.queueGroupContainer) {
-			console.group(i, this.queueGroupContainer[i].size());
+			console.log(i, this.queueGroupContainer[i].size());
 		}
 	}
 
@@ -261,17 +261,17 @@ class SMS extends Modem{
 				}
 			//this.queueFor(group, request);
 			this.emit("event", "new request", request);
-			console.group("SMS.sendSMS=> done notifying of new request");
+			console.log("SMS.sendSMS=> done notifying of new request");
 			resolve();
 		});
 	}
 
 	sendBulkSMS( request) {
-		//console.group(request);
+		//console.log(request);
 		return new Promise(async(resolve, reject)=> {
-			console.group("SMS.sendBulkSMS=> number of sms to send: ", request.length);
+			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
 			for(let i in request) {
-				console.group("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
+				console.log("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
 				request[i].hasOwnProperty("number") ? await this.sendSMS(request[i].message, request[i].number) : await this.sendSMS(request[i].message, request[i].phonenumber)
 			}
 			resolve("SMS.sendBulkSMS=> done.");
@@ -307,18 +307,18 @@ try {
 	var sms = new SMS;
 
 	sms.on("sms.ready", ()=>{
-		console.group("sms ready...");
+		console.log("sms ready...");
 		sms.sendBulkSMS( data ).then((resolve)=>{
-			console.group(resolve);
-		}).catch((reject)=>{ console.group(reject)})
+			console.log(resolve);
+		}).catch((reject)=>{ console.log(reject)})
 		/*sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
-			console.group(resolve);
-		}).catch((reject)=>{ console.group(reject)})
+			console.log(resolve);
+		}).catch((reject)=>{ console.log(reject)})
 		sms.queueLog();
 	});
 }
 catch(error) {
-	console.group(error.message)
+	console.log(error.message)
 }
 */
 
