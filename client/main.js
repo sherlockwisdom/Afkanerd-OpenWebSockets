@@ -49,6 +49,7 @@ let startScript = async ( sebastian )=>{
 					  } else {
 						console.log("%s", Chalk.bgRed(`${Chalk.white('state=> sorry, not connected to the internet')}`))
 						cron.stop();
+						socket = null;
 						sebastian.emit("safemenow!", sebastian);
 					  }
 				})
