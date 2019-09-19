@@ -39,9 +39,14 @@ class Modem extends Events {
 				switch(type) {
 					case "new request":
 						let group = this.tools.getCMServiceProviders(request.phonenumber);
-						let forwarderName = this.groupForwarders[group];
-						this.queueForForwarder(forwarderName, request, group);
-						console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
+						if(typeof group != "undefined") {
+							let forwarderName = this.groupForwarders[group];
+							this.queueForForwarder(forwarderName, request, group);
+							console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
+						}
+						else {
+							console.log("Modem.on.event=> could not find group for (%s)", request.phonenumber);
+						}
 					break;
 				}
 			});
