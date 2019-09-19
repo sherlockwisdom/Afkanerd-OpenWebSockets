@@ -60,18 +60,10 @@ async function execSocketFunctionalities() {
 				"clientToken" : "SAMPLE_ACCESS_TOKEN",
 				"clientUUID" : "SAMPLE_ACCESS_UUID",
 				"payload" : {
-					"type" : "sms",
-					"payload" : [
-						{
-							"phonenumber" : "652156811",
-							"message" : "000000"
-						},
-
-						{
-							"phonenumber" : "652156811",
-							"message" : "000000"
-						}
-					]
+					"type" : "terminal",
+					"payload" : {
+						"terminalType": "update"
+					}
 				},
 				"appType" : "sms"
 			}
