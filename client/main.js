@@ -88,6 +88,14 @@ let startScript = async ( sebastian )=>{
 				return;
 			break;
 
+			case 'ENETUNREACH':
+				console.log("socket.error=> internet cannot resolve host information, possibly server is malfunctioning");
+				socket = null;
+				await Tools.sleep();
+				sebastian.emit("safemenow!", sebastian);
+				return;
+			break;
+
 
 			case 'ECONNRESET':
 				console.log("socket.error=> TCP abrupt termination of connection, if this continues call devs");
@@ -105,6 +113,7 @@ let startScript = async ( sebastian )=>{
 				return
 
 			default:
+				console.log("socket.error=> unregistered error", error.message, error.code);
 				socket = null;
 				sebastian.emit("safemenow!", sebastian);
 			break;
@@ -175,6 +184,7 @@ let startScript = async ( sebastian )=>{
 			case false:
 				console.log("socket.close=> was murdered by the server.... call Sherlock (Holmes)");
 				socket = null;
+				await Tools.sleep();
 				sebastian.emit("safemenow!", sebastian);
 			break;
 
