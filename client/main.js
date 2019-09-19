@@ -37,6 +37,22 @@ let startScript = async ( sebastian )=>{
 				UUID:CLIENT_UUID,
 				appType:APP_TYPE
 			});
+
+			//XXX: Always test to make sure there's an active internet connection
+			var CronJob = require('cron').CronJob;
+			var connectivity = require('connectivity');
+			var Chalk = require('chalk');
+			var cron = new CronJob('*/5 * * * * *', ()=> {
+				connectivity( (online) => {
+					  if (online) {
+						console.log("%s", Chalk.bgGreen(`${Chalk.black('state=> connected to the internet!')}`))
+					  } else {
+						console.log("%s", Chalk.bgRed(`${Chalk.white('state=> sorry, not connected to the internet')}`))
+						cron.stop();
+						sebastian.emit("safemenow!", sebastian);
+					  }
+				})
+			}, null, true);
 		});
 	}
 
@@ -47,6 +63,14 @@ let startScript = async ( sebastian )=>{
 		console.log("socket.error=> [", error.code, "]", error.message);
 
 		switch( error.code ) {
+			case 'ENOTFOUND':
+				console.log("socket.error=> check internet connection!");
+				await Tools.sleep();
+				socket = null;
+				sebastian.emit("safemenow!", sebastian);
+				return;
+			break;
+
 			case 'ENOENT':
 				console.log("socket.error=> check configuration parameters... possibly wrong settings");
 				await Tools.sleep();
