@@ -179,6 +179,9 @@ let startScript = async ( sebastian )=>{
 		switch( hadError ){
 			case true:
 				console.log("socket.close=> failed due to transmission error, check internet connection");
+				socket = null;
+				await Tools.sleep();
+				sebastian.emit("safemenow!", sebastian);
 			break;
 
 			case false:
