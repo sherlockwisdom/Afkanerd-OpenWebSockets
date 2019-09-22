@@ -210,5 +210,5 @@ let startScript = async ( sebastian )=>{
 
 var sebastian = new Sebastian;
 startScript(sebastian);
-sebastian.on("safemenow!", startScript);
+sebastian.on("safemenow!", sebastian.restart());
 //TODO: Add important things to process file
