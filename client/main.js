@@ -143,16 +143,26 @@ let startScript = async ( sebastian )=>{
 
 					case "sms":
 						console.log("socket.message=> SMS requested...");
-						sms.sendBulkSMS(data.payload).then((resolve, reject)=>{
-							socket.sendMessage({
-								"type" : "confirmation",
-								"CLIENT_TOKEN" : CLIENT_TOKEN,
-								"CLIENT_UUID" : CLIENT_UUID,
-								"DATA_TYPE" : data.type,
-								"MESSAGE" : "finished forwarding a bulk message",
-								"RESOLVE" : resolve
-							})
-						});
+						try {
+							sms.sendBulkSMS(data.payload).then((resolve, reject)=>{
+								try {
+									socket.sendMessage({
+										"type" : "confirmation",
+										"CLIENT_TOKEN" : CLIENT_TOKEN,
+										"CLIENT_UUID" : CLIENT_UUID,
+										"DATA_TYPE" : data.type,
+										"MESSAGE" : "finished forwarding a bulk message",
+										"RESOLVE" : resolve
+									})
+								}
+								catch(error) {
+									console.log("socket.message.error=>", error.message);
+								}
+							});
+						}
+						catch(error) {
+							console.log("socket.message.error=>", error.message);
+						}
 					break;
 
 					default:
