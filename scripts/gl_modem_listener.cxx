@@ -17,7 +17,7 @@ int read_log_calculate_work_load(string modem_path) {
 
 void gl_modem_listener(string func_name) {
 	//XXX: Make sure only 1 instance of this thread is running always
-	cout << func_name << "listener called" << endl;
+	cout << func_name << "=> listener called" << endl;
 	
 	static short int prev_modem_size = 0;
 	
