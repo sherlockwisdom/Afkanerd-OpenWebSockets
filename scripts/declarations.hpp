@@ -12,6 +12,7 @@
 #include <string.h>
 #include <map>
 #include <fstream>
+#include <string>
 
 #include "helpers.hpp"
 

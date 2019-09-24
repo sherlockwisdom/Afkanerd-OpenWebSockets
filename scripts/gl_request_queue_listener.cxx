@@ -88,12 +88,15 @@ void gl_request_queue_listener(string func_name) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
 				//XXX: Round-Robin algorithm implementation goes here
 				vector<map<string,string>> isp_request = isp_sorted_request_container[i.first];
+
 				//TODO: Thread this!! No need sitting and waiting for one ISP before using the other
 				for(int k=0;k<isp_request.size();++k) {
 					for(auto j : i.second) {
 						if(k<isp_request.size()) {
 							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
-							string rand_filename = "";
+
+							//XXX: Naming files using UNIX EPOCH counter
+							string rand_filename = helpers::terminal_stdout("date +%s") + ".jb";
 							ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
 							//FIXME: verify file is opened
 							map<string, string> request = isp_request[k];
