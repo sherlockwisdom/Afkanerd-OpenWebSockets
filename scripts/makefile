@@ -1,2 +1,2 @@
 all:
-	g++ daemon.cxx -o daemon -pthread -std=c++1z
+	g++ daemon.cxx -o daemon -pthread -g -std=c++1z
