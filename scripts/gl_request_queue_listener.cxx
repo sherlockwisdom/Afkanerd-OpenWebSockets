@@ -72,7 +72,7 @@ void gl_request_queue_listener(string func_name) {
 			/* 
 			 * Check for connected modems in MODEM_POOL
 			 * then filter modems based on their ISP, 
-			 * then for each filter check their work 
+			 * then for each filter check the work load
 			 * and distribute files into their system
 			 */
 
@@ -86,13 +86,19 @@ void gl_request_queue_listener(string func_name) {
 			//XXX: Requires functional modems in other to test
 			for(auto i : ISP_container_pnt) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
+				long unsigned int number_of_modems_for_isp = i.second.size();
+				long unsigned int number_of_request_for_isp = isp_sorted_request_container[i.first].size();
+				//therefore by round-robin algorithm, everyone get's equal
+				float request_per_modem = number_of_request_for_isp / number_of_modems_for_isp;
+				printf("%s=> Request per Modem = %f", func_name.c_str(), request_per_modem);
 				for(auto j : i.second) {
 					printf("%s=> \tIMEI: %s\n", func_name.c_str(), j.c_str());
 					//checking workload - some badass algorith is needed here
 					//FIXME: so not to slow down, would just implement a round-robin here and return to it
+
+					
 				}
 
-				for(int i=0;i<isp_sorted_request_container.size();++i) {}
 			}	
 		}
 
