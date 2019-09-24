@@ -19,6 +19,7 @@ void gl_modem_listener(string func_name) {
 	//XXX: Make sure only 1 instance of this thread is running always
 	cout << func_name << "listener called" << endl;
 	
+	static short int prev_modem_size = 0;
 	
 	while(GL_MODEM_LISTENER_STATE) {
 		string str_stdout = helpers::terminal_stdout("./modem_information_extraction.sh list");
@@ -29,6 +30,15 @@ void gl_modem_listener(string func_name) {
 			vector<string> modem_indexes = helpers::split(str_stdout, '\n', true);
 			printf("%s=> found [%lu] modems...\n", func_name.c_str(), modem_indexes.size());
 
+			if(modem_indexes.size() != prev_modem_size) {
+				cout << func_name << "=> Modem's changed! Updating pool buffer..." << endl;
+				//XXX: Always keeps the container list upto date, to have this increase update time
+				//MODEM_POOL.clear();
+				//FIXME: Thought for commenting the line above, if the modems are put back, they can continue sending out messages immediately
+			}
+			prev_modem_size = modem_indexes.size();
+			//XXX: Always keeps the container list upto date, to have this increase update time
+			MODEM_POOL.clear();
 			/* For each modem create modem folder, extract the information and store modem in MODEM_POOL */
 			for(auto i : modem_indexes) {
 				printf("%s=> working with index - %s\n", func_name.c_str(), i.c_str());
@@ -36,6 +46,12 @@ void gl_modem_listener(string func_name) {
 				try {
 					str_stdout = helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + i));
 					vector<string> modem_information = helpers::split(str_stdout, '\n', true);
+					cout << func_name << "=> indexes acquired..." << endl;
+					if(modem_information.size() != 3) {
+						std::this_thread::sleep_for(std::chrono::seconds(5));
+						continue;
+					}
+					cout << func_name << "=> indexes are save to parse..." << endl;
 					string modem_imei = helpers::split(modem_information[0], ':', true)[1];
 					string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
 					string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP

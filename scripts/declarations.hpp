@@ -25,7 +25,11 @@ string SYS_REQUEST_FILE = SYS_FOLDER + "/request_queue.dat";
 
 mode_t STD_DIR_MODE = 0777;
 
+//INDEX -> <IMEI,LOADCOUNT>
 map<string, vector<string>> MODEM_POOL;
+
+
+//IMEI -> load count
 map<string, int> MODEM_WORKLOAD;
 
 #endif

@@ -9,6 +9,12 @@ void gl_request_queue_listener(string func_name) {
 
 	while(GL_MODEM_LISTENER_STATE) {
 		//FIXME: This line is just for testing purposes; should not be kept because it will create an endless loop
+
+		if(MODEM_POOL.empty()) {
+			std::this_thread::sleep_for(std::chrono::seconds(5));
+			continue;
+		}
+
 		ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 		if(!sys_request_file_read.good()) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
@@ -36,6 +42,7 @@ void gl_request_queue_listener(string func_name) {
 					}
 					if(i == ',' and !ignore) {
 						request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
+						tmp_key = "";
 						tmp_string_buffer = "";
 						continue;
 					}
@@ -72,10 +79,13 @@ void gl_request_queue_listener(string func_name) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
 				for(auto j : i.second) {
 					printf("%s=> \tIMEI: %s\n", func_name.c_str(), j.c_str());
+					//checking workload - some badass algorith is needed here
+					int workload = MODEM_WORKLOAD[j];
 				}
 			}	
 		}
-		//XXX: Sleep thread for some seconds
+
+
 		//cout << func_name << "=> sleeping thread..." << flush;
 		std::this_thread::sleep_for(std::chrono::seconds(5));
 		//cout << " [done]" << endl;
