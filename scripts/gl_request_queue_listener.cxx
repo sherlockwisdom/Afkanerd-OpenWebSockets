@@ -61,6 +61,13 @@ void gl_request_queue_listener(string func_name) {
 			}
 			printf("%s=> Work load analysis: #of request[%lu]\n", func_name.c_str(), request_tuple_container.size());
 			
+			//XXX: Determine the ISP from here
+			map<string, map<string, string>> isp_sorted_request_container;
+			for(auto request : request_tuple_container) {
+				string number= request["number"];
+				string isp = helpers::ISPFinder(number);
+				isp_sorted_request_container[isp] = request;
+			}
 			
 			/* 
 			 * Check for connected modems in MODEM_POOL
@@ -82,8 +89,10 @@ void gl_request_queue_listener(string func_name) {
 				for(auto j : i.second) {
 					printf("%s=> \tIMEI: %s\n", func_name.c_str(), j.c_str());
 					//checking workload - some badass algorith is needed here
-					int workload = MODEM_WORKLOAD[j];
+					//FIXME: so not to slow down, would just implement a round-robin here and return to it
 				}
+
+				for(int i=0;i<isp_sorted_request_container.size();++i) {}
 			}	
 		}
 
