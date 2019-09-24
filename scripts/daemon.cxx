@@ -24,8 +24,9 @@ bool check_system_folders() {
 }
 
 int main() {
-	//thread a listener that creates a dir when a new modem is plugged in and updates system modem pool
-	//thread a listener that listens for changes to request files and calculate work load and distributes to modems
+	//TODO: thread a listener that creates a dir when a new modem is plugged in and updates system modem pool - done
+	//TODO: thread a listener that listens for changes to request files and calculate work load and distributes to modems - done
+	//TODO: thread listeners that listen to each modem folder and executes jobs for specific modem alone
 	//main process spins of threads and manages them
 	
 	//checks and create defaults before begining the threads
