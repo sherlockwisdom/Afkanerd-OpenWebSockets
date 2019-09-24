@@ -83,7 +83,7 @@ void gl_request_queue_listener(string func_name) {
 			}
 
 			printf("%s=> # of ISP Connected [%lu]\n", func_name.c_str(), ISP_container_pnt.size());
-
+			//XXX: Requires functional modems in other to test
 			for(auto i : ISP_container_pnt) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
 				for(auto j : i.second) {
