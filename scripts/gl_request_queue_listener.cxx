@@ -88,6 +88,7 @@ void gl_request_queue_listener(string func_name) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
 				//XXX: Round-Robin algorithm implementation goes here
 				vector<map<string,string>> isp_request = isp_sorted_request_container[i.first];
+				//TODO: Thread this!! No need sitting and waiting for one ISP before using the other
 				for(int k=0;k<isp_request.size();++k) {
 					for(auto j : i.second) {
 						if(k<isp_request.size()) {
