@@ -7,8 +7,8 @@ int read_log_calculate_work_load(string modem_path) {
 	int total_count = 0;
 	while(getline(modem_log_read, tmp_buffer)) {
 		//XXX: timestamp:count
-		string timestamp = helpers::split(tmp_buffer, ':', true)[0];
-		string count = helpers::split(tmp_buffer, ':', true)[1];
+		string timestamp = helpers::split(tmp_buffer, ':')[0];
+		string count = helpers::split(tmp_buffer, ':')[1];
 		total_count += atoi(count.c_str());
 	}
 	modem_log_read.close();
@@ -27,7 +27,7 @@ void gl_modem_listener(string func_name) {
 
 		if(str_stdout.empty()) cout << func_name << "=> no modems found!" << endl;
 		else {
-			vector<string> modem_indexes = helpers::split(str_stdout, '\n', true);
+			vector<string> modem_indexes = helpers::split(str_stdout, '\n');
 			printf("%s=> found [%lu] modems...\n", func_name.c_str(), modem_indexes.size());
 
 			if(modem_indexes.size() != prev_modem_size) {
@@ -43,13 +43,11 @@ void gl_modem_listener(string func_name) {
 				//FIXME: add exception handling here
 				try {
 					str_stdout = helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + i));
-					vector<string> modem_information = helpers::split(str_stdout, '\n', true);
-					cout << func_name << "=> indexes acquired..." << endl;
+					vector<string> modem_information = helpers::split(str_stdout, '\n');
 					if(modem_information.size() != 3) {
 						std::this_thread::sleep_for(std::chrono::seconds(5));
 						continue;
 					}
-					cout << func_name << "=> indexes are save to parse..." << endl;
 					string modem_imei = helpers::split(modem_information[0], ':')[1];
 					string modem_sig_quality = helpers::split(modem_information[1], ':')[1];
 					string modem_service_provider = helpers::split(modem_information[2], ':')[1]; //FIXME: What happens when cannot get ISP

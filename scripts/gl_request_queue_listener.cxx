@@ -9,11 +9,13 @@ void gl_request_queue_listener(string func_name) {
 
 	while(GL_MODEM_LISTENER_STATE) {
 		//FIXME: This line is just for testing purposes; should not be kept because it will create an endless loop
-
+		//
+		/*
 		if(MODEM_POOL.empty()) {
 			std::this_thread::sleep_for(std::chrono::seconds(5));
 			continue;
 		}
+		*/
 
 		ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 		if(!sys_request_file_read.good()) {
