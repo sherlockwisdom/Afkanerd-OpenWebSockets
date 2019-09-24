@@ -62,11 +62,11 @@ void gl_request_queue_listener(string func_name) {
 			printf("%s=> Work load analysis: #of request[%lu]\n", func_name.c_str(), request_tuple_container.size());
 			
 			//XXX: Determine the ISP from here
-			map<string, map<string, string>> isp_sorted_request_container;
+			map<string, vector<map<string, string>>> isp_sorted_request_container;
 			for(auto request : request_tuple_container) {
 				string number= request["number"];
 				string isp = helpers::ISPFinder(number);
-				isp_sorted_request_container[isp] = request;
+				isp_sorted_request_container[isp].push_back(request);
 			}
 			
 			/* 
@@ -86,17 +86,25 @@ void gl_request_queue_listener(string func_name) {
 			//XXX: Requires functional modems in other to test
 			for(auto i : ISP_container_pnt) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
-				long unsigned int number_of_modems_for_isp = i.second.size();
-				long unsigned int number_of_request_for_isp = isp_sorted_request_container[i.first].size();
-				//therefore by round-robin algorithm, everyone get's equal
-				float request_per_modem = number_of_request_for_isp / number_of_modems_for_isp;
-				printf("%s=> Request per Modem = %f", func_name.c_str(), request_per_modem);
-				for(auto j : i.second) {
-					printf("%s=> \tIMEI: %s\n", func_name.c_str(), j.c_str());
-					//checking workload - some badass algorith is needed here
-					//FIXME: so not to slow down, would just implement a round-robin here and return to it
-
-					
+				//XXX: Round-Robin algorithm implementation goes here
+				vector<map<string,string>> isp_request = isp_sorted_request_container[i.first];
+				for(int k=0;k<isp_request.size();++k) {
+					for(auto j : i.second) {
+						if(k<isp_request.size()) {
+							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
+							string rand_filename = "";
+							ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
+							//FIXME: verify file is opened
+							map<string, string> request = isp_request[k];
+							job_write << request["number"] << "\n" << request["message"];
+							job_write.close();
+							++k;
+						}
+						else {
+							//XXX: thus round robin
+							break;
+						}
+					}
 				}
 
 			}	
