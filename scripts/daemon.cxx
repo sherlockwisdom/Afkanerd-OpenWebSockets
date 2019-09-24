@@ -7,6 +7,7 @@
 #include <sys/stat.h> //mkdir
 #include <errno.h>
 #include <string.h>
+#include <map>
 
 #include "helpers.hpp"
 using namespace std;
@@ -16,8 +17,9 @@ string ENV_HOME = getenv("HOME");
 string SYS_FOLDER = ENV_HOME + "/deku";
 string SYS_FOLDER_MODEMS = SYS_FOLDER + "/modems";
 
-
 mode_t STD_DIR_MODE = 0777;
+
+map<string, vector<string>> MODEM_POOL;
 
 void gl_modem_listener(string func_name) {
 	//XXX: Make sure only 1 instance of this thread is running always
@@ -46,7 +48,11 @@ void gl_modem_listener(string func_name) {
 					char str_error[256];
 					cerr << "FAILED\n" << func_name << ".error=> " << strerror_r(errno, str_error, 256) << endl;
 				}
-				else cout << "DONE!" << endl;
+				else {
+					cout << "DONE!" << endl;
+					MODEM_POOL.insert(make_pair(i, (vector<string>){modem_imei, modem_service_provider}));
+					printf("%s=> updated modem pool\n%s=> update info: index[%s], imei[%s], ISP[%s]\n%s=> Pool count: %lu\n", func_name.c_str(), func_name.c_str(), i.c_str(), modem_imei.c_str(), modem_service_provider.c_str(), func_name.c_str(), MODEM_POOL.size());
+				}
 			}
 		}
 		cout << func_name << "=> sleeping thread..." << flush;
