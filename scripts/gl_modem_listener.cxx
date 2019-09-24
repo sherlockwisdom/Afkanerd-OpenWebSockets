@@ -37,8 +37,6 @@ void gl_modem_listener(string func_name) {
 				//FIXME: Thought for commenting the line above, if the modems are put back, they can continue sending out messages immediately
 			}
 			prev_modem_size = modem_indexes.size();
-			//XXX: Always keeps the container list upto date, to have this increase update time
-			MODEM_POOL.clear();
 			/* For each modem create modem folder, extract the information and store modem in MODEM_POOL */
 			for(auto i : modem_indexes) {
 				printf("%s=> working with index - %s\n", func_name.c_str(), i.c_str());
@@ -52,9 +50,9 @@ void gl_modem_listener(string func_name) {
 						continue;
 					}
 					cout << func_name << "=> indexes are save to parse..." << endl;
-					string modem_imei = helpers::split(modem_information[0], ':', true)[1];
-					string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
-					string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
+					string modem_imei = helpers::split(modem_information[0], ':')[1];
+					string modem_sig_quality = helpers::split(modem_information[1], ':')[1];
+					string modem_service_provider = helpers::split(modem_information[2], ':')[1]; //FIXME: What happens when cannot get ISP
 
 					printf("%s=> creating folder[%s]: ...", func_name.c_str(), modem_imei.c_str());
 					if(mkdir((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei).c_str(), STD_DIR_MODE) != 0 && errno != EEXIST) {
