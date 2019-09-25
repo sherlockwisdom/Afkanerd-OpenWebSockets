@@ -89,13 +89,14 @@ void gl_request_queue_listener(string func_name) {
 			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
 			//cout << func_name <<"=> renamed request file..." << endl;
 
-			DEQUEUE_JOBS: //XXX: Just a shit on yourself line which I have no clue if it will fire back at me or work properly
+			//goto statement here because sometimes shit has to continue from where it stopped
+			DEQUEUE_JOBS: 
 			vector<map<string,string>> request_tuple_container = de_queue_from_request_file();
 
-			//XXX: File is done reading so we can remove it
+			//File is done reading so we can remove it
 			remove(SYS_JOB_FILE.c_str());
 			
-			//XXX: Determine the ISP from here
+			//Determine the ISP from here
 			map<string, vector<map<string, string>>> isp_sorted_request_container = determine_isp_for_request(request_tuple_container);
 			
 			/* 
