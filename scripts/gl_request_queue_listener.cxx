@@ -83,6 +83,7 @@ void gl_request_queue_listener(string func_name) {
 			}
 
 			//XXX: Based on the size of each ISP in ISP_container_pnt, one could determine if to send out the messages or halt them
+			//XXX: Remember it's based on the ISP anything else
 
 			printf("%s=> # of ISP Connected [%lu]\n", func_name.c_str(), ISP_container_pnt.size());
 			//XXX: Requires functional modems in other to test
