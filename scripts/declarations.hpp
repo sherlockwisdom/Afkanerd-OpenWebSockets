@@ -19,6 +19,7 @@
 using namespace std;
 /* GLOBAL SYSTEM DECLARATIONS */
 bool GL_MODEM_LISTENER_STATE = true;
+bool GL_SYSTEM_READY = false;
 string ENV_HOME = getenv("HOME");
 string SYS_FOLDER = ENV_HOME + "/deku";
 string SYS_FOLDER_MODEMS = SYS_FOLDER + "/modems";
