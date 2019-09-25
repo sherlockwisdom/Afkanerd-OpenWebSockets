@@ -18,6 +18,11 @@ void gl_request_queue_listener(string func_name) {
 		/*if(!sys_request_file_read) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
 		}*/
+		if( struct stat buffer;!(stat (SYS_JOB_FILE.c_str(), &buffer) == 0) ) {
+			cout << func_name << "=> WARNING: OLD JOBS PRESENT IN SYSTEM... JUMPING CHECKS AND DEQUEING!!!" << endl;
+			goto DEQUEUE_JOBS;
+		}
+
 		if( struct stat buffer;!(stat (SYS_REQUEST_FILE.c_str(), &buffer) == 0) ) 
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
 
@@ -26,6 +31,7 @@ void gl_request_queue_listener(string func_name) {
 			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
 			cout << func_name <<"=> renamed request file..." << endl;
 
+			DEQUEUE_JOBS: //XXX: Just a shit on yourself line which I have no clue if it will fire back at me or work properly
 			string tmp_ln_buffer;
 			ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
 
