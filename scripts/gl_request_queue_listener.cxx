@@ -18,7 +18,7 @@ void gl_request_queue_listener(string func_name) {
 		/*if(!sys_request_file_read) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
 		}*/
-		if( struct stat buffer;!(stat (SYS_JOB_FILE.c_str(), &buffer) == 0) ) {
+		if( struct stat buffer;(stat (SYS_JOB_FILE.c_str(), &buffer) == 0) ) {
 			cout << func_name << "=> WARNING: OLD JOBS PRESENT IN SYSTEM... JUMPING CHECKS AND DEQUEING!!!" << endl;
 			goto DEQUEUE_JOBS;
 		}
