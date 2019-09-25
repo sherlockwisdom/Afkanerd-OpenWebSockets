@@ -40,7 +40,7 @@ void gl_request_queue_listener(string func_name) {
 				for(auto i : tmp_ln_buffer) {
 					static bool ignore = false;
 					//XXX: checks for seperator
-					if(i == ':' and !ignore) {
+					if(i == '=' and !ignore) {
 						tmp_key = tmp_string_buffer;
 						tmp_string_buffer = "";
 						continue;
