@@ -6,7 +6,7 @@
 void gl_request_queue_listener(string func_name) {
 	//FIXME: Only 1 of this should be running at any moment
 	//FIXME: mv SYS_REQUEST_FILE to randomly generated name, then use name to read file
-	ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
+	//ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 
 	while(GL_MODEM_LISTENER_STATE) {
 		
@@ -15,12 +15,18 @@ void gl_request_queue_listener(string func_name) {
 			continue;
 		}
 
-		if(!sys_request_file_read.good()) {
+		/*if(!sys_request_file_read) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
-		}
+		}*/
+		if( struct stat buffer;!(stat (SYS_REQUEST_FILE.c_str(), &buffer) == 0) ) 
+			cout << func_name << "=> no request file, thus no request yet..." << endl;
 
 		else {
 			string tmp_ln_buffer;
+			//FIXME: Add some errno catch here, to make sure this happens well
+			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
+			cout << func_name <<"=> renamed request file..." << endl;
+			ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
 			//XXX: Container contains maps which have keys as number and message
 			vector<map<string,string>> request_tuple_container;
 			while(getline(sys_request_file_read, tmp_ln_buffer)) {
@@ -56,6 +62,7 @@ void gl_request_queue_listener(string func_name) {
 				//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", func_name.c_str(), j.first.c_str(), j.second.c_str());
 				request_tuple_container.push_back(request_tuple);
 			}
+			sys_request_file_read.close();
 			printf("%s=> Work load analysis: #of request[%lu]\n", func_name.c_str(), request_tuple_container.size());
 			
 			//XXX: Determine the ISP from here
@@ -117,5 +124,4 @@ void gl_request_queue_listener(string func_name) {
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
-	sys_request_file_read.close();
 }
