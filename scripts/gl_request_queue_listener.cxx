@@ -71,6 +71,9 @@ void gl_request_queue_listener(string func_name) {
 				request_tuple_container.push_back(request_tuple);
 			}
 			sys_request_file_read.close();
+
+			//XXX: File is done reading so we can remove it
+			remove(SYS_JOB_FILE.c_str());
 			printf("%s=> Work load analysis: #of request[%lu]\n", func_name.c_str(), request_tuple_container.size());
 			
 			//XXX: Determine the ISP from here
