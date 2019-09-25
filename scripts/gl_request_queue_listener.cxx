@@ -29,7 +29,7 @@ void gl_request_queue_listener(string func_name) {
 		else {
 			//FIXME: Add some errno catch here, to make sure this happens well
 			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
-			cout << func_name <<"=> renamed request file..." << endl;
+			//cout << func_name <<"=> renamed request file..." << endl;
 
 			DEQUEUE_JOBS: //XXX: Just a shit on yourself line which I have no clue if it will fire back at me or work properly
 			string tmp_ln_buffer;
@@ -38,10 +38,11 @@ void gl_request_queue_listener(string func_name) {
 			//XXX: Container contains maps which have keys as number and message
 			vector<map<string,string>> request_tuple_container;
 			while(getline(sys_request_file_read, tmp_ln_buffer)) {
-				printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
+				if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
+				//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
 				//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
 				//XXX: custom parser
-				cout << func_name << "=> parsing request...";
+				//cout << func_name << "=> parsing request...";
 				string tmp_string_buffer = "";
 				string tmp_key = "";
 				map<string, string> request_tuple;
