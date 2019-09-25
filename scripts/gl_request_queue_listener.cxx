@@ -6,7 +6,7 @@
 void gl_request_queue_listener(string func_name) {
 	//FIXME: Only 1 of this should be running at any moment
 	//FIXME: mv SYS_REQUEST_FILE to randomly generated name, then use name to read file
-	//ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
+	ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 
 	while(GL_MODEM_LISTENER_STATE) {
 		
@@ -15,8 +15,6 @@ void gl_request_queue_listener(string func_name) {
 			continue;
 		}
 
-		//FIXME: This line is just for testing purposes; should not be kept because it will create an endless loop
-		ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 		if(!sys_request_file_read.good()) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
 		}
