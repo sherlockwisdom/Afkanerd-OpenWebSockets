@@ -22,11 +22,13 @@ void gl_request_queue_listener(string func_name) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
 
 		else {
-			string tmp_ln_buffer;
 			//FIXME: Add some errno catch here, to make sure this happens well
 			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
 			cout << func_name <<"=> renamed request file..." << endl;
+
+			string tmp_ln_buffer;
 			ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
+
 			//XXX: Container contains maps which have keys as number and message
 			vector<map<string,string>> request_tuple_container;
 			while(getline(sys_request_file_read, tmp_ln_buffer)) {
@@ -103,7 +105,8 @@ void gl_request_queue_listener(string func_name) {
 							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
 							//XXX: Naming files using UNIX EPOCH counter
 							//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
-							string rand_filename = helpers::terminal_stdout("date +%s");
+							//string rand_filename = helpers::terminal_stdout("date +%s");
+							string rand_filename = helpers::random_string();
 							rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
 							rand_filename += ".jb";
 							printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());

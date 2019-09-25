@@ -1,5 +1,7 @@
 #ifndef HELPERS_H_INCLUDED_
 #define HELPERS_H_INCLUDED_
+#include <algorithm>
+#include <random>
 using namespace std;
 
 namespace helpers {
@@ -90,6 +92,18 @@ string ISPFinder(string number) {
 	}
 	return "";
 						
+}
+
+string random_string()
+{
+     string str("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+
+     random_device rd;
+     mt19937 generator(rd());
+
+     shuffle(str.begin(), str.end(), generator);
+
+     return str.substr(0, 32);    // assumes 32 < number of characters in str         
 }
 
 }
