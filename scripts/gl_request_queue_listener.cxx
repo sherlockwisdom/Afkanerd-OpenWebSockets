@@ -48,6 +48,18 @@ auto de_queue_from_request_file() {
 }
 
 
+auto determine_isp_for_request(vector<map<string,string>> request_tuple_container) {
+	map<string,vector<map<string,string>>> isp_sorted_request_container;
+	for(auto request : request_tuple_container) {
+		string number= request["number"];
+		string isp = helpers::ISPFinder(number);
+		isp_sorted_request_container[isp].push_back(request);
+	}
+
+	return isp_sorted_request_container;
+}
+
+
 
 void gl_request_queue_listener(string func_name) {
 	//FIXME: Only 1 of this should be running at any moment
@@ -82,15 +94,9 @@ void gl_request_queue_listener(string func_name) {
 
 			//XXX: File is done reading so we can remove it
 			remove(SYS_JOB_FILE.c_str());
-			printf("%s=> Work load analysis: #of request[%lu]\n", func_name.c_str(), request_tuple_container.size());
 			
 			//XXX: Determine the ISP from here
-			map<string, vector<map<string, string>>> isp_sorted_request_container;
-			for(auto request : request_tuple_container) {
-				string number= request["number"];
-				string isp = helpers::ISPFinder(number);
-				isp_sorted_request_container[isp].push_back(request);
-			}
+			map<string, vector<map<string, string>>> isp_sorted_request_container = determine_isp_for_request(request_tuple_container);
 			
 			/* 
 			 * TODO: Check for connected modems in MODEM_POOL
