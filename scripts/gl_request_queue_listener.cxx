@@ -99,10 +99,10 @@ void gl_request_queue_listener(string func_name) {
 			map<string, vector<map<string, string>>> isp_sorted_request_container = determine_isp_for_request(request_tuple_container);
 			
 			/* 
-			 * TODO: Check for connected modems in MODEM_POOL
-			 * TODO: then filter modems based on their ISP, 
-			 * TODO: then for each filter check the work load
-			 * TODO: and distribute files into their system
+			 * Check for connected modems in MODEM_POOL
+			 * Then filter modems based on their ISP, 
+			 * Then for each filter check the work load
+			 * Distribute files into their system
 			 */
 
 			map<string, vector<string>> ISP_container_pnt;
