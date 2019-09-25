@@ -2,6 +2,19 @@
 
 #include "declarations.hpp"
 
+void gen_random(char *s, const int len) {
+	static const char alphanum[] =
+	"0123456789"
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	"abcdefghijklmnopqrstuvwxyz";
+
+	for (int i = 0; i < len; ++i) {
+		s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+	}
+
+	s[len] = 0;
+}
+
 void gl_request_queue_listener(string func_name) {
 	//FIXME: Only 1 of this should be running at any moment
 	//FIXME: mv SYS_REQUEST_FILE to randomly generated name, then use name to read file
@@ -98,7 +111,10 @@ void gl_request_queue_listener(string func_name) {
 						if(k<isp_request.size()) {
 							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
 							//XXX: Naming files using UNIX EPOCH counter
-							string rand_filename = helpers::terminal_stdout("date +%s") + ".jb";
+							string rand_filename = helpers::terminal_stdout("date +%s");
+							rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
+							rand_filename += ".jb";
+							printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
 							ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
 							//FIXME: verify file is opened
 							map<string, string> request = isp_request[k];

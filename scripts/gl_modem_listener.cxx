@@ -1,6 +1,8 @@
 #include "declarations.hpp"
 
 int read_log_calculate_work_load(string modem_path) {
+	string func_name = "Read Log Calculate Workload";
+	cout << func_name << "=> started calculating work load" << endl;
 	ifstream modem_log_read(modem_path.c_str());
 	//XXX: Assumption is the file is good if it's passed in here
 	string tmp_buffer;
@@ -8,10 +10,11 @@ int read_log_calculate_work_load(string modem_path) {
 	while(getline(modem_log_read, tmp_buffer)) {
 		//XXX: timestamp:count
 		string timestamp = helpers::split(tmp_buffer, ':')[0];
-		string count = helpers::split(tmp_buffer, ':')[1];
+		string count = helpers::split(tmp_buffer, ':', true)[1];
 		total_count += atoi(count.c_str());
 	}
 	modem_log_read.close();
+	cout << func_name << "=> calculating work load ended..." << endl;
 	return total_count;
 }
 
@@ -27,11 +30,11 @@ void gl_modem_listener(string func_name) {
 
 		if(str_stdout.empty()) cout << func_name << "=> no modems found!" << endl;
 		else {
-			vector<string> modem_indexes = helpers::split(str_stdout, '\n');
+			vector<string> modem_indexes = helpers::split(str_stdout, '\n', true);
 			printf("%s=> found [%lu] modems...\n", func_name.c_str(), modem_indexes.size());
 
 			if(modem_indexes.size() != prev_modem_size) {
-				cout << func_name << "=> Modem's changed! Updating pool buffer..." << endl;
+				//cout << func_name << "=> Modem's changed! Updating pool buffer..." << endl;
 				//XXX: Always keeps the container list upto date, to have this increase update time
 				//MODEM_POOL.clear();
 				//FIXME: Thought for commenting the line above, if the modems are put back, they can continue sending out messages immediately
@@ -39,18 +42,36 @@ void gl_modem_listener(string func_name) {
 			prev_modem_size = modem_indexes.size();
 			/* For each modem create modem folder, extract the information and store modem in MODEM_POOL */
 			for(auto i : modem_indexes) {
-				printf("%s=> working with index - %s\n", func_name.c_str(), i.c_str());
+				//printf("%s=> working with index - %s\n", func_name.c_str(), i.c_str());
 				//FIXME: add exception handling here
 				try {
 					str_stdout = helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + i));
-					vector<string> modem_information = helpers::split(str_stdout, '\n');
+					vector<string> modem_information = helpers::split(str_stdout, '\n', true);
 					if(modem_information.size() != 3) {
 						std::this_thread::sleep_for(std::chrono::seconds(5));
+						printf("%s=> modem information extracted - incomplete [%lu]\n", func_name.c_str(), modem_information.size());
 						continue;
 					}
-					string modem_imei = helpers::split(modem_information[0], ':')[1];
-					string modem_sig_quality = helpers::split(modem_information[1], ':')[1];
-					string modem_service_provider = helpers::split(modem_information[2], ':')[1]; //FIXME: What happens when cannot get ISP
+					
+					//XXX: doing something here which isn't standard - sanitation checks
+					bool sanitation_check = false;
+					for(auto j: modem_information) {
+						if(helpers::split(j, ':', true).size() != 2) {
+							cerr << func_name << "=> sanitation check failed! Could not extract modem info" << endl;
+							cerr << func_name << "=> failed info: " << j << endl << endl;
+							sanitation_check = false;
+							break;
+						} else {
+							sanitation_check = true;
+						}
+					}
+					
+					if(!sanitation_check) continue;
+					printf("%s=> modem information... [%s]\n", func_name.c_str(), modem_information[2].c_str());
+					string modem_imei = helpers::split(modem_information[0], ':', true)[1];
+					string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
+					string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
+					printf("%s=> ISP[%s][%s]\n", func_name.c_str(), modem_service_provider.c_str(), i.c_str());
 
 					printf("%s=> creating folder[%s]: ...", func_name.c_str(), modem_imei.c_str());
 					if(mkdir((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei).c_str(), STD_DIR_MODE) != 0 && errno != EEXIST) {
@@ -60,21 +81,24 @@ void gl_modem_listener(string func_name) {
 					else {
 						cout << "DONE!" << endl;
 						if(errno == EEXIST) {
+							cout << func_name << "=> Checking modem's workload... ";
 							string modem_path = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
 							ifstream modem_log_read(modem_path.c_str());
 							if(!modem_log_read.good()) {
-								cout << func_name << "=> modem hasn't begun working yet!" << endl;
+								cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
 							}
 							else {
+								cout << "DONE" << endl;
 								int load_counter = read_log_calculate_work_load(modem_path);
 								MODEM_WORKLOAD.insert(make_pair(modem_imei, load_counter));
-								printf("%s=> updated workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
+								printf("DONE\n%s=> updated workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
 								modem_log_read.close();
 							}
-						}	
+						}
 
+						printf("%s=> About to store information in modem pool\n", func_name.c_str());
 						MODEM_POOL.insert(make_pair(i, (vector<string>){modem_imei, modem_service_provider}));
-						printf("%s=> updated modem pool\n%s=> update info: index[%s], imei[%s], ISP[%s]\n%s=> Pool count: %lu\n", func_name.c_str(), func_name.c_str(), i.c_str(), modem_imei.c_str(), modem_service_provider.c_str(), func_name.c_str(), MODEM_POOL.size());
+						printf("%s=> updated modem pool\n%s=> update info: index[%s], imei[%s], ISP[%s]\n", func_name.c_str(), func_name.c_str(), i.c_str(), modem_imei.c_str(), modem_service_provider.c_str());
 					}
 
 				}
