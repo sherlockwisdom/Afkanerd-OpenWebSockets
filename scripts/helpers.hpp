@@ -106,6 +106,12 @@ string random_string()
      return str.substr(0, 32);    // assumes 32 < number of characters in str         
 }
 
+string to_upper(string input) {
+	string str = input;
+	transform(str.begin(), str.end(),str.begin(), ::toupper);
+	return str;
+}
+
 }
 
 #endif
