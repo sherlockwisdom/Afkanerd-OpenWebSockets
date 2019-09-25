@@ -3,6 +3,52 @@
 #include "declarations.hpp"
 
 
+auto de_queue_from_request_file() {
+
+	string tmp_ln_buffer;
+	ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
+
+	//XXX: Container contains maps which have keys as number and message
+	vector<map<string,string>> request_tuple_container;
+	while(getline(sys_request_file_read, tmp_ln_buffer)) {
+		if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
+		//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
+		//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
+		//XXX: custom parser
+		//cout << func_name << "=> parsing request...";
+		string tmp_string_buffer = "";
+		string tmp_key = "";
+		map<string, string> request_tuple;
+		for(auto i : tmp_ln_buffer) {
+			static bool ignore = false;
+			//XXX: checks for seperator
+			if(i == '=' and !ignore) {
+				tmp_key = tmp_string_buffer;
+				tmp_string_buffer = "";
+				continue;
+			}
+			if(i == ',' and !ignore) {
+				request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
+				tmp_key = "";
+				tmp_string_buffer = "";
+				continue;
+			}
+			if(i == '"') {
+				ignore = !ignore;
+				continue;
+			}
+			tmp_string_buffer += i;
+		}
+		if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
+		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", func_name.c_str(), j.first.c_str(), j.second.c_str());
+		request_tuple_container.push_back(request_tuple);
+	}
+	sys_request_file_read.close();
+	return request_tuple_container;
+}
+
+
+
 void gl_request_queue_listener(string func_name) {
 	//FIXME: Only 1 of this should be running at any moment
 	//FIXME: mv SYS_REQUEST_FILE to randomly generated name, then use name to read file
@@ -32,45 +78,7 @@ void gl_request_queue_listener(string func_name) {
 			//cout << func_name <<"=> renamed request file..." << endl;
 
 			DEQUEUE_JOBS: //XXX: Just a shit on yourself line which I have no clue if it will fire back at me or work properly
-			string tmp_ln_buffer;
-			ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
-
-			//XXX: Container contains maps which have keys as number and message
-			vector<map<string,string>> request_tuple_container;
-			while(getline(sys_request_file_read, tmp_ln_buffer)) {
-				if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
-				//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
-				//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
-				//XXX: custom parser
-				//cout << func_name << "=> parsing request...";
-				string tmp_string_buffer = "";
-				string tmp_key = "";
-				map<string, string> request_tuple;
-				for(auto i : tmp_ln_buffer) {
-					static bool ignore = false;
-					//XXX: checks for seperator
-					if(i == '=' and !ignore) {
-						tmp_key = tmp_string_buffer;
-						tmp_string_buffer = "";
-						continue;
-					}
-					if(i == ',' and !ignore) {
-						request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-						tmp_key = "";
-						tmp_string_buffer = "";
-						continue;
-					}
-					if(i == '"') {
-						ignore = !ignore;
-						continue;
-					}
-					tmp_string_buffer += i;
-				}
-				if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-				//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", func_name.c_str(), j.first.c_str(), j.second.c_str());
-				request_tuple_container.push_back(request_tuple);
-			}
-			sys_request_file_read.close();
+			vector<map<string,string>> request_tuple_container = de_queue_from_request_file();
 
 			//XXX: File is done reading so we can remove it
 			remove(SYS_JOB_FILE.c_str());
