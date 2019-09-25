@@ -111,7 +111,6 @@ void gl_request_queue_listener(string func_name) {
 							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
 							//XXX: Naming files using UNIX EPOCH counter
 							//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
-							//string rand_filename = helpers::terminal_stdout("date +%s");
 							string rand_filename = helpers::random_string();
 							rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
 							rand_filename += ".jb";
