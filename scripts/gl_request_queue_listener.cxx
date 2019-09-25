@@ -70,10 +70,10 @@ void gl_request_queue_listener(string func_name) {
 			}
 			
 			/* 
-			 * Check for connected modems in MODEM_POOL
-			 * then filter modems based on their ISP, 
-			 * then for each filter check the work load
-			 * and distribute files into their system
+			 * TODO: Check for connected modems in MODEM_POOL
+			 * TODO: then filter modems based on their ISP, 
+			 * TODO: then for each filter check the work load
+			 * TODO: and distribute files into their system
 			 */
 
 			map<string, vector<string>> ISP_container_pnt;
@@ -81,6 +81,8 @@ void gl_request_queue_listener(string func_name) {
 				vector<string> modem_info = i.second;
 				ISP_container_pnt[modem_info[1]].push_back(modem_info[0]);
 			}
+
+			//XXX: Based on the size of each ISP in ISP_container_pnt, one could determine if to send out the messages or halt them
 
 			printf("%s=> # of ISP Connected [%lu]\n", func_name.c_str(), ISP_container_pnt.size());
 			//XXX: Requires functional modems in other to test
@@ -94,7 +96,6 @@ void gl_request_queue_listener(string func_name) {
 					for(auto j : i.second) {
 						if(k<isp_request.size()) {
 							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
-
 							//XXX: Naming files using UNIX EPOCH counter
 							string rand_filename = helpers::terminal_stdout("date +%s") + ".jb";
 							ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
