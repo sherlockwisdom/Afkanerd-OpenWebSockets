@@ -9,14 +9,13 @@ void gl_request_queue_listener(string func_name) {
 	//ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 
 	while(GL_MODEM_LISTENER_STATE) {
-		//FIXME: This line is just for testing purposes; should not be kept because it will create an endless loop
-		//
 		
 		if(!GL_SYSTEM_READY) {
 			std::this_thread::sleep_for(std::chrono::seconds(5));
 			continue;
 		}
 
+		//FIXME: This line is just for testing purposes; should not be kept because it will create an endless loop
 		ifstream sys_request_file_read(SYS_REQUEST_FILE.c_str());
 		if(!sys_request_file_read.good()) {
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
@@ -98,6 +97,7 @@ void gl_request_queue_listener(string func_name) {
 						if(k<isp_request.size()) {
 							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
 							//XXX: Naming files using UNIX EPOCH counter
+							//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
 							string rand_filename = helpers::terminal_stdout("date +%s");
 							rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
 							rand_filename += ".jb";
@@ -110,7 +110,6 @@ void gl_request_queue_listener(string func_name) {
 							++k;
 						}
 						else {
-							//XXX: thus round robin
 							break;
 						}
 					}
@@ -118,14 +117,7 @@ void gl_request_queue_listener(string func_name) {
 
 			}	
 		}
-
-
-		//cout << func_name << "=> sleeping thread..." << flush;
 		std::this_thread::sleep_for(std::chrono::seconds(5));
-		//cout << " [done]" << endl;
-
-		//FIXME: This is just for testing purposes... if left nothing will be kept in queue
-		sys_request_file_read.close();
 	}
-	//sys_request_file_read.close();
+	sys_request_file_read.close();
 }
