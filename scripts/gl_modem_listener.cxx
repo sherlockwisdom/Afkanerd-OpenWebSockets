@@ -18,6 +18,23 @@ int read_log_calculate_work_load(string modem_path) {
 	return total_count;
 }
 
+void check_modem_workload(string modem_imei) {
+	string func_name = "Check Modem Workload";
+	cout << func_name << "=> Checking modem's workload... ";
+	string modem_path = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
+	ifstream modem_log_read(modem_path.c_str());
+	if(!modem_log_read.good()) {
+		cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
+	}
+	else {
+		cout << "DONE" << endl;
+		int load_counter = read_log_calculate_work_load(modem_path);
+		MODEM_WORKLOAD.insert(make_pair(modem_imei, load_counter));
+		printf("DONE\n%s=> updated workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
+		modem_log_read.close();
+	}
+}
+
 void gl_modem_listener(string func_name) {
 	//XXX: Make sure only 1 instance of this thread is running always
 	cout << func_name << "=> listener called" << endl;
@@ -72,8 +89,6 @@ void gl_modem_listener(string func_name) {
 					string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
 					string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
 					printf("%s=> ISP[%s][%s]\n", func_name.c_str(), modem_service_provider.c_str(), i.c_str());
-
-					printf("%s=> creating folder[%s]: ...", func_name.c_str(), modem_imei.c_str());
 					if(mkdir((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei).c_str(), STD_DIR_MODE) != 0 && errno != EEXIST) {
 						char str_error[256];
 						cerr << "FAILED\n" << func_name << ".error=> " << strerror_r(errno, str_error, 256) << endl;
@@ -81,22 +96,9 @@ void gl_modem_listener(string func_name) {
 					else {
 						cout << "DONE!" << endl;
 						if(errno == EEXIST) {
-							cout << func_name << "=> Checking modem's workload... ";
-							string modem_path = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
-							ifstream modem_log_read(modem_path.c_str());
-							if(!modem_log_read.good()) {
-								cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
-							}
-							else {
-								cout << "DONE" << endl;
-								int load_counter = read_log_calculate_work_load(modem_path);
-								MODEM_WORKLOAD.insert(make_pair(modem_imei, load_counter));
-								printf("DONE\n%s=> updated workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
-								modem_log_read.close();
-							}
+							check_modem_workload(modem_imei);
 						}
 
-						printf("%s=> About to store information in modem pool\n", func_name.c_str());
 						MODEM_POOL.insert(make_pair(i, (vector<string>){modem_imei, modem_service_provider}));
 						printf("%s=> updated modem pool\n%s=> update info: index[%s], imei[%s], ISP[%s]\n", func_name.c_str(), func_name.c_str(), i.c_str(), modem_imei.c_str(), modem_service_provider.c_str());
 					}
