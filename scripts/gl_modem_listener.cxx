@@ -27,6 +27,7 @@ void check_modem_workload(string modem_imei) {
 	ifstream modem_log_read(modem_path.c_str());
 	if(!modem_log_read.good()) {
 		//cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
+		cout << "DONE" << endl;
 	}
 	else {
 		cout << "DONE" << endl;

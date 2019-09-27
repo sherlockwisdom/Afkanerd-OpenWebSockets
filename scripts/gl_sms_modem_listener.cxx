@@ -74,8 +74,6 @@ void gl_sms_modem_listener(string func_name) {
 				tr_modem_listener.join();
 				modem_listener_container.push_back(tr_modem_listener.get_id());
 				printf("%s=> Number of active SMS MODEM LISTENERS = %lu\n", func_name.c_str(), modem_listener_container.size());
-				//FIXME: breaks at build... don't know if they're joined....
-				//modem_listener_container.push_back(tr_modem_listener);
 			}
 		}
 
