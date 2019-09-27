@@ -32,7 +32,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 		for(auto filename : jobs) {
 			string full_filename = SYS_FOLDER_MODEMS + "/" + modem_imei + "/" + filename;
 			printf("%s=> EXECUTING JOB FOR FILE: %s\n", func_name.c_str(), full_filename.c_str());
-			/*ifstream read_job(full_filename.c_str());
+			ifstream read_job(full_filename.c_str());
 			if(!read_job) {
 				cerr << func_name << "=> error reading job: " << filename << endl;
 				continue;
@@ -46,11 +46,11 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 					message = tmp_buffer;
 					break;
 				}
+				++line_counter;
 			}
 
 			read_job.close();
 			printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
-			*/
 			
 			//TODO: Delete files after reading them.
 

@@ -90,7 +90,7 @@ void gl_modem_listener(string func_name) {
 					string modem_imei = helpers::split(modem_information[0], ':', true)[1];
 					string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
 					string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
-					printf("%s=> ISP[%s][%s]\n", func_name.c_str(), modem_service_provider.c_str(), i.c_str());
+					printf("%s=> ISP[%s][%s] - ", func_name.c_str(), modem_service_provider.c_str(), i.c_str());
 					if(mkdir((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei).c_str(), STD_DIR_MODE) != 0 && errno != EEXIST) {
 						char str_error[256];
 						cerr << "FAILED\n" << func_name << ".error=> " << strerror_r(errno, str_error, 256) << endl;
