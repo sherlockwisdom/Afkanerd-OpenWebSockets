@@ -52,11 +52,17 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 			read_job.close();
 			printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			
-			//TODO: Delete files after reading them.
 			//XXX: Lord Help me
 			string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
 			string terminal_stdout = helpers::terminal_stdout(sms_command);
 			cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+
+			//TODO: Check if message failed or was successful
+			//TODO: If a serial timeout message, sleep modem for and give it time to solve it's problems
+			//TODO: Get error messages from the list provided the last time or wherever they've been kept
+
+			//Deleting the job file
+			remove(full_filename.c_str());
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
