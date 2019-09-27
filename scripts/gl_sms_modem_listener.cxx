@@ -7,7 +7,7 @@ inline vector<string> get_modems_jobs(string folder_name) {
 	return helpers::split( helpers::terminal_stdout((string)("ls -1 " + folder_name)), '\n', true );
 }
 
-void modem_listener(string func_name, string modem_imei, string modem_index, bool watch_dog = true) {
+void modem_listener(string func_name, string modem_imei, string modem_index, bool watch_dog = true, string type = "MMCLI") {
 	//XXX: Just 1 instance should be running for every modem_imei
 	
 	MODEM_DAEMON[modem_imei] = true;
@@ -53,9 +53,17 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 			printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			
 			//XXX: Lord Help me
-			string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
-			string terminal_stdout = helpers::terminal_stdout(sms_command);
-			cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+			if(type == "MMCLI") {
+				string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
+				string terminal_stdout = helpers::terminal_stdout(sms_command);
+				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+			}
+
+			else if(type == "SSH") {
+				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" 'sendsms \"" + number + "\" \"" + message + "\"";
+				string terminal_stdout = helpers::terminal_stdout(sms_command);
+				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+			}
 
 			//TODO: Check if message failed or was successful
 			//TODO: If a serial timeout message, sleep modem for and give it time to solve it's problems
@@ -85,11 +93,12 @@ void gl_sms_modem_listener(string func_name) {
 		for(auto modem : MODEM_POOL) {
 			if(!MODEM_DAEMON[modem.second[0]]) {
 				printf("%s=> Threading modem listener: +imei[%s], +index[%s]\n", func_name.c_str(), modem.second[0].c_str(), modem.first.c_str());
-				std::thread tr_modem_listener(modem_listener, "Modem Listener", modem.second[0], modem.first, true);
+				string type = modem.first.find(GL_SSH_IP_GATEWAY) != string::npos ? "SSH" : "MMCLI";
+				std::thread tr_modem_listener(modem_listener, "Modem Listener", modem.second[0], modem.first, true, type);
 				tr_modem_listener.detach();
 				modem_listener_container.push_back(tr_modem_listener.get_id());
-				printf("%s=> Number of active SMS MODEM LISTENERS = %lu\n", func_name.c_str(), modem_listener_container.size());
 			}
+			printf("%s=> Number of active SMS MODEM LISTENERS = %lu\n", func_name.c_str(), modem_listener_container.size());
 
 		}
 
