@@ -26,7 +26,7 @@ void check_modem_workload(string modem_imei) {
 	string modem_path = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
 	ifstream modem_log_read(modem_path.c_str());
 	if(!modem_log_read.good()) {
-		cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
+		//cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
 	}
 	else {
 		cout << "DONE" << endl;
