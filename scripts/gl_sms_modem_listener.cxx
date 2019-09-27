@@ -44,7 +44,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 				if(line_counter == 0) number = tmp_buffer;
 				else if(line_counter == 1) {
 					message = tmp_buffer;
-					break;
+					line_counter = 0;
 				}
 				++line_counter;
 			}
@@ -62,7 +62,12 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 			//TODO: Get error messages from the list provided the last time or wherever they've been kept
 
 			//Deleting the job file
-			remove(full_filename.c_str());
+			if( remove(full_filename.c_str()) != 0 ) {
+				cerr << func_name << "=> failed to delete job!!!!!" << endl;
+				char str_error[256];
+				cerr << func_name << "=> errno message: " << strerror_r(errno, str_error, 256) << endl;
+			}
+
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
@@ -76,14 +81,16 @@ void gl_sms_modem_listener(string func_name) {
 	vector<thread::id> modem_listener_container;
 	cout << func_name << "=> Began SMS Modem Listener!" << endl;
 	while(GL_MODEM_LISTENER_STATE) {
+		cout << func_name << "=> Number of Modems about to thread: " << MODEM_POOL.size() << endl;
 		for(auto modem : MODEM_POOL) {
-			if(!MODEM_DAEMON[modem.first]) {
+			if(!MODEM_DAEMON[modem.second[0]]) {
 				printf("%s=> Threading modem listener: +imei[%s], +index[%s]\n", func_name.c_str(), modem.second[0].c_str(), modem.first.c_str());
 				std::thread tr_modem_listener(modem_listener, "Modem Listener", modem.second[0], modem.first, true);
-				tr_modem_listener.join();
+				tr_modem_listener.detach();
 				modem_listener_container.push_back(tr_modem_listener.get_id());
 				printf("%s=> Number of active SMS MODEM LISTENERS = %lu\n", func_name.c_str(), modem_listener_container.size());
 			}
+
 		}
 
 
