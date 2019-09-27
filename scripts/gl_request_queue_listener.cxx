@@ -60,6 +60,32 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 }
 
 
+void isp_distribution(string func_name, vector<string> modems, vector<map<string, string>> isp_request) {
+	for(int k=0;k<isp_request.size();++k) {
+		for(auto j : modems) {
+			if(k<isp_request.size()) {
+				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
+				//XXX: Naming files using UNIX EPOCH counter
+				//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
+				string rand_filename = helpers::random_string();
+				rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
+				rand_filename += ".jb";
+				printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
+				ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
+				//FIXME: verify file is opened
+				map<string, string> request = isp_request[k];
+				job_write << request["number"] << "\n" << request["message"];
+				job_write.close();
+				++k;
+			}
+			else {
+				break;
+			}
+		}
+	}
+}
+
+
 
 void gl_request_queue_listener(string func_name) {
 	//FIXME: Only 1 of this should be running at any moment
@@ -123,29 +149,8 @@ void gl_request_queue_listener(string func_name) {
 				vector<map<string,string>> isp_request = isp_sorted_request_container[helpers::to_upper(i.first)];
 
 				//TODO: Thread this!! No need sitting and waiting for one ISP before using the other
-				for(int k=0;k<isp_request.size();++k) {
-					for(auto j : i.second) {
-						if(k<isp_request.size()) {
-							printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
-							//XXX: Naming files using UNIX EPOCH counter
-							//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
-							string rand_filename = helpers::random_string();
-							rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
-							rand_filename += ".jb";
-							printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
-							ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
-							//FIXME: verify file is opened
-							map<string, string> request = isp_request[k];
-							job_write << request["number"] << "\n" << request["message"];
-							job_write.close();
-							++k;
-						}
-						else {
-							break;
-						}
-					}
-				}
-
+				std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.second, isp_request);
+				tr_isp_distribution.detach();
 			}	
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
