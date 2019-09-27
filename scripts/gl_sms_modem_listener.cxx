@@ -4,7 +4,7 @@ using namespace std;
 
 
 inline vector<string> get_modems_jobs(string folder_name) {
-	return helpers::split( helpers::terminal_stdout((string)("ls -1" + folder_name)), true );
+	return helpers::split( helpers::terminal_stdout((string)("ls -1 " + folder_name)), '\n', true );
 }
 
 void modem_listener(string func_name, string modem_imei, string modem_index, bool watch_dog = true) {
@@ -28,7 +28,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 		//read the modems folder for changes
 		vector<string> jobs = get_modems_jobs((string)(SYS_FOLDER_MODEMS + "/" + modem_imei));
 
-		printf("%s=> [%lu] found jobs...", func_name.c_str(), jobs.size());
+		printf("%s=> [%lu] found jobs...\n", func_name.c_str(), jobs.size());
 		for(auto filename : jobs) {
 			string full_filename = SYS_FOLDER_MODEMS + "/" + modem_imei + "/" + filename;
 			printf("%s=> EXECUTING JOB FOR FILE: %s\n", func_name.c_str(), full_filename.c_str());
