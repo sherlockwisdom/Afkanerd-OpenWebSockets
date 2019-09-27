@@ -69,7 +69,7 @@ void gl_request_queue_listener(string func_name) {
 	while(GL_MODEM_LISTENER_STATE) {
 		
 		if(!GL_SYSTEM_READY) {
-			std::this_thread::sleep_for(std::chrono::seconds(5));
+			std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 			continue;
 		}
 
@@ -148,6 +148,6 @@ void gl_request_queue_listener(string func_name) {
 
 			}	
 		}
-		std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 	}
 }

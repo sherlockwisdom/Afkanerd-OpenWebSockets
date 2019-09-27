@@ -1,5 +1,7 @@
 #include "declarations.hpp"
 
+using namespace std;
+
 int read_log_calculate_work_load(string modem_path) {
 	string func_name = "Read Log Calculate Workload";
 	cout << func_name << "=> started calculating work load" << endl;
@@ -65,7 +67,7 @@ void gl_modem_listener(string func_name) {
 					str_stdout = helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + i));
 					vector<string> modem_information = helpers::split(str_stdout, '\n', true);
 					if(modem_information.size() != 3) {
-						std::this_thread::sleep_for(std::chrono::seconds(5));
+						std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 						printf("%s=> modem information extracted - incomplete [%lu]\n", func_name.c_str(), modem_information.size());
 						continue;
 					}
@@ -112,7 +114,7 @@ void gl_modem_listener(string func_name) {
 
 		//XXX: Sleep thread for some seconds
 		//cout << func_name << "=> sleeping thread..." << flush;
-		std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 		++iteration_counter;
 		if(iteration_counter == 3) GL_SYSTEM_READY = true;
 		//cout << " [done]" << endl;

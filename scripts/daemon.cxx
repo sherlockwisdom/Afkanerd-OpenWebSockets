@@ -1,5 +1,6 @@
 #include "gl_modem_listener.cxx"
 #include "gl_request_queue_listener.cxx"
+#include "gl_sms_modem_listener.cxx"
 using namespace std;
 
 bool check_system_folders() {
@@ -37,8 +38,10 @@ int main() {
 
 	std::thread tr_modem_listener(gl_modem_listener, "Master Modem Listener");
 	std::thread tr_request_listener(gl_request_queue_listener, "Request Queue Listener");
+	std::thread tr_sms_modem_listener(gl_sms_modem_listener, "SMS Modem Listener");
 	tr_modem_listener.join();
 	tr_request_listener.join();
-
+	tr_sms_modem_listener.join();
+			
 	return 1;
 }

@@ -20,6 +20,7 @@ using namespace std;
 /* GLOBAL SYSTEM DECLARATIONS */
 bool GL_MODEM_LISTENER_STATE = true;
 bool GL_SYSTEM_READY = false;
+int GL_TR_SLEEP_TIME = 5;
 string ENV_HOME = getenv("HOME");
 string SYS_FOLDER = ENV_HOME + "/deku";
 string SYS_FOLDER_MODEMS = SYS_FOLDER + "/modems";
@@ -34,5 +35,9 @@ map<string, vector<string>> MODEM_POOL;
 
 //IMEI -> load count
 map<string, int> MODEM_WORKLOAD;
+
+
+//IMEI -> initialized
+map<string, bool> MODEM_DAEMON;
 
 #endif
