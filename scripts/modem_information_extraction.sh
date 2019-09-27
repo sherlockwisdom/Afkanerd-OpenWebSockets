@@ -7,8 +7,10 @@
 
 #check for available modems
 if [ "$1" == "list" ] ; then
-	list=$( mmcli -L | grep -oe "[0-9]* " | grep -oe [0-9]* )
-	printf "$list"
+	mmcli_list=$( mmcli -L | grep -oe "[0-9]* " | grep -oe [0-9]* )
+	ssh_list=$( nmcli device show | grep IP4.GATEWAY | grep -oe "192.168.[0-9*].[0-9*]" )
+	printf "$mmcli_list"
+	printf "$ssh_list"
 elif [ "$1" == "extract" ] ; then
 	modem_index=$2
 	#if [ "$_command" == "e_id" ] ; then

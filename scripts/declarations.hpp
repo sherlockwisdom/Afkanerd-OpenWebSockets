@@ -21,6 +21,7 @@ using namespace std;
 bool GL_MODEM_LISTENER_STATE = true;
 bool GL_SYSTEM_READY = false;
 int GL_TR_SLEEP_TIME = 5;
+string GL_SSH_IP_GATEWAY = "192.168.";
 string ENV_HOME = getenv("HOME");
 string SYS_FOLDER = ENV_HOME + "/deku";
 string SYS_FOLDER_MODEMS = SYS_FOLDER + "/modems";
