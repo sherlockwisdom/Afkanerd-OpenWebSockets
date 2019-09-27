@@ -53,7 +53,11 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 			printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			
 			//TODO: Delete files after reading them.
-
+			//XXX: Lord Help me
+			cout << func_name << "=> \tSending out sms message...\n";
+			string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
+			string terminal_stdout = helpers::terminal_stdout(sms_command);
+			cout << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 		}
 
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
