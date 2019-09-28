@@ -2,6 +2,7 @@
 const Events = require('events');
 const { spawnSync, spawn } = require ('child_process');
 const Queue = require('./queue.js');
+const fs = require('fs');
 
 //TODO: SOC
 /* 
@@ -275,17 +276,31 @@ class SMS extends Modem{
 		//console.log(request);
 		return new Promise(async(resolve, reject)=> {
 			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
+			let requestContainerDump = []; //This container takes a list of request and dumps to file
 			for(let i in request) {
-				console.log("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
-				request[i].hasOwnProperty("number") ? await this.sendSMS(request[i].message, request[i].number) : await this.sendSMS(request[i].message, request[i].phonenumber)
+				//console.log("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
+				//request[i].hasOwnProperty("number") ? await this.sendSMS(request[i].message, request[i].number) : await this.sendSMS(request[i].message, request[i].phonenumber)
+				let simpleRequest;
+				if( request[i].hasOwnProperty("number") ) {
+					//requestContainerDump.push( request[i] );
+					simpleRequest = "number=" + request[i].number + ",message=\"" + request[i].message + "\"";
+				}
+				else if(request[i].hasOwnProperty("phonenumber") ) {
+					simpleRequest = "number=" + request[i].phonenumber + ",message=\"" + request[i].message + "\"";
+				}
+				requestContainerDump.push(simpleRequest);
+				//console.log(simpleRequest);
 			}
+			console.log(requestContainerDump.join('\n'));
+			let HOME = process.env.HOME;
+			fs.appendFileSync(`${HOME}/deku/request_queue.dat`, requestContainerDump.join('\n'));
 			resolve("SMS.sendBulkSMS=> done.");
 		});
 	}
 }
 
 //TODO: Each modem is bound to a sender and it manages it sender
-/*
+
 let modems = new Modem;
 let data = [
 	{
@@ -319,13 +334,13 @@ try {
 		/*sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
 			console.log(resolve);
 		}).catch((reject)=>{ console.log(reject)})
-		sms.queueLog();
+		sms.queueLog(); */
 	});
 }
 catch(error) {
 	console.log(error.message)
 }
-*/
+
 
 //TODO: which modem group does this message relate to?
 //TODO: which modems in that group execute this command
