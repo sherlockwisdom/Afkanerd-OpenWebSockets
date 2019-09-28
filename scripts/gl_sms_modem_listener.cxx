@@ -57,12 +57,17 @@ void modem_listener(string func_name, string modem_imei, string modem_index, boo
 				string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
 				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+				if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
+					printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
+					std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+				}
 			}
 
 			else if(type == "SSH") {
 				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" 'sendsms \"" + number + "\" \"" + message + "\"";
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
 				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+
 			}
 
 			//TODO: Check if message failed or was successful
