@@ -2,6 +2,8 @@
 
 using namespace std;
 
+
+//TODO: Make work load checking functional
 int read_log_calculate_work_load(string modem_path) {
 	string func_name = "Read Log Calculate Workload";
 	cout << func_name << "=> started calculating work load" << endl;
@@ -147,9 +149,10 @@ void gl_modem_listener(string func_name) {
 
 		//XXX: Sleep thread for some seconds
 		//cout << func_name << "=> sleeping thread..." << flush;
-		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
+		std::this_thread::sleep_for(std::chrono::seconds(10)); //XXX: Change this to a const isn't the best to have it as it is
 		++iteration_counter;
 		if(iteration_counter == 3) GL_SYSTEM_READY = true;
+		MODEM_POOL.clear();
 		//cout << " [done]" << endl;
 	}
 }
