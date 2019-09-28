@@ -300,7 +300,7 @@ class SMS extends Modem{
 }
 
 //TODO: Each modem is bound to a sender and it manages it sender
-
+/*
 let modems = new Modem;
 let data = [
 	{
@@ -334,13 +334,13 @@ try {
 		/*sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
 			console.log(resolve);
 		}).catch((reject)=>{ console.log(reject)})
-		sms.queueLog(); */
+		sms.queueLog(); *//*
 	});
 }
 catch(error) {
 	console.log(error.message)
 }
-
+*/
 
 //TODO: which modem group does this message relate to?
 //TODO: which modems in that group execute this command
