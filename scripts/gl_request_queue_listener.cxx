@@ -60,18 +60,27 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 }
 
 
-void isp_distribution(string func_name, vector<string> modems, vector<map<string, string>> isp_request) {
+void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
 	for(int k=0;k<isp_request.size();++k) {
-		for(auto j : modems) {
+		if(MODEM_DAEMON.empty()) {
+			ofstream write_back_to_request_file(SYS_REQUEST_FILE, ios::app);
+			write_back_to_request_file << "number=" << isp_request[k]["number"] << ",message=" << isp_request[k]["message"] << endl;
+			write_back_to_request_file.close();
+			break;
+		}
+		for(auto modem : MODEM_DAEMON) {
+			if(helpers::to_upper(modem.second) != isp) continue;
+
+			if(!helpers::modem_is_available(modem.first)) continue;
 			if(k<isp_request.size()) {
-				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), j.c_str());
+				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
 				//XXX: Naming files using UNIX EPOCH counter
 				//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
 				string rand_filename = helpers::random_string();
 				rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
 				rand_filename += ".jb";
 				printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
-				ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + j + "/" + rand_filename).c_str());
+				ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + modem.first + "/" + rand_filename).c_str());
 				//FIXME: verify file is opened
 				map<string, string> request = isp_request[k];
 				job_write << request["number"] << "\n" << request["message"];
@@ -131,25 +140,22 @@ void gl_request_queue_listener(string func_name) {
 			 * Then for each filter check the work load
 			 * Distribute files into their system
 			 */
-
+			/*
 			map<string, vector<string>> ISP_container_pnt;
-			for(auto i : MODEM_POOL) {
-				vector<string> modem_info = i.second;
-				ISP_container_pnt[modem_info[1]].push_back(modem_info[0]);
-			}
+			for(auto i : MODEM_DAEMON) {
+				ISP_container_pnt[i.first].push_back(i.second);
+			}*/
 
 			//XXX: Based on the size of each ISP in ISP_container_pnt, one could determine if to send out the messages or halt them
 			//XXX: Remember it's based on the ISP anything else
 
-			printf("%s=> # of ISP Connected [%lu]\n", func_name.c_str(), ISP_container_pnt.size());
+			//printf("%s=> # of ISP Connected [%lu]\n", func_name.c_str(), ISP_container_pnt.size());
 			//XXX: Requires functional modems in other to test
-			for(auto i : ISP_container_pnt) {
+			for(auto i : isp_sorted_request_container) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
-				//XXX: Round-Robin algorithm implementation goes here
-				vector<map<string,string>> isp_request = isp_sorted_request_container[helpers::to_upper(i.first)];
 
 				//TODO: Thread this!! No need sitting and waiting for one ISP before using the other
-				std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.second, isp_request);
+				std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.first, i.second);
 				tr_isp_distribution.detach();
 			}	
 		}

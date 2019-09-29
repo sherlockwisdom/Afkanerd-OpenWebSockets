@@ -112,6 +112,20 @@ string to_upper(string input) {
 	return str;
 }
 
+
+
+bool modem_is_available(string modem_imei) {
+	string list_of_modem_indexes = helpers::terminal_stdout("./modem_information_extraction.sh list");
+	vector<string> modem_indexes = helpers::split(list_of_modem_indexes, '\n', true);
+
+	for(auto modem_index : modem_indexes) {
+		string imei = helpers::split( helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + modem_index)), ':', true)[0];
+		if(imei == modem_imei) return true;
+	}
+	return false;
+}
+
+
 }
 
 #endif

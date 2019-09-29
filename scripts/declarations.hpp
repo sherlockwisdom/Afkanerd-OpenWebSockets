@@ -40,6 +40,6 @@ map<string, int> MODEM_WORKLOAD;
 
 
 //IMEI -> initialized
-map<string, bool> MODEM_DAEMON;
+map<string, string> MODEM_DAEMON;
 
 #endif
