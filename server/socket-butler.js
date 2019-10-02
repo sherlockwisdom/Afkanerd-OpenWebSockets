@@ -104,8 +104,16 @@ class SocketButler extends Event {
 						}
 					})
 
+
+					socketClient.on("error",async ()=>{
+						console.log("socket:on:disconnect=> a socket just ended");
+						socketClient.end();
+						await this.removeClientSocket(socketClient.clientUUID, socketClient.clientToken)
+						console.log("socket:on:close=> number of client sockets:", this.size());
+					})
 					socketClient.on("close",async ()=>{
 						console.log("socket:on:disconnect=> a socket just disconnected");
+						socketClient.end();
 						await this.removeClientSocket(socketClient.clientUUID, socketClient.clientToken)
 						console.log("socket:on:close=> number of client sockets:", this.size());
 					})

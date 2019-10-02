@@ -74,7 +74,8 @@ async function execSocketFunctionalities() {
 		var count = 0;
 		socketButler.on('new client', ()=>{
 			console.log('main:event:socket-butler:new-client');
-			if(count == 0) socketButler.forward(mostImportantRequest.payload);
+			//if(count == 0) 
+			socketButler.forward(mostImportantRequest.payload);
 			count=1;
 		});
 	});
