@@ -17,7 +17,7 @@ const TCP_HOST_NAME = process.env.TCP_HOST_NAME;
 const TCP_HOST_PORT = process.env.TCP_HOST_PORT;
 const CLIENT_TOKEN = process.env.CLIENT_TOKEN;
 const CLIENT_UUID = process.env.CLIENT_UUID;
-const APP_TYPE = process.env.APP_TYPE
+const APP_TYPE = process.env.APP_TYPE.split(',')
 
 console.log("DEKU SYSTEM INFORMATION----");
 console.log("TCP_HOST_NAME: ", TCP_HOST_NAME);
@@ -34,7 +34,7 @@ if(typeof TCP_HOST_NAME != "undefined" &&
 	TCP_HOST_NAME != "" &&
 	CLIENT_TOKEN != "" &&
 	CLIENT_UUID != "" &&
-	APP_TYPE != "" ) {
+	APP_TYPE.length > 0 ) {
 	console.log("SYSTEM RATING=> Everything is set for takeoff!!");
 }
 else {

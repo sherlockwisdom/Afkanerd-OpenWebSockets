@@ -83,7 +83,7 @@ class SocketButler extends Event {
 										console.log("socket:on:message=> socket authentication token:", jsData.clientToken);
 										socketClient.clientToken = jsData.clientToken;
 										socketClient.clientUUID = jsData.UUID;
-										socketClient.appType = jsData.appType;
+										socketClient.appType = jsData.appType; //This is still JSON object
 										this.addClientSocket(socketClient);
 										console.log("socket:on:message=> number of client sockets:", this.size());
 									}
@@ -122,7 +122,7 @@ class SocketButler extends Event {
 
 	addClientSocket(socket) {
 		this.socketContainer.push( socket );
-		console.log("socket-butler:addClientSocket=> adding client with token (%s) and UUID (%s)", socket.clientToken, socket.clientUUID);
+		console.log("socket-butler:addClientSocket=> adding client with TOKEN (%s) and UUID (%s) and APP-TYPE (%s)", socket.clientToken, socket.clientUUID, socket.appType);
 		this.emit('new client', socket.clientToken, socket.clientUUID);
 	}
 
@@ -171,13 +171,14 @@ class SocketButler extends Event {
 			let clientUUID = request.clientUUID;
 			let payload = request.payload;
 			let appType = request.appType;
+			console.log("socket-butler:forward=> forwarding new request...");
 			try {
 				try {
 					let sockets = this.findClientSocket(clientToken, clientUUID);
 					for(let i in sockets) {
 						let socket = sockets[i];
 						if(!socket.isClosed()) {
-							if(typeof appType != "undefined" && socket.appType == appType ) {
+							if(typeof appType != "undefined" && socket.appType.includes(appType) ) {
 								socket.sendMessage( payload, (error)=>{
 									if(error) {
 										console.log("socket-butler:forwarder:error=>", error.message);
