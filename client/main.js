@@ -4,7 +4,7 @@ const JsonSocket = require('json-socket');
 const Sebastian = require('./sebastian.js');
 const { spawn, spawnSync,fork } = require('child_process');
 const SMS = require('./../globals/sms.js');
-require('dotenv').config({path: 'whoami.env'})
+require('dotenv').config({path: process.env.HOME + '/whoami.env'})
 'use strict';
 
 //TODO: start pm2 manually and keep restarting using name in app
@@ -16,6 +16,29 @@ const TCP_HOST_PORT = process.env.TCP_HOST_PORT;
 const CLIENT_TOKEN = process.env.CLIENT_TOKEN;
 const CLIENT_UUID = process.env.CLIENT_UUID;
 const APP_TYPE = process.env.APP_TYPE
+
+console.log("DEKU SYSTEM INFORMATION----");
+console.log("TCP_HOST_NAME: ", TCP_HOST_NAME);
+console.log("TCP_HOST_PORT: ", TCP_HOST_PORT);
+console.log("CLIENT_TOKEN: ", CLIENT_TOKEN);
+console.log("CLIENT_UUID: ", CLIENT_UUID);
+console.log("APP_TYPE: ", APP_TYPE);
+
+if(typeof TCP_HOST_NAME != "undefined" &&
+	typeof TCP_HOST_PORT != "undefined" &&
+	typeof CLIENT_TOKEN != "undefined" &&
+	typeof CLIENT_UUID != "undefined" &&
+	typeof APP_TYPE != "undefined" &&
+	TCP_HOST_NAME != "" &&
+	CLIENT_TOKEN != "" &&
+	CLIENT_UUID != "" &&
+	APP_TYPE != "" ) {
+	console.log("SYSTEM RATING=> Everything is set for takeoff!!");
+}
+else {
+	console.log("SYSTEM RATING=> Not clear for takeoff, this means death... so sorry...");
+	process.exit(1);
+}
 
 let startScript = async ( sebastian )=>{
 //Let's begin, le dance macabre
