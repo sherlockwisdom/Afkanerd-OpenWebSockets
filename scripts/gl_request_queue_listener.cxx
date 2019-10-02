@@ -63,6 +63,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
 	for(int k=0;k<isp_request.size();++k) {
 		if(MODEM_DAEMON.empty()) {
+			cout << func_name << "=> No modem found, writing back to request file..." << endl;
 			ofstream write_back_to_request_file(SYS_REQUEST_FILE, ios::app);
 			write_back_to_request_file << "number=" << isp_request[k]["number"] << ",message=" << isp_request[k]["message"] << endl;
 			write_back_to_request_file.close();
