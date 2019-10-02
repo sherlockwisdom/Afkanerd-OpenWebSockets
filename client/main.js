@@ -45,12 +45,17 @@ let startScript = async ( sebastian )=>{
 			var cron = new CronJob('*/5 * * * * *', ()=> {
 				connectivity( (online) => {
 					  if (online) {
-						console.log("%s", Chalk.bgGreen(`${Chalk.black('state=> connected to the internet!')}`))
+						//console.log("%s", Chalk.bgGreen(`${Chalk.black('state=> connected to the internet!')}`))
 					  } else {
 						console.log("%s", Chalk.bgRed(`${Chalk.white('state=> sorry, not connected to the internet')}`))
-						cron.stop();
-						socket = null;
-						sebastian.emit("safemenow!", sebastian);
+						if(sms.isEmpty()) {
+							cron.stop();
+							socket = null;
+							sebastian.emit("safemenow!", sebastian);
+						}
+						else {
+							console.log("state=> cannot restart because of an ongoing job");
+						}
 					  }
 				})
 			}, null, true);

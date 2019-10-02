@@ -68,6 +68,13 @@ class Modem extends Events {
 		this.emit("new queue", forwarderName, group);
 	}
 
+	isEmpty() {
+		for(let i in this.forwarderQueue) {
+			if(this.forwarderQueue[i].size() != 0) return false;
+		}
+		return true;
+	}
+
 	async deQueueForForwarder(forwarderName, group) {
 		switch( this.forwarderState[forwarderName] ) {
 			case "busy":
