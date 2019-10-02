@@ -192,6 +192,13 @@ void modem_extractor(string func_name, string modem_index ) {
 	if(!sanitation_check) return;
 	//printf("%s=> modem information... [%s]\n", func_name.c_str(), modem_information[2].c_str());
 	string modem_imei = helpers::split(modem_information[0], ':', true)[1];
+	//XXX: Check if another an instance of the modem is already running
+	if(MODEM_DAEMON.find(modem_imei) != MODEM_DAEMON.end()) {
+		cout << func_name << "=> Instance of Modem already running... watch dog reset!" << endl;
+
+		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
+		return;
+	}
 	string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
 	string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
 	printf("%s=> +ISP[%s] +index[%s] - ", func_name.c_str(), modem_service_provider.c_str(), modem_index.c_str());
