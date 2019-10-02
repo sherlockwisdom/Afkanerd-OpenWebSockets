@@ -122,11 +122,12 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				cerr << func_name << "=> errno message: " << strerror_r(errno, str_error, 256) << endl;
 			}
 			else { //XXX: Storing workload
-				string timestamp = helpers::terminal_stdout("date +%s");
+				/*string timestamp = helpers::terminal_stdout("date +%s");
 				string load_balancer = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
 				ofstream write_to_work_load(load_balancer.c_str(), ios::app);
 				write_to_work_load << timestamp << ":1" << endl;
 				write_to_work_load.close();
+				*/
 			}
 
 		}
