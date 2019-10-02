@@ -61,6 +61,8 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 
 
 void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
+	cout << func_name << "=> Processing " << isp_request.size() << " jobs for - " << isp << endl;
+	bool do_not_iterate = false;
 	for(int k=0;k<isp_request.size();++k) {
 		if(MODEM_DAEMON.empty()) {
 			cout << func_name << "=> No modem found, writing back to request file..." << endl;
@@ -70,10 +72,13 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			break;
 		}
 		for(auto modem : MODEM_DAEMON) {
-			if(helpers::to_upper(modem.second) != isp) continue;
+			if(!helpers::modem_is_available(modem.first) || helpers::to_upper(modem.second) != isp) {
+				do_not_iterate = true;
+				continue;
+			}
 
-			if(!helpers::modem_is_available(modem.first)) continue;
 			if(k<isp_request.size()) {
+				do_not_iterate = false;
 				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
 				//XXX: Naming files using UNIX EPOCH counter
 				//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
@@ -92,6 +97,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 				break;
 			}
 		}
+		if(do_not_iterate) --k;
 	}
 }
 
