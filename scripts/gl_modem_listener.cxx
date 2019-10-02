@@ -55,12 +55,13 @@ inline vector<string> get_modems_jobs(string folder_name) {
 void modem_listener(string func_name, string modem_imei, string modem_index, string ISP, bool watch_dog = true, string type = "MMCLI") {
 	//XXX: Just 1 instance should be running for every modem_imei
 	printf("%s=> Started instance of modem\n\t+imei[%s] +index[%s] +isp[%s] +type[%s]\n", func_name.c_str(), modem_imei.c_str(), modem_index.c_str(), ISP.c_str(), type.c_str());
-	MODEM_DAEMON[modem_imei] = ISP;
+	MODEM_DAEMON.insert(make_pair(modem_imei, ISP));
 
 	while(GL_MODEM_LISTENER_STATE) {
 
 		if(watch_dog) {
 			if(!helpers::modem_is_available( modem_imei ) ) {
+				printf("%s=> Killed instance of modem because disconncted\n\t+imei[%s] +index[%s] +isp[%s] +type[%s]\n", func_name.c_str(), modem_imei.c_str(), modem_index.c_str(), ISP.c_str(), type.c_str());
 				modem_cleanse( modem_imei );
 				break;
 			}
