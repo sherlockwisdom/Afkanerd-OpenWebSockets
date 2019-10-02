@@ -54,7 +54,7 @@ inline vector<string> get_modems_jobs(string folder_name) {
 
 void modem_listener(string func_name, string modem_imei, string modem_index, string ISP, bool watch_dog = true, string type = "MMCLI") {
 	//XXX: Just 1 instance should be running for every modem_imei
-	
+	printf("%s=> Started instance of modem\n\t+imei[%s] +index[%s] +isp[%s] +type[%s]\n", func_name.c_str(), modem_imei.c_str(), modem_index.c_str(), ISP.c_str(), type.c_str());
 	MODEM_DAEMON[modem_imei] = ISP;
 
 	while(GL_MODEM_LISTENER_STATE) {
