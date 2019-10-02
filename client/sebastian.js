@@ -10,6 +10,17 @@ class Sebastian extends Events {
 		this.pm2 = require('pm2');
 	}
 
+	restart() {
+		
+		this.pm2.connect(()=>{
+			
+
+			this.pm2.restart("all", (err, list) => {
+				console.log(list);
+			});
+		});
+	}
+
 	update() {
 		
 		let options = {

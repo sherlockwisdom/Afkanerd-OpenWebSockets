@@ -4,7 +4,9 @@ const JsonSocket = require('json-socket');
 const Sebastian = require('./sebastian.js');
 const { spawn, spawnSync,fork } = require('child_process');
 const SMS = require('./../globals/sms.js');
-require('dotenv').config({path: 'whoami.env'})
+
+const path = process.env.HOME + "/deku/whoami.env";
+require('dotenv').config({path: path.toString()})
 'use strict';
 
 //TODO: start pm2 manually and keep restarting using name in app
@@ -15,7 +17,30 @@ const TCP_HOST_NAME = process.env.TCP_HOST_NAME;
 const TCP_HOST_PORT = process.env.TCP_HOST_PORT;
 const CLIENT_TOKEN = process.env.CLIENT_TOKEN;
 const CLIENT_UUID = process.env.CLIENT_UUID;
-const APP_TYPE = process.env.APP_TYPE
+const APP_TYPE = process.env.APP_TYPE.split(',')
+
+console.log("DEKU SYSTEM INFORMATION----");
+console.log("TCP_HOST_NAME: ", TCP_HOST_NAME);
+console.log("TCP_HOST_PORT: ", TCP_HOST_PORT);
+console.log("CLIENT_TOKEN: ", CLIENT_TOKEN);
+console.log("CLIENT_UUID: ", CLIENT_UUID);
+console.log("APP_TYPE: ", APP_TYPE);
+
+if(typeof TCP_HOST_NAME != "undefined" &&
+	typeof TCP_HOST_PORT != "undefined" &&
+	typeof CLIENT_TOKEN != "undefined" &&
+	typeof CLIENT_UUID != "undefined" &&
+	typeof APP_TYPE != "undefined" &&
+	TCP_HOST_NAME != "" &&
+	CLIENT_TOKEN != "" &&
+	CLIENT_UUID != "" &&
+	APP_TYPE.length > 0 ) {
+	console.log("SYSTEM RATING=> Everything is set for takeoff!!");
+}
+else {
+	console.log("SYSTEM RATING=> Not clear for takeoff, this means death... so sorry...");
+	process.exit(1);
+}
 
 let startScript = async ( sebastian )=>{
 //Let's begin, le dance macabre
@@ -37,6 +62,28 @@ let startScript = async ( sebastian )=>{
 				UUID:CLIENT_UUID,
 				appType:APP_TYPE
 			});
+
+			//XXX: Always test to make sure there's an active internet connection
+			var CronJob = require('cron').CronJob;
+			var connectivity = require('connectivity');
+			var Chalk = require('chalk');
+			var cron = new CronJob('*/5 * * * * *', ()=> {
+				connectivity( (online) => {
+					  if (online) {
+						//console.log("%s", Chalk.bgGreen(`${Chalk.black('state=> connected to the internet!')}`))
+					  } else {
+						console.log("%s", Chalk.bgRed(`${Chalk.white('state=> sorry, not connected to the internet')}`))
+						if(sms.isEmpty()) {
+							cron.stop();
+							socket = null;
+							sebastian.emit("safemenow!", sebastian);
+						}
+						else {
+							console.log("state=> cannot restart because of an ongoing job");
+						}
+					  }
+				})
+			}, null, true);
 		});
 	}
 
@@ -47,6 +94,14 @@ let startScript = async ( sebastian )=>{
 		console.log("socket.error=> [", error.code, "]", error.message);
 
 		switch( error.code ) {
+			case 'ENOTFOUND':
+				console.log("socket.error=> check internet connection!");
+				await Tools.sleep();
+				socket = null;
+				sebastian.emit("safemenow!", sebastian);
+				return;
+			break;
+
 			case 'ENOENT':
 				console.log("socket.error=> check configuration parameters... possibly wrong settings");
 				await Tools.sleep();
@@ -59,6 +114,14 @@ let startScript = async ( sebastian )=>{
 				console.log("socket.error=> server doesn't seem to be running, check port or call devs");
 				await Tools.sleep();
 				socket = null; //This is murder!!
+				sebastian.emit("safemenow!", sebastian);
+				return;
+			break;
+
+			case 'ENETUNREACH':
+				console.log("socket.error=> internet cannot resolve host information, possibly server is malfunctioning");
+				socket = null;
+				await Tools.sleep();
 				sebastian.emit("safemenow!", sebastian);
 				return;
 			break;
@@ -80,6 +143,7 @@ let startScript = async ( sebastian )=>{
 				return
 
 			default:
+				console.log("socket.error=> unregistered error", error.message, error.code);
 				socket = null;
 				sebastian.emit("safemenow!", sebastian);
 			break;
@@ -109,16 +173,26 @@ let startScript = async ( sebastian )=>{
 
 					case "sms":
 						console.log("socket.message=> SMS requested...");
-						sms.sendBulkSMS(data.payload).then((resolve, reject)=>{
-							socket.sendMessage({
-								"type" : "confirmation",
-								"CLIENT_TOKEN" : CLIENT_TOKEN,
-								"CLIENT_UUID" : CLIENT_UUID,
-								"DATA_TYPE" : data.type,
-								"MESSAGE" : "finished forwarding a bulk message",
-								"RESOLVE" : resolve
-							})
-						});
+						try {
+							sms.sendBulkSMS(data.payload).then((resolve, reject)=>{
+								try {
+									socket.sendMessage({
+										"type" : "confirmation",
+										"CLIENT_TOKEN" : CLIENT_TOKEN,
+										"CLIENT_UUID" : CLIENT_UUID,
+										"DATA_TYPE" : data.type,
+										"MESSAGE" : "finished forwarding a bulk message",
+										"RESOLVE" : resolve
+									})
+								}
+								catch(error) {
+									console.log("socket.message.error=>", error.message);
+								}
+							});
+						}
+						catch(error) {
+							console.log("socket.message.error=>", error.message);
+						}
 					break;
 
 					default:
@@ -145,11 +219,15 @@ let startScript = async ( sebastian )=>{
 		switch( hadError ){
 			case true:
 				console.log("socket.close=> failed due to transmission error, check internet connection");
+				socket = null;
+				await Tools.sleep();
+				sebastian.emit("safemenow!", sebastian);
 			break;
 
 			case false:
 				console.log("socket.close=> was murdered by the server.... call Sherlock (Holmes)");
 				socket = null;
+				await Tools.sleep();
 				sebastian.emit("safemenow!", sebastian);
 			break;
 
@@ -162,5 +240,5 @@ let startScript = async ( sebastian )=>{
 
 var sebastian = new Sebastian;
 startScript(sebastian);
-sebastian.on("safemenow!", startScript);
+sebastian.on("safemenow!", sebastian.restart);
 //TODO: Add important things to process file

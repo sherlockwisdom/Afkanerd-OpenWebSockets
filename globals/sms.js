@@ -2,6 +2,7 @@
 const Events = require('events');
 const { spawnSync, spawn } = require ('child_process');
 const Queue = require('./queue.js');
+const fs = require('fs');
 
 //TODO: SOC
 /* 
@@ -39,9 +40,14 @@ class Modem extends Events {
 				switch(type) {
 					case "new request":
 						let group = this.tools.getCMServiceProviders(request.phonenumber);
-						let forwarderName = this.groupForwarders[group];
-						this.queueForForwarder(forwarderName, request, group);
-						console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
+						if(typeof group != "undefined") {
+							let forwarderName = this.groupForwarders[group];
+							this.queueForForwarder(forwarderName, request, group);
+							console.log("Modem.on.event=> forwarder requested (%s) for group (%s)", forwarderName, group);
+						}
+						else {
+							console.log("Modem.on.event=> could not find group for (%s)", request.phonenumber);
+						}
 					break;
 				}
 			});
@@ -60,6 +66,13 @@ class Modem extends Events {
 	queueForForwarder(forwarderName, request, group) {
 		this.forwarderQueue[forwarderName].insert(request);
 		this.emit("new queue", forwarderName, group);
+	}
+
+	isEmpty() {
+		for(let i in this.forwarderQueue) {
+			if(this.forwarderQueue[i].size() != 0) return false;
+		}
+		return true;
 	}
 
 	async deQueueForForwarder(forwarderName, group) {
@@ -270,10 +283,24 @@ class SMS extends Modem{
 		//console.log(request);
 		return new Promise(async(resolve, reject)=> {
 			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
+			let requestContainerDump = []; //This container takes a list of request and dumps to file
 			for(let i in request) {
-				console.log("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
-				request[i].hasOwnProperty("number") ? await this.sendSMS(request[i].message, request[i].number) : await this.sendSMS(request[i].message, request[i].phonenumber)
+				//console.log("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
+				//request[i].hasOwnProperty("number") ? await this.sendSMS(request[i].message, request[i].number) : await this.sendSMS(request[i].message, request[i].phonenumber)
+				let simpleRequest;
+				if( request[i].hasOwnProperty("number") ) {
+					//requestContainerDump.push( request[i] );
+					simpleRequest = "number=" + request[i].number + ",message=\"" + request[i].message + "\"";
+				}
+				else if(request[i].hasOwnProperty("phonenumber") ) {
+					simpleRequest = "number=" + request[i].phonenumber + ",message=\"" + request[i].message + "\"";
+				}
+				requestContainerDump.push(simpleRequest);
+				//console.log(simpleRequest);
 			}
+			console.log(requestContainerDump.join('\n'));
+			let HOME = process.env.HOME;
+			fs.appendFileSync(`${HOME}/deku/request_queue.dat`, requestContainerDump.join('\n') + "\n");
 			resolve("SMS.sendBulkSMS=> done.");
 		});
 	}
@@ -314,7 +341,7 @@ try {
 		/*sms.sendSMS(data[1].message, data[0].phonenumber).then((resolve)=>{
 			console.log(resolve);
 		}).catch((reject)=>{ console.log(reject)})
-		sms.queueLog();
+		sms.queueLog(); *//*
 	});
 }
 catch(error) {
