@@ -23,7 +23,7 @@ auto de_queue_from_request_file() {
 			static bool ignore = false;
 			static bool safe = false;
 			//XXX: checks for seperator
-			if(i == 'n' and safe) {
+			if(i == 'n' and safe and ignore) {
 				tmp_string_buffer += '\n';
 				safe = false;
 				continue;
@@ -43,7 +43,7 @@ auto de_queue_from_request_file() {
 				ignore = !ignore;
 				continue;
 			}
-			if(i == '\\') {
+			if(i == '\\' and ignore) {
 				safe = !safe;
 				continue;
 			}
@@ -63,7 +63,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 	for(auto request : request_tuple_container) {
 		string number= request["number"];
 		string isp = helpers::ISPFinder(number);
-		isp_sorted_request_container[isp].push_back(request);
+		if(!isp.empty()) isp_sorted_request_container[isp].push_back(request);
 	}
 
 	return isp_sorted_request_container;
