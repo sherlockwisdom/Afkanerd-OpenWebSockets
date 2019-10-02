@@ -252,7 +252,7 @@ void gl_modem_listener(string func_name) {
 		//cout << func_name << "=> sleeping thread..." << flush;
 		std::this_thread::sleep_for(std::chrono::seconds(10)); //XXX: Change this to a const isn't the best to have it as it is
 		++iteration_counter;
-		//if(iteration_counter == 3) GL_SYSTEM_READY = true;
+		if(iteration_counter == 3) GL_SYSTEM_READY = true;
 		//MODEM_POOL.clear();
 		//cout << " [done]" << endl;
 	}
