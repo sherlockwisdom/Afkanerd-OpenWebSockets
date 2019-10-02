@@ -298,7 +298,7 @@ class SMS extends Modem{
 				requestContainerDump.push(simpleRequest);
 				//console.log(simpleRequest);
 			}
-			console.log(requestContainerDump.join('\n'));
+			//console.log(requestContainerDump.join('\n'));
 			let HOME = process.env.HOME;
 			fs.appendFileSync(`${HOME}/deku/request_queue.dat`, requestContainerDump.join('\n') + "\n");
 			resolve("SMS.sendBulkSMS=> done.");
