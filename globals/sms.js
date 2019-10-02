@@ -290,10 +290,10 @@ class SMS extends Modem{
 				let simpleRequest;
 				if( request[i].hasOwnProperty("number") ) {
 					//requestContainerDump.push( request[i] );
-					simpleRequest = "number=" + request[i].number + ",message=\"" + request[i].message + "\"";
+					simpleRequest = "number=" + request[i].number + ",message=" + JSON.stringify(request[i].message);
 				}
 				else if(request[i].hasOwnProperty("phonenumber") ) {
-					simpleRequest = "number=" + request[i].phonenumber + ",message=\"" + request[i].message + "\"";
+					simpleRequest = "number=" + request[i].phonenumber + ",message="+ JSON.stringify(request[i].message);
 				}
 				requestContainerDump.push(simpleRequest);
 				//console.log(simpleRequest);

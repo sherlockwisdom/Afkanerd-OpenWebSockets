@@ -10,7 +10,7 @@ auto de_queue_from_request_file() {
 
 	//XXX: Container contains maps which have keys as number and message
 	vector<map<string,string>> request_tuple_container;
-	/*while(getline(sys_request_file_read, tmp_ln_buffer)) {
+	while(getline(sys_request_file_read, tmp_ln_buffer)) {
 		if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
 		//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
 		//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
@@ -20,7 +20,14 @@ auto de_queue_from_request_file() {
 		string tmp_key = "";
 		map<string, string> request_tuple;
 		for(auto i : tmp_ln_buffer) {
+			static bool ignore = false;
+			static bool safe = false;
 			//XXX: checks for seperator
+			if(i == 'n' and safe) {
+				tmp_string_buffer += '\n';
+				safe = false;
+				continue;
+			}
 			if(i == '=' and !ignore) {
 				tmp_key = tmp_string_buffer;
 				tmp_string_buffer = "";
@@ -32,8 +39,12 @@ auto de_queue_from_request_file() {
 				tmp_string_buffer = "";
 				continue;
 			}
-			if(i == '"') {
+			if(i == '"' and !safe) {
 				ignore = !ignore;
+				continue;
+			}
+			if(i == '\\') {
+				safe = !safe;
 				continue;
 			}
 			tmp_string_buffer += i;
@@ -41,32 +52,6 @@ auto de_queue_from_request_file() {
 		if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
 		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", func_name.c_str(), j.first.c_str(), j.second.c_str());
 		request_tuple_container.push_back(request_tuple);
-	}*/
-	std::ifstream ifs(SYS_JOB_FILE.c_str());
-  	std::string content( (std::istreambuf_iterator<char>(ifs) ),
-                       (std::istreambuf_iterator<char>()    ) );
-	string tmp_key = "";
-	string tmp_string_buffer = "";
-	bool ignore = false;
-	for(auto i : content) {
-		//XXX: checks for seperator
-		if(i == '=' and !ignore) {
-			tmp_key = tmp_string_buffer;
-			tmp_string_buffer = "";
-			continue;
-		}
-		if(i == ',' and !ignore) {
-			map<string,string>request_tuple{{tmp_key, tmp_string_buffer}};
-			tmp_key = "";
-			tmp_string_buffer = "";
-			request_tuple_container.push_back(request_tuple);
-			continue;
-		}
-		if(i == '"') {
-			ignore = !ignore;
-			continue;
-		}
-		tmp_string_buffer += i;
 	}
 	sys_request_file_read.close();
 	return request_tuple_container;
