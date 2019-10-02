@@ -10,16 +10,15 @@ auto de_queue_from_request_file() {
 
 	//XXX: Container contains maps which have keys as number and message
 	vector<map<string,string>> request_tuple_container;
-	string tmp_string_buffer = "";
-	string tmp_key = "";
-	map<string, string> request_tuple;
-	bool ignore = false;
-	while(getline(sys_request_file_read, tmp_ln_buffer)) {
+	/*while(getline(sys_request_file_read, tmp_ln_buffer)) {
 		if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
 		//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
 		//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
 		//XXX: custom parser
 		//cout << func_name << "=> parsing request...";
+		string tmp_string_buffer = "";
+		string tmp_key = "";
+		map<string, string> request_tuple;
 		for(auto i : tmp_ln_buffer) {
 			//XXX: checks for seperator
 			if(i == '=' and !ignore) {
@@ -42,6 +41,32 @@ auto de_queue_from_request_file() {
 		if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
 		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", func_name.c_str(), j.first.c_str(), j.second.c_str());
 		request_tuple_container.push_back(request_tuple);
+	}*/
+	std::ifstream ifs(SYS_JOB_FILE.c_str());
+  	std::string content( (std::istreambuf_iterator<char>(ifs) ),
+                       (std::istreambuf_iterator<char>()    ) );
+	string tmp_key = "";
+	string tmp_string_buffer = "";
+	bool ignore = false;
+	for(auto i : content) {
+		//XXX: checks for seperator
+		if(i == '=' and !ignore) {
+			tmp_key = tmp_string_buffer;
+			tmp_string_buffer = "";
+			continue;
+		}
+		if(i == ',' and !ignore) {
+			map<string,string>request_tuple{{tmp_key, tmp_string_buffer}};
+			tmp_key = "";
+			tmp_string_buffer = "";
+			request_tuple_container.push_back(request_tuple);
+			continue;
+		}
+		if(i == '"') {
+			ignore = !ignore;
+			continue;
+		}
+		tmp_string_buffer += i;
 	}
 	sys_request_file_read.close();
 	return request_tuple_container;
@@ -61,8 +86,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 
 
 void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
-	cout << func_name << "=> Processing " << isp_request.size() << " jobs for - " << isp << endl;
-	for(int k=0;k<isp_request.size();) {
+	for(int k=0;k<isp_request.size();++k) {
 		if(MODEM_DAEMON.empty()) {
 			cout << func_name << "=> No modem found, writing back to request file..." << endl;
 			ofstream write_back_to_request_file(SYS_REQUEST_FILE, ios::app);
@@ -71,13 +95,11 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			break;
 		}
 		for(auto modem : MODEM_DAEMON) {
-			if(!helpers::modem_is_available(modem.first) || helpers::to_upper(modem.second) != isp) {
-				//do_not_iterate = true;
-				continue;
-			}
+			if(helpers::to_upper(modem.second) != isp) continue;
 
+			if(!helpers::modem_is_available(modem.first)) continue;
 			if(k<isp_request.size()) {
-				printf("%s=>\tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
+				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
 				//XXX: Naming files using UNIX EPOCH counter
 				//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
 				string rand_filename = helpers::random_string();
