@@ -39,7 +39,7 @@ auto de_queue_from_request_file() {
 				tmp_string_buffer = "";
 				continue;
 			}
-			if(i == '"' and !safe) {
+			if(i == '"') {
 				ignore = !ignore;
 				continue;
 			}
