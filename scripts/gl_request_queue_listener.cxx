@@ -10,17 +10,17 @@ auto de_queue_from_request_file() {
 
 	//XXX: Container contains maps which have keys as number and message
 	vector<map<string,string>> request_tuple_container;
+	string tmp_string_buffer = "";
+	string tmp_key = "";
+	map<string, string> request_tuple;
+	bool ignore = false;
 	while(getline(sys_request_file_read, tmp_ln_buffer)) {
 		if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
 		//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
 		//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
 		//XXX: custom parser
 		//cout << func_name << "=> parsing request...";
-		string tmp_string_buffer = "";
-		string tmp_key = "";
-		map<string, string> request_tuple;
 		for(auto i : tmp_ln_buffer) {
-			static bool ignore = false;
 			//XXX: checks for seperator
 			if(i == '=' and !ignore) {
 				tmp_key = tmp_string_buffer;
