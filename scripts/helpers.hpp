@@ -119,8 +119,11 @@ bool modem_is_available(string modem_imei) {
 	vector<string> modem_indexes = helpers::split(list_of_modem_indexes, '\n', true);
 
 	for(auto modem_index : modem_indexes) {
-		string imei = helpers::split( helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + modem_index)), ':', true)[1];
-		if(imei == modem_imei) return true;
+		string modem_information = helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + modem_index));
+		vector<string> imei_info = helpers::split(modem_information, ':', true);
+		if(imei_info[0] == "equipment_id") {
+	       		if(imei_info[1].find(modem_imei) != string::npos) return true;
+		}	
 	}
 	return false;
 }
