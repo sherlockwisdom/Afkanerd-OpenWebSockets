@@ -4,7 +4,9 @@ const JsonSocket = require('json-socket');
 const Sebastian = require('./sebastian.js');
 const { spawn, spawnSync,fork } = require('child_process');
 const SMS = require('./../globals/sms.js');
-require('dotenv').config({path: process.env.HOME + '/whoami.env'})
+
+const path = process.env.HOME + "/deku/whoami.env";
+require('dotenv').config({path: path.toString()})
 'use strict';
 
 //TODO: start pm2 manually and keep restarting using name in app
