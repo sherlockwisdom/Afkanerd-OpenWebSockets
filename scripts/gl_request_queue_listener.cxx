@@ -19,9 +19,9 @@ auto de_queue_from_request_file() {
 		string tmp_string_buffer = "";
 		string tmp_key = "";
 		map<string, string> request_tuple;
+		bool ignore = false;
+		bool safe = false;
 		for(auto i : tmp_ln_buffer) {
-			static bool ignore = false;
-			static bool safe = false;
 			//XXX: checks for seperator
 			if(i == 'n' and safe and ignore) {
 				tmp_string_buffer += '\n';
@@ -44,13 +44,13 @@ auto de_queue_from_request_file() {
 				continue;
 			}
 			if(i == '\\' and ignore) {
-				safe = !safe;
+				safe = true;
 				continue;
 			}
 			tmp_string_buffer += i;
 		}
 		if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-		for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", "PARSED REQUEST", j.first.c_str(), j.second.c_str());
+		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", "PARSED REQUEST", j.first.c_str(), j.second.c_str());
 		request_tuple_container.push_back(request_tuple);
 	}
 	sys_request_file_read.close();

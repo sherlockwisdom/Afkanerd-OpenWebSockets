@@ -1,0 +1,38 @@
+enp0s25: connected to Wired connection 1
+	"Intel 82567LM-3 Gigabit"
+	ethernet (e1000e), 2C:27:D7:26:B6:B8, hw, mtu 1500
+	ip4 default
+	inet4 192.168.1.100/24
+	route4 0.0.0.0/0
+	route4 192.168.1.0/24
+	inet6 fe80::c3f1:f0c8:6cbd:2ddd/64
+	route6 ff00::/8
+	route6 fe80::/64
+	route6 fe80::/64
+
+ttyUSB1: disconnected
+	"HUAWEI Mobile"
+	1 connection available
+	gsm (option1), hw
+
+ttyUSB4: disconnected
+	"HUAWEI Technologies HUAWEI Mobile"
+	1 connection available
+	gsm (option1), hw
+
+wlx000b819c986f: unavailable
+	"Realtek 802.11n WLAN NIC"
+	wifi (r8188eu), 00:0B:81:9C:98:6F, hw, mtu 1500
+
+lo: unmanaged
+	"lo"
+	loopback (unknown), 00:00:00:00:00:00, sw, mtu 65536
+
+DNS configuration:
+	servers: 192.168.1.1
+	interface: enp0s25
+
+Use "nmcli device show" to get complete information about known devices and
+"nmcli connection show" to get an overview on active connection profiles.
+
+Consult nmcli(1) and nmcli-examples(5) manual pages for complete usage details.

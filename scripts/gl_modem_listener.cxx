@@ -79,19 +79,19 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				continue;
 			}
 
-			string tmp_buffer, number, message;
+			string tmp_buffer, number, message = "";
 			short int line_counter = 0;
 			while(getline(read_job, tmp_buffer)) {
 				if(line_counter == 0) number = tmp_buffer;
-				else if(line_counter == 1) {
-					message = tmp_buffer;
+				else if(line_counter > 0) {
+					message += "\n" + tmp_buffer;
 					line_counter = 0;
 				}
 				++line_counter;
 			}
 
 			read_job.close();
-			printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
+			//printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			
 			//XXX: Lord Help me
 			if(type == "MMCLI") {
@@ -105,7 +105,8 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 			}
 
 			else if(type == "SSH") {
-				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" 'sendsms \"" + number + "\" \"" + message + "\"";
+				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + message + "\\\"\"";
+				//cout << func_name << "=> SSH COMMAND: " << sms_command << endl;
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
 				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 
