@@ -84,7 +84,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 			while(getline(read_job, tmp_buffer)) {
 				if(line_counter == 0) number = tmp_buffer;
 				else if(line_counter > 0) {
-					message += line_counter > 1 ? "\n" + tmp_buffer : tmp_buffer;
+					message += "\n" + tmp_buffer;
 					line_counter = 0;
 				}
 				++line_counter;
