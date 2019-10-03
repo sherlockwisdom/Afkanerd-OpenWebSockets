@@ -7,7 +7,7 @@
 
 #check for available modems
 if [ "$1" == "list" ] ; then
-	mmcli_list=$( mmcli -L | grep -oe "[0-9]* " | grep -oe [0-9]* )
+	mmcli_list=$( mmcli -L | grep -oe "[0-9*] " )
 	ssh_list=$( nmcli device show 2>/dev/null | grep IP4.GATEWAY | grep -oe "192.168.[0-9*].[0-9*]" )
 	printf "$mmcli_list"
 	printf "\n"
