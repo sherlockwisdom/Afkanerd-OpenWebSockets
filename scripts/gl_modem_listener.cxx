@@ -13,7 +13,7 @@ int read_log_calculate_work_load(string modem_path) {
 	int total_count = 0;
 	while(getline(modem_log_read, tmp_buffer)) {
 		//XXX: timestamp:count
-		string timestamp = helpers::split(tmp_buffer, ':')[0];
+		string timestamp = helpers::split(tmp_buffer, ':', true)[0];
 		string count = helpers::split(tmp_buffer, ':', true)[1];
 		total_count += atoi(count.c_str());
 	}
@@ -123,12 +123,11 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				cerr << func_name << "=> errno message: " << strerror_r(errno, str_error, 256) << endl;
 			}
 			else { //XXX: Storing workload
-				/*string timestamp = helpers::terminal_stdout("date +%s");
+				string timestamp = helpers::split( helpers::terminal_stdout("date +%s"), '\n')[0];
 				string load_balancer = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
 				ofstream write_to_work_load(load_balancer.c_str(), ios::app);
 				write_to_work_load << timestamp << ":1" << endl;
 				write_to_work_load.close();
-				*/
 			}
 
 		}

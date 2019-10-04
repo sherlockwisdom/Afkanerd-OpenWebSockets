@@ -79,7 +79,21 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			write_back_to_request_file.close();
 			break;
 		}
+		//convert modems into a multimap, then take the last elements and store in a map, then pass that map to the iterator and iterate till all the request have been taken care of
+		set<pair<int,string>> modems_sorted_by_workload;
 		for(auto modem : MODEM_DAEMON) {
+			modems_sorted_by_workload.insert({MODEM_WORKLOAD[modem.first], modem.first});
+		}
+		set<pair<int,string>>::iterator modems_sorted_by_workload_iterator = modems_sorted_by_workload.begin();
+		int min_workload = modems_sorted_by_workload_iterator->first;
+		map<string,string> modems_to_use {{modems_sorted_by_workload_iterator->second, MODEM_DAEMON[modems_sorted_by_workload_iterator->second]}};
+		++modems_sorted_by_workload_iterator;
+		for(auto modems_sorted_by_workload_iterator : modems_sorted_by_workload) {
+			if(modems_sorted_by_workload_iterator.first <= min_workload) modems_to_use.insert(make_pair(modems_sorted_by_workload_iterator.second, MODEM_DAEMON[modems_sorted_by_workload_iterator.second]));
+			else break;
+		}
+
+		for(auto modem : modems_to_use) {
 			if(helpers::to_upper(modem.second) != isp) continue;
 
 			if(!helpers::modem_is_available(modem.first)) continue;
