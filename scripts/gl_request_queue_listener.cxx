@@ -113,12 +113,12 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 
 				//update load_balancer
-				ofstream write_to_load_balancer((string)(SYS_FOLDER_MODEMS + "/" + modem.first + "/.load_balancer.dat").c_str());
+				/*
+				ofstream write_to_load_balancer((string)(SYS_FOLDER_MODEMS + "/" + modem.first + "/.load_balancer.dat").c_str(), ios::app);
 				write_to_load_balancer << helpers::split( helpers::terminal_stdout("date +%s"), '\n' )[0] << ":1" << endl;
-				write_to_load_balancer.close();
+				write_to_load_balancer.close();*/
 				
 				//update mem load balancer
-				++MODEM_WORKLOAD[modem.first];
 				++k;
 			}
 			else {

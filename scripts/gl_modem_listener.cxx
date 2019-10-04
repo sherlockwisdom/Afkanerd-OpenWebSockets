@@ -48,7 +48,7 @@ void modem_cleanse( string imei ) {
 }
 
 
-inline vector<string> get_modems_jobs(string folder_name) {
+vector<string> get_modems_jobs(string folder_name) {
 	return helpers::split( helpers::terminal_stdout((string)("ls -1 " + folder_name)), '\n', true );
 }
 
@@ -90,8 +90,18 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				++line_counter;
 			}
 
+			if(message.empty() or number.empty()) {
+				printf("%s=> Found bad file --- no message--- deleting....", func_name.c_str());
+				if( remove(full_filename.c_str()) != 0 ) {
+					cerr << func_name << "=> failed to delete job!!!!!" << endl;
+					char str_error[256];
+					cerr << func_name << "=> errno message: " << strerror_r(errno, str_error, 256) << endl;
+				}
+				continue;
+			}
+
 			read_job.close();
-			//printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
+			printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			
 			//XXX: Lord Help me
 			if(type == "MMCLI") {
@@ -142,6 +152,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				ofstream write_to_work_load(load_balancer.c_str(), ios::app);
 				write_to_work_load << timestamp << ":1" << endl;
 				write_to_work_load.close();
+				++MODEM_WORKLOAD[modem_imei];
 			}
 
 		}
