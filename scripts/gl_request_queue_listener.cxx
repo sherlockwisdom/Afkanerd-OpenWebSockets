@@ -113,6 +113,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 
 				//update load_balancer
+				//TODO: Check if load balancer file read good
 				ofstream write_to_load_balancer((string)(SYS_FOLDER_MODEMS + "/" + modem.first + "/.load_balancer.dat").c_str());
 				write_to_load_balancer << helpers::split( helpers::terminal_stdout("date +%s"), '\n' )[0] << ":1" << endl;
 				write_to_load_balancer.close();
