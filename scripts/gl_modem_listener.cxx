@@ -99,12 +99,25 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
 				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 				if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
-					printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
-					std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+					if(terminal_stdout.find("Serial command timed out") != string::npos) {
+						printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
+						std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+					}
+					else {
+						printf("%s=> Not testing again... routing jobs away!", func_name.c_str());
+						//TODO: Should have some form of alert that tell about this modem being down
+						//FIXME: URGENT: If this modem ever comes back to it's enses, people would be receiving lots of messages
+						//XXX: Writing back to back to request file
+						ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);
+						//TODO: make sure this can happen
+						write_to_request_file << "number=" << number << ",message=\"" << message << "\"" << endl;
+						write_to_request_file.close();	
+					}
 				}
 			}
 
 			else if(type == "SSH") {
+				//TODO: Figure out how to make SSH tell if SMS has gone out or failed
 				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + message + "\\\"\"";
 				//cout << func_name << "=> SSH COMMAND: " << sms_command << endl;
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
