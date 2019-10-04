@@ -102,10 +102,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 					if(terminal_stdout.find("Serial command timed out") != string::npos) {
 						printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
 						std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
-<<<<<<< HEAD
 						//TODO: Could make it try again even once before calling it a day, but not sure how effective this will be
-=======
->>>>>>> 87cc53a01d10c544c6ddd140462ad316710c0cb6
 					}
 					else {
 						printf("%s=> Not testing again... routing jobs away!", func_name.c_str());
