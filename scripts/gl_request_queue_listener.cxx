@@ -82,6 +82,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		//convert modems into a multimap, then take the last elements and store in a map, then pass that map to the iterator and iterate till all the request have been taken care of
 		set<pair<int,string>> modems_sorted_by_workload;
 		for(auto modem : MODEM_DAEMON) {
+			if(helpers::to_upper(modem.second) != isp) continue;
 			printf("%s=> Modem workload at sorting: +imei[%s] +workload[%d]\n", func_name.c_str(), modem.first.c_str(), MODEM_WORKLOAD[modem.first]);
 			modems_sorted_by_workload.insert({MODEM_WORKLOAD[modem.first], modem.first});
 		}
@@ -89,6 +90,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		int min_workload = modems_sorted_by_workload_iterator->first;
 		map<string,string> modems_to_use {{modems_sorted_by_workload_iterator->second, MODEM_DAEMON[modems_sorted_by_workload_iterator->second]}};
 		++modems_sorted_by_workload_iterator;
+		printf("%s=> Min workload = [%d]\n", func_name.c_str(), min_workload);
 		for(auto modems_sorted_by_workload_iterator : modems_sorted_by_workload) {
 			if(modems_sorted_by_workload_iterator.first <= min_workload) modems_to_use.insert(make_pair(modems_sorted_by_workload_iterator.second, MODEM_DAEMON[modems_sorted_by_workload_iterator.second]));
 			else break;
@@ -98,9 +100,18 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 		for(auto modem : modems_to_use) {
 			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
-			if(helpers::to_upper(modem.second) != isp) continue;
+			if(helpers::to_upper(modem.second) != isp) {
+				printf("%s=> Wrong ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
+				continue;
+			}
 
-			if(!helpers::modem_is_available(modem.first)) continue;
+			if(!helpers::modem_is_available(modem.first)) {
+				printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
+				continue;
+			}
+
+			printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
+			///*
 			if(k<isp_request.size()) {
 				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
 				//XXX: Naming files using UNIX EPOCH counter
@@ -117,17 +128,18 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 
 				//update load_balancer
-				/*
+				//*//*
 				ofstream write_to_load_balancer((string)(SYS_FOLDER_MODEMS + "/" + modem.first + "/.load_balancer.dat").c_str(), ios::app);
 				write_to_load_balancer << helpers::split( helpers::terminal_stdout("date +%s"), '\n' )[0] << ":1" << endl;
-				write_to_load_balancer.close();*/
+				write_to_load_balancer.close();//*/
 				
-				//update mem load balancer
+				//update mem load balancer 
+				//*/
 				++k;
 			}
 			else {
 				break;
-			}
+			}//*/
 		}
 	}
 }

@@ -182,13 +182,14 @@ void ssh_extractor( string ip_gateway ) {
 			//printf("%s=> updated modem pool for SSH\n%s=> update info: ip[%s], ISP[%s]\n", func_name.c_str(), func_name.c_str(), ip_gateway.c_str(), ssh_stdout_lines[1].c_str());
 
 			if(MODEM_DAEMON.find(ip_gateway) != MODEM_DAEMON.end()) {
-				if(errno == EEXIST) {
-					check_modem_workload(ip_gateway);
-				}
 				cout << func_name << "=> Instance of SSH already running... watch dog reset!" << endl;
 
 				std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 				return;
+			}
+
+			else if(errno == EEXIST) {
+				check_modem_workload(ip_gateway);
 			}
 
 			std::thread tr_ssh_listener(modem_listener, "\tSSH Listener", ip_gateway, ip_gateway, ssh_stdout_lines[1], true, "SSH");
