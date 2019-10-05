@@ -82,6 +82,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		//convert modems into a multimap, then take the last elements and store in a map, then pass that map to the iterator and iterate till all the request have been taken care of
 		set<pair<int,string>> modems_sorted_by_workload;
 		for(auto modem : MODEM_DAEMON) {
+			printf("%s=> Modem workload at sorting: +imei[%s] +workload[%d]\n", func_name.c_str(), modem.first.c_str(), MODEM_WORKLOAD[modem.first]);
 			modems_sorted_by_workload.insert({MODEM_WORKLOAD[modem.first], modem.first});
 		}
 		set<pair<int,string>>::iterator modems_sorted_by_workload_iterator = modems_sorted_by_workload.begin();
@@ -93,7 +94,10 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			else break;
 		}
 
+		cout << func_name << "=> Targeting " << modems_to_use.size() << " modems..." << endl;
+
 		for(auto modem : modems_to_use) {
+			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
 			if(helpers::to_upper(modem.second) != isp) continue;
 
 			if(!helpers::modem_is_available(modem.first)) continue;

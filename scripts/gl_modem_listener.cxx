@@ -152,7 +152,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				ofstream write_to_work_load(load_balancer.c_str(), ios::app);
 				write_to_work_load << timestamp << ":1" << endl;
 				write_to_work_load.close();
-				++MODEM_WORKLOAD[modem_imei];
+				MODEM_WORKLOAD[modem_imei] += 1;
 			}
 
 		}
@@ -177,14 +177,14 @@ void ssh_extractor( string ip_gateway ) {
 			cerr << func_name << ".error=> " << strerror_r(errno, str_error, 256) << endl;
 		}
 		else {
-			if(errno == EEXIST) {
-				//check_modem_workload(ip_gateway);
-			}
 
 			//MODEM_POOL.insert(make_pair(ip_gateway, (vector<string>){ip_gateway, ssh_stdout_lines[1]}));
 			//printf("%s=> updated modem pool for SSH\n%s=> update info: ip[%s], ISP[%s]\n", func_name.c_str(), func_name.c_str(), ip_gateway.c_str(), ssh_stdout_lines[1].c_str());
 
 			if(MODEM_DAEMON.find(ip_gateway) != MODEM_DAEMON.end()) {
+				if(errno == EEXIST) {
+					check_modem_workload(ip_gateway);
+				}
 				cout << func_name << "=> Instance of SSH already running... watch dog reset!" << endl;
 
 				std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
