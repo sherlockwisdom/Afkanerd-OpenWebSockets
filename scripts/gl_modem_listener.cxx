@@ -13,7 +13,7 @@ int read_log_calculate_work_load(string modem_path) {
 	int total_count = 0;
 	while(getline(modem_log_read, tmp_buffer)) {
 		//XXX: timestamp:count
-		string timestamp = helpers::split(tmp_buffer, ':')[0];
+		string timestamp = helpers::split(tmp_buffer, ':', true)[0];
 		string count = helpers::split(tmp_buffer, ':', true)[1];
 		total_count += atoi(count.c_str());
 	}
@@ -48,7 +48,7 @@ void modem_cleanse( string imei ) {
 }
 
 
-inline vector<string> get_modems_jobs(string folder_name) {
+vector<string> get_modems_jobs(string folder_name) {
 	return helpers::split( helpers::terminal_stdout((string)("ls -1 " + folder_name)), '\n', true );
 }
 
@@ -79,15 +79,25 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				continue;
 			}
 
-			string tmp_buffer, number, message;
+			string tmp_buffer, number, message = "";
 			short int line_counter = 0;
 			while(getline(read_job, tmp_buffer)) {
 				if(line_counter == 0) number = tmp_buffer;
-				else if(line_counter == 1) {
-					message = tmp_buffer;
+				else if(line_counter > 0) {
+					message += "\n" + tmp_buffer;
 					line_counter = 0;
 				}
 				++line_counter;
+			}
+
+			if(message.empty() or number.empty()) {
+				printf("%s=> Found bad file --- no message--- deleting....", func_name.c_str());
+				if( remove(full_filename.c_str()) != 0 ) {
+					cerr << func_name << "=> failed to delete job!!!!!" << endl;
+					char str_error[256];
+					cerr << func_name << "=> errno message: " << strerror_r(errno, str_error, 256) << endl;
+				}
+				continue;
 			}
 
 			read_job.close();
@@ -99,13 +109,28 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
 				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 				if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
-					printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
-					std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+					if(terminal_stdout.find("Serial command timed out") != string::npos) {
+						printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
+						std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+						//TODO: Could make it try again even once before calling it a day, but not sure how effective this will be
+					}
+					else {
+						printf("%s=> Not testing again... routing jobs away!", func_name.c_str());
+						//TODO: Should have some form of alert that tell about this modem being down
+						//FIXME: URGENT: If this modem ever comes back to it's enses, people would be receiving lots of messages
+						//XXX: Writing back to back to request file
+						ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);
+						//TODO: make sure this can happen
+						write_to_request_file << "number=" << number << ",message=\"" << message << "\"" << endl;
+						write_to_request_file.close();	
+					}
 				}
 			}
 
 			else if(type == "SSH") {
-				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" 'sendsms \"" + number + "\" \"" + message + "\"";
+				//TODO: Figure out how to make SSH tell if SMS has gone out or failed
+				string sms_command = "ssh root@" + modem_index + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + message + "\\\"\"";
+				//cout << func_name << "=> SSH COMMAND: " << sms_command << endl;
 				string terminal_stdout = helpers::terminal_stdout(sms_command);
 				cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 
@@ -122,12 +147,12 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 				cerr << func_name << "=> errno message: " << strerror_r(errno, str_error, 256) << endl;
 			}
 			else { //XXX: Storing workload
-				/*string timestamp = helpers::terminal_stdout("date +%s");
+				string timestamp = helpers::split( helpers::terminal_stdout("date +%s"), '\n')[0];
 				string load_balancer = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
 				ofstream write_to_work_load(load_balancer.c_str(), ios::app);
 				write_to_work_load << timestamp << ":1" << endl;
 				write_to_work_load.close();
-				*/
+				MODEM_WORKLOAD[modem_imei] += 1;
 			}
 
 		}
@@ -152,9 +177,6 @@ void ssh_extractor( string ip_gateway ) {
 			cerr << func_name << ".error=> " << strerror_r(errno, str_error, 256) << endl;
 		}
 		else {
-			if(errno == EEXIST) {
-				//check_modem_workload(ip_gateway);
-			}
 
 			//MODEM_POOL.insert(make_pair(ip_gateway, (vector<string>){ip_gateway, ssh_stdout_lines[1]}));
 			//printf("%s=> updated modem pool for SSH\n%s=> update info: ip[%s], ISP[%s]\n", func_name.c_str(), func_name.c_str(), ip_gateway.c_str(), ssh_stdout_lines[1].c_str());
@@ -164,6 +186,10 @@ void ssh_extractor( string ip_gateway ) {
 
 				std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 				return;
+			}
+
+			else if(errno == EEXIST) {
+				check_modem_workload(ip_gateway);
 			}
 
 			std::thread tr_ssh_listener(modem_listener, "\tSSH Listener", ip_gateway, ip_gateway, ssh_stdout_lines[1], true, "SSH");

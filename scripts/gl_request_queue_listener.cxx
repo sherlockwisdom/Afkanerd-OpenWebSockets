@@ -19,9 +19,15 @@ auto de_queue_from_request_file() {
 		string tmp_string_buffer = "";
 		string tmp_key = "";
 		map<string, string> request_tuple;
+		bool ignore = false;
+		bool safe = false;
 		for(auto i : tmp_ln_buffer) {
-			static bool ignore = false;
 			//XXX: checks for seperator
+			if(i == 'n' and safe and ignore) {
+				tmp_string_buffer += '\n';
+				safe = false;
+				continue;
+			}
 			if(i == '=' and !ignore) {
 				tmp_key = tmp_string_buffer;
 				tmp_string_buffer = "";
@@ -37,10 +43,14 @@ auto de_queue_from_request_file() {
 				ignore = !ignore;
 				continue;
 			}
+			if(i == '\\' and ignore) {
+				safe = true;
+				continue;
+			}
 			tmp_string_buffer += i;
 		}
 		if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", func_name.c_str(), j.first.c_str(), j.second.c_str());
+		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", "PARSED REQUEST", j.first.c_str(), j.second.c_str());
 		request_tuple_container.push_back(request_tuple);
 	}
 	sys_request_file_read.close();
@@ -53,7 +63,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 	for(auto request : request_tuple_container) {
 		string number= request["number"];
 		string isp = helpers::ISPFinder(number);
-		isp_sorted_request_container[isp].push_back(request);
+		if(!isp.empty()) isp_sorted_request_container[isp].push_back(request);
 	}
 
 	return isp_sorted_request_container;
@@ -61,7 +71,6 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 
 
 void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
-	cout << func_name << "=> Processing " << isp_request.size() << " jobs for - " << isp << endl;
 	for(int k=0;k<isp_request.size();) {
 		if(MODEM_DAEMON.empty()) {
 			cout << func_name << "=> No modem found, writing back to request file..." << endl;
@@ -70,14 +79,41 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			write_back_to_request_file.close();
 			break;
 		}
+		//convert modems into a multimap, then take the last elements and store in a map, then pass that map to the iterator and iterate till all the request have been taken care of
+		set<pair<int,string>> modems_sorted_by_workload;
 		for(auto modem : MODEM_DAEMON) {
-			if(!helpers::modem_is_available(modem.first) || helpers::to_upper(modem.second) != isp) {
-				//do_not_iterate = true;
+			if(helpers::to_upper(modem.second) != isp) continue;
+			printf("%s=> Modem workload at sorting: +imei[%s] +workload[%d]\n", func_name.c_str(), modem.first.c_str(), MODEM_WORKLOAD[modem.first]);
+			modems_sorted_by_workload.insert({MODEM_WORKLOAD[modem.first], modem.first});
+		}
+		set<pair<int,string>>::iterator modems_sorted_by_workload_iterator = modems_sorted_by_workload.begin();
+		int min_workload = modems_sorted_by_workload_iterator->first;
+		map<string,string> modems_to_use {{modems_sorted_by_workload_iterator->second, MODEM_DAEMON[modems_sorted_by_workload_iterator->second]}};
+		++modems_sorted_by_workload_iterator;
+		printf("%s=> Min workload = [%d]\n", func_name.c_str(), min_workload);
+		for(auto modems_sorted_by_workload_iterator : modems_sorted_by_workload) {
+			if(modems_sorted_by_workload_iterator.first <= min_workload) modems_to_use.insert(make_pair(modems_sorted_by_workload_iterator.second, MODEM_DAEMON[modems_sorted_by_workload_iterator.second]));
+			else break;
+		}
+
+		cout << func_name << "=> Targeting " << modems_to_use.size() << " modems..." << endl;
+
+		for(auto modem : modems_to_use) {
+			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
+			if(helpers::to_upper(modem.second) != isp) {
+				printf("%s=> Wrong ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
 				continue;
 			}
 
+			if(!helpers::modem_is_available(modem.first)) {
+				printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
+				continue;
+			}
+
+			printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
+			///*
 			if(k<isp_request.size()) {
-				printf("%s=>\tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
+				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
 				//XXX: Naming files using UNIX EPOCH counter
 				//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
 				string rand_filename = helpers::random_string();
@@ -89,11 +125,21 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 				map<string, string> request = isp_request[k];
 				job_write << request["number"] << "\n" << request["message"];
 				job_write.close();
+
+
+				//update load_balancer
+				//*//*
+				ofstream write_to_load_balancer((string)(SYS_FOLDER_MODEMS + "/" + modem.first + "/.load_balancer.dat").c_str(), ios::app);
+				write_to_load_balancer << helpers::split( helpers::terminal_stdout("date +%s"), '\n' )[0] << ":1" << endl;
+				write_to_load_balancer.close();//*/
+				
+				//update mem load balancer 
+				//*/
 				++k;
 			}
 			else {
 				break;
-			}
+			}//*/
 		}
 	}
 }
