@@ -188,6 +188,8 @@ class SocketButler extends Event {
 						if(!socket.isClosed()) {
 							if(typeof appType != "undefined" && socket.appType.includes(appType) ) {
 								socket.sendMessage( payload, (error)=>{
+									console.log("socket-butler:forwarder=> sending payload..");
+									console.log(payload);
 									if(error) {
 										console.log("socket-butler:forwarder:error=>", error.message);
 										throw error;

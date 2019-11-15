@@ -7,10 +7,19 @@ let mysqlConnection = Tools.mysql_connection();
 var socketButler = new SocketButler(mysqlConnection);
 var app = express()
 
-app.use(bodyParser.json());
+
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+//app.use(bodyParser.json());
+
+
+app.post('/v1/deku', function(req, res){
+	console.log(req.body);
+	res.status(200);
+	res.end();
+})
 app.post('/v1/sms', function(req, res){
 	let body = req.body;
-	//console.log(body);
 
 	if(!body.hasOwnProperty("access_token")){
 		res.status(401);
