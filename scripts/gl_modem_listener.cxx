@@ -35,7 +35,7 @@ void check_modem_workload(string modem_imei) {
 		cout << "DONE" << endl;
 		int load_counter = read_log_calculate_work_load(modem_path);
 		MODEM_WORKLOAD.insert(make_pair(modem_imei, load_counter));
-		printf("DONE\n%s=> updated workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
+		printf("DONE\n%s=> inserted into workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
 		modem_log_read.close();
 	}
 }
@@ -115,7 +115,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 						//TODO: Could make it try again even once before calling it a day, but not sure how effective this will be
 					}
 					else {
-						printf("%s=> Not testing again... routing jobs away!", func_name.c_str());
+						printf("%s=> Not testing again... routing jobs away!\n", func_name.c_str());
 						//TODO: Should have some form of alert that tell about this modem being down
 						//FIXME: URGENT: If this modem ever comes back to it's enses, people would be receiving lots of messages
 						//XXX: Writing back to back to request file
