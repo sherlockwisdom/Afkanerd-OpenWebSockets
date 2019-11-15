@@ -79,6 +79,8 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			write_back_to_request_file.close();
 			break;
 		}
+
+		/*
 		//convert modems into a multimap, then take the last elements and store in a map, then pass that map to the iterator and iterate till all the request have been taken care of
 		set<pair<int,string>> modems_sorted_by_workload;
 		for(auto modem : MODEM_DAEMON) {
@@ -86,19 +88,25 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 			printf("%s=> Modem workload at sorting: +imei[%s] +workload[%d]\n", func_name.c_str(), modem.first.c_str(), MODEM_WORKLOAD[modem.first]);
 			modems_sorted_by_workload.insert({MODEM_WORKLOAD[modem.first], modem.first});
 		}
+
+		print("%s=> Modems matching provided ISP [%d]\n", func_name.c_str(), modems_sorted_by_workload.size());
+
 		set<pair<int,string>>::iterator modems_sorted_by_workload_iterator = modems_sorted_by_workload.begin();
 		int min_workload = modems_sorted_by_workload_iterator->first;
 		map<string,string> modems_to_use {{modems_sorted_by_workload_iterator->second, MODEM_DAEMON[modems_sorted_by_workload_iterator->second]}};
 		++modems_sorted_by_workload_iterator;
 		printf("%s=> Min workload = [%d]\n", func_name.c_str(), min_workload);
-		for(auto modems_sorted_by_workload_iterator : modems_sorted_by_workload) {
+
+		// Add some form of better algorithmic load balancer here
+		for( modems_sorted_by_workload_iterator : modems_sorted_by_workload) {
 			if(modems_sorted_by_workload_iterator.first <= min_workload) modems_to_use.insert(make_pair(modems_sorted_by_workload_iterator.second, MODEM_DAEMON[modems_sorted_by_workload_iterator.second]));
 			else break;
 		}
 
 		cout << func_name << "=> Targeting " << modems_to_use.size() << " modems..." << endl;
+		*/
 
-		for(auto modem : modems_to_use) {
+		for(auto modem : MODEM_DAEMON) {
 			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
 			if(helpers::to_upper(modem.second) != isp) {
 				printf("%s=> Wrong ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());

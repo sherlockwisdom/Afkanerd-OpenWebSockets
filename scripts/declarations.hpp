@@ -40,7 +40,7 @@ map<string, vector<string>> MODEM_POOL;
 map<string, int> MODEM_WORKLOAD;
 
 
-//IMEI -> initialized
+//IMEI -> ISP
 map<string, string> MODEM_DAEMON;
 
 #endif
