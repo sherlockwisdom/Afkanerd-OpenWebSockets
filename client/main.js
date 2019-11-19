@@ -238,6 +238,22 @@ let startScript = async ( sebastian )=>{
 	});
 }
 
+
+
+let data = {
+	type : "make",
+	payload : ["-C", "../scripts/"]
+}
+
+newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+outputs = newProcess.stdout;
+stderrs = newProcess.stderr;
+
+console.log("Sebastian:make=> outputs:", outputs)
+console.log("Sebastian:make=> stderrs:", stderrs);
+
+
+
 var sebastian = new Sebastian;
 startScript(sebastian);
 sebastian.on("safemenow!", sebastian.restart);
