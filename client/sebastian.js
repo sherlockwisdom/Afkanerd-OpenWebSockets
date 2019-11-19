@@ -57,6 +57,11 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		outputs = newProcess.stdout;
+		stderrs = newProcess.stderr;
+
+		console.log("Sebastian:update=> outputs:", outputs)
+		console.log("Sebastian:update=> stderrs:", stderrs);
 
 		this.pm2.connect(()=>{
 			
