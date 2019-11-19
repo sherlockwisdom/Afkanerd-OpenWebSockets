@@ -185,7 +185,6 @@ let startScript = async ( sebastian )=>{
 										"RESOLVE" : resolve
 									})
 								}
-	console.log(body);
 								catch(error) {
 									console.log("socket.message.error=>", error.message);
 								}
