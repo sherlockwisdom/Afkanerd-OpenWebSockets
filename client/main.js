@@ -253,6 +253,23 @@ console.log("Sebastian:make=> outputs:", outputs)
 console.log("Sebastian:make=> stderrs:", stderrs);
 
 
+if(outputs.length < 1 && stderrs.length > 0) {
+	console.warn("Sebastian:make=> error has been detected...");
+	//TODO: something goes in here
+	let data = {
+		type : "make",
+		payload : ["-C", "scripts/"]
+	}
+
+	newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+	outputs = newProcess.stdout;
+	stderrs = newProcess.stderr;
+
+	console.log("Sebastian:make=> outputs:", outputs)
+	console.log("Sebastian:make=> stderrs:", stderrs);
+}
+
+
 
 var sebastian = new Sebastian;
 startScript(sebastian);
