@@ -45,4 +45,7 @@ map<string, int> MODEM_WORKLOAD;
 //IMEI -> ISP
 map<string, string> MODEM_DAEMON;
 
+//IMEI -> SUCCESS COUNT
+map<string, int> GL_SUCCESS_MODEM_LIST;
+
 #endif

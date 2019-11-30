@@ -102,7 +102,12 @@ bool ssh_send( string message, string number, string modem_ip ) {
 }
 
 void update_modem_success_count( string modem_imei ) {
+	//TODO: increment success count for this modem
+	if( GL_SUCCESS_MODEM_LIST.find( modem_imei ) == GL_SUCCESS_MODEM_LIST.end() ) {
+		GL_SUCCESS_MODEM_LIST.insert( make_pair( modem_imei, 0 ) );
+	}
 
+	GL_SUCCESS_MODEM_LIST[modem_imei] += 1;
 }
 
 
