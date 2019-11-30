@@ -46,33 +46,49 @@ map<string, string> read_request_file( string full_filename, string modem_imei) 
 
 
 
-
-void write_for_urgent_transmission( string modem_imei, string message, string number ) {
-	//begin by blacklisting the modem, then write to the file
-}
-
-
 bool mmcli_send( string message, string number, string modem_index ) {
 	string func_name = "mmcli_send";
 	string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
 	string terminal_stdout = helpers::terminal_stdout(sms_command);
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 	if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
-		if(terminal_stdout.find("Serial command timed out") != string::npos) {
+		if(terminal_stdout.find("timed out") != string::npos) {
 			printf("%s=> Modem needs to sleep... going down for 60 seconds\n", func_name.c_str());
 			std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
 		}
-		else {
-			printf("%s=> Not testing again... routing jobs away!\n", func_name.c_str());
-			//write_to_request_file( message, number );
-			//TODO: Write to urgent transmission
-		}
-
-
 		return false;
 	}
 
 	return true;
+}
+
+
+void write_for_urgent_transmission( string modem_imei, string message, string number ) {
+	//XXX: which modem has been the most successful
+	if( !GL_SUCCESS_MODEM_LIST.empty() ) {
+		string most_successful_modem;
+		auto it_GL_SUCCESS_MODEM_LIST = GL_SUCCESS_MODEM_LIST->begin();
+		int most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST->second();
+		++it_GL_SUCCESS_MODEM_LIST;
+		for( it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
+			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second > most_success_modem_count ) {
+				most_successful_modem_count = it_GL_MODEM_LIST.second;
+				most_successful_modem = it_GL_MODEM_LIST.first;
+			}
+		}
+		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), modem_count);
+
+		string modem_index;
+		for(auto modem_details : GL_MODEM_POOL) {
+			if( modem_details.second[0] == most_successful_modem ) {
+				modem_index = modem_details.first;
+				break;
+			}
+		}
+
+		//FIXME: This solution is not checking for SSH modems
+		modem_index.empty() ? write_to_request_file( message, number ) : mmcli_send( message, number, modem_index );
+	}
 }
 
 bool ssh_send( string message, string number, string modem_ip ) {
@@ -83,6 +99,10 @@ bool ssh_send( string message, string number, string modem_ip ) {
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 
 	return true; //FIXME: This is propaganda
+}
+
+void update_modem_success_count( string modem_imei ) {
+
 }
 
 
@@ -134,11 +154,11 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 
 			//printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			if(type == "MMCLI") {
-				mmcli_send( message, number, modem_index ) ? update_modem_success_count( modem_imei ) : write_for_urgent_transmission( modem_imei );
+				mmcli_send( message, number, modem_index ) ? update_modem_success_count( modem_imei ) : write_for_urgent_transmission( modem_imei, message, number );
 			}
 
 			else if(type == "SSH") {
-				ssh_send( message, number, modem_index ) ? update_modem_workload( modem_imei ) : update_modem_workload( modem_imei, 2 );
+				ssh_send( message, number, modem_index ) ? update_modem_success_count( modem_imei ) : write_for_urgent_transmission( modem_imei, message, number );
 			}
 
 			//XXX: Test if it fails to delete this file
