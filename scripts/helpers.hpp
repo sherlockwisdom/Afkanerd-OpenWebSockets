@@ -113,7 +113,7 @@ string to_upper(string input) {
 }
 
 
-
+//Customized just to work for those needing tools to continue working on deku
 bool modem_is_available(string modem_imei) {
 	string list_of_modem_indexes = helpers::terminal_stdout("./modem_information_extraction.sh list");
 	vector<string> modem_indexes = helpers::split(list_of_modem_indexes, '\n', true);
@@ -129,6 +129,40 @@ bool modem_is_available(string modem_imei) {
 	return false;
 }
 
+//TODO: Make work load checking functional
+int read_log_calculate_work_load(string modem_path) {
+	string func_name = "Read Log Calculate Workload";
+	//cout << func_name << "=> started calculating work load" << endl;
+	ifstream modem_log_read(modem_path.c_str());
+	//XXX: Assumption is the file is good if it's passed in here
+	string tmp_buffer;
+	int total_count = 0;
+	while(getline(modem_log_read, tmp_buffer)) {
+		//XXX: timestamp:count
+		string timestamp = helpers::split(tmp_buffer, ':', true)[0];
+		string count = helpers::split(tmp_buffer, ':', true)[1];
+		total_count += atoi(count.c_str());
+	}
+	modem_log_read.close();
+	//cout << func_name << "=> calculating work load ended..." << endl;
+	return total_count;
+}
+
+void check_modem_workload( string modem_path ) {
+	string func_name = "Check Modem Workload";
+	//string modem_path = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
+	ifstream modem_log_read(modem_path.c_str());
+	if(!modem_log_read.good()) {
+		//cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
+	}
+	else {
+		cout << "DONE" << endl;
+		int load_counter = read_log_calculate_work_load(modem_path);
+		MODEM_WORKLOAD.insert(make_pair(modem_imei, load_counter));
+		//printf("DONE\n%s=> inserted into workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
+		modem_log_read.close();
+	}
+}
 
 }
 
