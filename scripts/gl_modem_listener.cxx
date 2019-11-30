@@ -52,6 +52,11 @@ void write_to_request_file( string message, string number ) {
 }
 
 
+void write_for_urgent_transmission( string message, string number ) {
+
+}
+
+
 bool mmcli_send( string message, string number, string modem_index ) {
 	string func_name = "mmcli_send";
 	string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
@@ -59,14 +64,17 @@ bool mmcli_send( string message, string number, string modem_index ) {
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 	if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
 		if(terminal_stdout.find("Serial command timed out") != string::npos) {
-			printf("%s=> Modem needs to sleep... going down for 30 seconds\n", func_name.c_str());
+			printf("%s=> Modem needs to sleep... going down for 60 seconds\n", func_name.c_str());
 			std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
 		}
 		else {
 			printf("%s=> Not testing again... routing jobs away!\n", func_name.c_str());
-			write_to_request_file( message, number );
-			return false;
+			//write_to_request_file( message, number );
+			//TODO: Write to urgent transmission
 		}
+
+
+		return false;
 	}
 
 	return true;
@@ -80,17 +88,6 @@ bool ssh_send( string message, string number, string modem_ip ) {
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 
 	return true; //FIXME: This is propaganda
-}
-
-void update_modem_workload( string modem_imei, int work_count = 1) {
-	string timestamp = helpers::split( helpers::terminal_stdout("date +%s"), '\n')[0];
-	string load_balancer = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
-	ofstream write_to_work_load(load_balancer.c_str(), ios::app);
-	write_to_work_load << timestamp << ":" << work_count << endl;
-	write_to_work_load.close();
-
-	//TODO: Remove this and update live from the file, the few microseconds of doing this wont get anyone killed
-	MODEM_WORKLOAD[modem_imei] += 1;
 }
 
 

@@ -18,11 +18,13 @@
 #include "helpers.hpp"
 
 using namespace std;
+
 /* GLOBAL SYSTEM DECLARATIONS */
 bool GL_MODEM_LISTENER_STATE = true;
 bool GL_SYSTEM_READY = false;
 int GL_TR_SLEEP_TIME = 5;
-int GL_MMCLI_MODEM_SLEEP_TIME = 30;
+int GL_MMCLI_MODEM_SLEEP_TIME = 60; //Seconds
+
 string GL_SSH_IP_GATEWAY = "192.168.";
 string ENV_HOME = getenv("HOME");
 string SYS_FOLDER = ENV_HOME + "/deku";

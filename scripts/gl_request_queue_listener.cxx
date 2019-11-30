@@ -3,7 +3,7 @@
 #include "declarations.hpp"
 
 
-auto de_queue_from_request_file() {
+vector<map<string,string>> de_queue_from_request_file() {
 
 	string tmp_ln_buffer;
 	ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
@@ -59,11 +59,12 @@ auto de_queue_from_request_file() {
 
 
 auto determine_isp_for_request(vector<map<string,string>> request_tuple_container) {
-	map<string,vector<map<string,string>>> isp_sorted_request_container;
+	map<string,vector<map<string,string>>> isp_sorted_request_container; //ISP=>container of messages
 	for(auto request : request_tuple_container) {
 		string number= request["number"];
 		string isp = helpers::ISPFinder(number);
 		if(!isp.empty()) isp_sorted_request_container[isp].push_back(request);
+		//Remove request once it's stored in container
 	}
 
 	return isp_sorted_request_container;
@@ -146,9 +147,6 @@ void gl_request_queue_listener(string func_name) {
 			continue;
 		}
 
-		/*if(!sys_request_file_read) {
-			cout << func_name << "=> no request file, thus no request yet..." << endl;
-		}*/
 		if( struct stat buffer;(stat (SYS_JOB_FILE.c_str(), &buffer) == 0) ) {
 			cout << func_name << "=> WARNING: OLD JOBS PRESENT IN SYSTEM... JUMPING CHECKS AND DEQUEING!!!" << endl;
 			goto DEQUEUE_JOBS;
