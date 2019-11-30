@@ -60,11 +60,18 @@ vector<map<string,string>> de_queue_from_request_file() {
 
 auto determine_isp_for_request(vector<map<string,string>> request_tuple_container) {
 	map<string,vector<map<string,string>>> isp_sorted_request_container; //ISP=>container of messages
-	for(auto request : request_tuple_container) {
+	for(int i=0;i<request_tuple_container.size();++i) {
+		map<string, string> request = request_tuple_container[i];
 		string number= request["number"];
 		string isp = helpers::ISPFinder(number);
-		if(!isp.empty()) isp_sorted_request_container[isp].push_back(request);
-		//Remove request once it's stored in container
+		if(!isp.empty()) {
+			isp_sorted_request_container[isp].push_back(request);
+		}
+		else {
+			string message = request["message"];
+			string number = request["number"];
+			write_to_request_file( message, number );
+		}
 	}
 
 	return isp_sorted_request_container;

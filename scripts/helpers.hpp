@@ -164,6 +164,13 @@ void check_modem_workload( string modem_path ) {
 	}
 }
 
+
+void write_to_request_file( string message, string number ) {
+	ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);
+	write_to_request_file << "number=" << number << ",message=\"" << message << "\"" << endl;
+	write_to_request_file.close();	
+}
+
 }
 
 #endif

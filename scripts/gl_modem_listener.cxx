@@ -45,15 +45,10 @@ map<string, string> read_request_file( string full_filename, string modem_imei) 
 }
 
 
-void write_to_request_file( string message, string number ) {
-	ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);
-	write_to_request_file << "number=" << number << ",message=\"" << message << "\"" << endl;
-	write_to_request_file.close();	
-}
 
 
-void write_for_urgent_transmission( string message, string number ) {
-
+void write_for_urgent_transmission( string modem_imei, string message, string number ) {
+	//begin by blacklisting the modem, then write to the file
 }
 
 
@@ -139,7 +134,7 @@ void modem_listener(string func_name, string modem_imei, string modem_index, str
 
 			//printf("%s=> processing job: number[%s], message[%s]\n", func_name.c_str(), number.c_str(), message.c_str());
 			if(type == "MMCLI") {
-				mmcli_send( message, number, modem_index ) ? update_modem_workload( modem_imei ) : update_modem_workload( modem_imei, 2 );
+				mmcli_send( message, number, modem_index ) ? update_modem_success_count( modem_imei ) : write_for_urgent_transmission( modem_imei );
 			}
 
 			else if(type == "SSH") {
