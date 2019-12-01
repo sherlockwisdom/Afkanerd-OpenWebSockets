@@ -93,12 +93,25 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		Goal: Even distribution of workload across modems
 		*/
 
-		for(auto modem : MODEM_DAEMON) {
+		//TODO: determine all modems for this ISP then send out the messages, will help with even distribution
+
+		map<string,string> isp_modems;
+		cout << func_name << "=> checking for modems for this ISP" << endl;
+		for( auto modem : MODEM_DAEMON ) {
+			if( modem.second.find( isp ) != string::npos ) {
+				isp_modems.insert( modem ); //FIXME: I doubt this
+			}
+		}
+
+		cout << func_name << "=> number of modems for ISP| {" << isp_modems.size() << "}" << endl;
+		for( auto modem : isp_modems ) {
 			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
+			/*
 			if(helpers::to_upper(modem.second) != isp) {
 				printf("%s=> Wrong ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
 				continue;
 			}
+			*/
 
 			if(!helpers::modem_is_available(modem.first)) {
 				printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
