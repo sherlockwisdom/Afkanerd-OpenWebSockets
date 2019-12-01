@@ -95,8 +95,12 @@ void write_modem_job_file( string modem_imei, string message, string number ) {
 void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
 	if(MODEM_DAEMON.empty()) {
 		cout << func_name << "=> No modem found, writing back to request file..." << endl;
-		write_to_request_file( message, number );
-		break;
+		for(auto request_container : isp_request) {
+			string message = request_container["message"];
+			string number = request_container["number"];
+			helpers::write_to_request_file( message, number );
+		}
+		return;
 	}
 
 	//TODO: determine all modems for this ISP then send out the messages, will help with even distribution
@@ -117,22 +121,22 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		for(auto request_container : isp_request) {
 			string message = request_container["message"];
 			string number = request_container["number"];
-			write_to_request_file( message, number );
+			helpers::write_to_request_file( message, number );
 		}
-		break;
+		return;
 	}
 
-	int request_index = 0;
-	for( auto modem : isp_modems ) {
-		printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
+	size_t request_index = 0;
+	for( map<string,string>::iterator i = isp_modems.begin();i != isp_modems.end();++i ) {
+		string modem_imei = i->first;
+		string modem_isp = i->second;
 
-		if(!helpers::modem_is_available(modem.first)) {
-			printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
+		if( request_index >= isp_request.size() ) break;
+
+		if(!helpers::modem_is_available(modem_imei)) {
+			printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem_imei.c_str(), modem_isp.c_str());
 			continue;
 		}
-
-		//FIXME: verify file is opened
-
 
 		map<string, string> request = isp_request[request_index];
 		++request_index;
@@ -140,7 +144,10 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		string message = request["message"];
 		string number = request["number"];
 		
-		write_modem_job_file( modem.first, message, number );
+		write_modem_job_file( modem_imei, message, number );
+
+		if( ++i; i== isp_modems.end()) i = isp_modems.begin();
+		else --i;
 	}
 }
 
