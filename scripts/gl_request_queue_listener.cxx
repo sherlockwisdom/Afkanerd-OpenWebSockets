@@ -78,77 +78,69 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 }
 
 
+void write_modem_job_file( string modem_imei, string message, string number ) {
+	string func_name = "write_modem_job_file";
+	printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem_imei.c_str());
+
+	string rand_filename = helpers::random_string();
+	rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
+	rand_filename += ".jb";
+
+	printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
+	ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei + "/" + rand_filename).c_str());
+	job_write << number << "\n" << message;
+	job_write.close();
+}
+
 void isp_distribution(string func_name, string isp, vector<map<string, string>> isp_request) {
-	for(int k=0;k<isp_request.size();) {
-		if(MODEM_DAEMON.empty()) {
-			cout << func_name << "=> No modem found, writing back to request file..." << endl;
-			ofstream write_back_to_request_file(SYS_REQUEST_FILE, ios::app);
-			write_back_to_request_file << "number=" << isp_request[k]["number"] << ",message=\"" << isp_request[k]["message"] << "\"" << endl;
-			write_back_to_request_file.close();
-			break;
+	if(MODEM_DAEMON.empty()) {
+		cout << func_name << "=> No modem found, writing back to request file..." << endl;
+		write_to_request_file( message, number );
+		break;
+	}
+
+	//TODO: determine all modems for this ISP then send out the messages, will help with even distribution
+	map<string,string> isp_modems;
+	cout << func_name << "=> checking for modems for this ISP" << endl;
+	for( auto modem : MODEM_DAEMON ) {
+		if( modem.second.find( isp ) != string::npos ) {
+			isp_modems.insert( modem ); //FIXME: I doubt this
+		}
+	}
+
+	cout << func_name << "=> number of modems for ISP| {" << isp_modems.size() << "}" << endl;
+	if( isp_modems.size() < 1 ) {
+		cout << func_name << "=> No modem found for ISP, writing back to request file and going to sleep" <<endl;
+		//std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
+		std::this_thread::sleep_for(std::chrono::seconds(10));
+
+		for(auto request_container : isp_request) {
+			string message = request_container["message"];
+			string number = request_container["number"];
+			write_to_request_file( message, number );
+		}
+		break;
+	}
+
+	int request_index = 0;
+	for( auto modem : isp_modems ) {
+		printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
+
+		if(!helpers::modem_is_available(modem.first)) {
+			printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
+			continue;
 		}
 
-
-		/*
-		Goal: Even distribution of workload across modems
-		*/
-
-		//TODO: determine all modems for this ISP then send out the messages, will help with even distribution
-
-		map<string,string> isp_modems;
-		cout << func_name << "=> checking for modems for this ISP" << endl;
-		for( auto modem : MODEM_DAEMON ) {
-			if( modem.second.find( isp ) != string::npos ) {
-				isp_modems.insert( modem ); //FIXME: I doubt this
-			}
-		}
-
-		cout << func_name << "=> number of modems for ISP| {" << isp_modems.size() << "}" << endl;
-		for( auto modem : isp_modems ) {
-			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
-			/*
-			if(helpers::to_upper(modem.second) != isp) {
-				printf("%s=> Wrong ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
-				continue;
-			}
-			*/
-
-			if(!helpers::modem_is_available(modem.first)) {
-				printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem.first.c_str(), modem.second.c_str());
-				continue;
-			}
-
-			printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
-			///*
-			if(k<isp_request.size()) {
-				printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem.first.c_str());
-				//XXX: Naming files using UNIX EPOCH counter
-				//FIXME: EPOCH is poor choice, because this code runs faster than 1 sec
-				string rand_filename = helpers::random_string();
-				rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
-				rand_filename += ".jb";
-				printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
-				ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + modem.first + "/" + rand_filename).c_str());
-				//FIXME: verify file is opened
-				map<string, string> request = isp_request[k];
-				job_write << request["number"] << "\n" << request["message"];
-				job_write.close();
+		//FIXME: verify file is opened
 
 
-				//update load_balancer
-				//*//*
-				ofstream write_to_load_balancer((string)(SYS_FOLDER_MODEMS + "/" + modem.first + "/.load_balancer.dat").c_str(), ios::app);
-				write_to_load_balancer << helpers::split( helpers::terminal_stdout("date +%s"), '\n' )[0] << ":1" << endl;
-				write_to_load_balancer.close();//*/
-				
-				//update mem load balancer 
-				//*/
-				++k;
-			}
-			else {
-				break;
-			}//*/
-		}
+		map<string, string> request = isp_request[request_index];
+		++request_index;
+
+		string message = request["message"];
+		string number = request["number"];
+		
+		write_modem_job_file( modem.first, message, number );
 	}
 }
 
