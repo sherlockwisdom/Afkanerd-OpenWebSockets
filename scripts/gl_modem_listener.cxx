@@ -71,7 +71,7 @@ void update_modem_success_count( string modem_imei ) {
 	GL_SUCCESS_MODEM_LIST[modem_imei] += 1;
 }
 
-void write_for_urgent_transmission( string modem_imei, string message, string number, bool urgent_write = false) {
+void write_for_urgent_transmission( string modem_imei, string message, string number ) {
 	//XXX: which modem has been the most successful
 	string func_name = "write_for_urgent_transmission";
 	if( !GL_SUCCESS_MODEM_LIST.empty() ) {
