@@ -62,8 +62,16 @@ bool mmcli_send( string message, string number, string modem_index ) {
 	return true;
 }
 
+void update_modem_success_count( string modem_imei ) {
+	//TODO: increment success count for this modem
+	if( GL_SUCCESS_MODEM_LIST.find( modem_imei ) == GL_SUCCESS_MODEM_LIST.end() ) {
+		GL_SUCCESS_MODEM_LIST.insert( make_pair( modem_imei, 0 ) );
+	}
 
-void write_for_urgent_transmission( string modem_imei, string message, string number ) {
+	GL_SUCCESS_MODEM_LIST[modem_imei] += 1;
+}
+
+void write_for_urgent_transmission( string modem_imei, string message, string number, bool urgent_write = false) {
 	//XXX: which modem has been the most successful
 	string func_name = "write_for_urgent_transmission";
 	if( !GL_SUCCESS_MODEM_LIST.empty() ) {
@@ -95,7 +103,14 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			helpers::write_to_request_file( message, number );
 		}
 		else {
-			mmcli_send( message, number, modem_index );
+			if( mmcli_send( message, number, modem_index ) ) {
+				update_modem_success_count( modem_imei );
+			}
+			else {
+				cerr << func_name << "=> urgent transmission failed, writing back to request file" << endl;
+				std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+				helpers::write_to_request_file( message, number );
+			}
 		}
 	}
 }
@@ -110,14 +125,6 @@ bool ssh_send( string message, string number, string modem_ip ) {
 	return true; //FIXME: This is propaganda
 }
 
-void update_modem_success_count( string modem_imei ) {
-	//TODO: increment success count for this modem
-	if( GL_SUCCESS_MODEM_LIST.find( modem_imei ) == GL_SUCCESS_MODEM_LIST.end() ) {
-		GL_SUCCESS_MODEM_LIST.insert( make_pair( modem_imei, 0 ) );
-	}
-
-	GL_SUCCESS_MODEM_LIST[modem_imei] += 1;
-}
 
 
 void modem_listener(string func_name, string modem_imei, string modem_index, string ISP, bool watch_dog = true, string type = "MMCLI") {
