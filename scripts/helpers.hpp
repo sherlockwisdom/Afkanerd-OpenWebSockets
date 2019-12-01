@@ -2,6 +2,7 @@
 #define HELPERS_H_INCLUDED_
 #include <algorithm>
 #include <random>
+#include "declarations.hpp"
 using namespace std;
 
 namespace helpers {
@@ -147,23 +148,6 @@ int read_log_calculate_work_load(string modem_path) {
 	//cout << func_name << "=> calculating work load ended..." << endl;
 	return total_count;
 }
-
-void check_modem_workload( string modem_path ) {
-	string func_name = "Check Modem Workload";
-	//string modem_path = SYS_FOLDER_MODEMS + "/" + modem_imei + "/.load_balancer.dat";
-	ifstream modem_log_read(modem_path.c_str());
-	if(!modem_log_read.good()) {
-		//cout << "FAILED\n" << func_name << "=> modem hasn't begun working yet!" << endl;
-	}
-	else {
-		cout << "DONE" << endl;
-		int load_counter = read_log_calculate_work_load(modem_path);
-		MODEM_WORKLOAD.insert(make_pair(modem_imei, load_counter));
-		//printf("DONE\n%s=> inserted into workload, info: imei[%s] load[%d]\n", func_name.c_str(), modem_imei.c_str(), load_counter);
-		modem_log_read.close();
-	}
-}
-
 
 void write_to_request_file( string message, string number ) {
 	ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);

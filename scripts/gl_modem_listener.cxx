@@ -1,4 +1,4 @@
-#include "declarations.hpp"
+#include "helpers.hpp"
 
 using namespace std;
 
@@ -65,21 +65,24 @@ bool mmcli_send( string message, string number, string modem_index ) {
 
 void write_for_urgent_transmission( string modem_imei, string message, string number ) {
 	//XXX: which modem has been the most successful
+	string func_name = "write_for_urgent_transmission";
 	if( !GL_SUCCESS_MODEM_LIST.empty() ) {
 		string most_successful_modem;
-		auto it_GL_SUCCESS_MODEM_LIST = GL_SUCCESS_MODEM_LIST->begin();
-		int most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST->second();
+		auto it_GL_SUCCESS_MODEM_LIST = GL_SUCCESS_MODEM_LIST.begin();
+		int most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST->second;
 		++it_GL_SUCCESS_MODEM_LIST;
-		for( it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
-			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second > most_success_modem_count ) {
-				most_successful_modem_count = it_GL_MODEM_LIST.second;
-				most_successful_modem = it_GL_MODEM_LIST.first;
+
+		//FIXME: Something's wrong with this iterator
+		for( auto it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
+			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second > most_successful_modem_count ) {
+				most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST.second;
+				most_successful_modem = it_GL_SUCCESS_MODEM_LIST.first;
 			}
 		}
-		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), modem_count);
+		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), most_successful_modem_count);
 
 		string modem_index;
-		for(auto modem_details : GL_MODEM_POOL) {
+		for(auto modem_details : MODEM_POOL) {
 			if( modem_details.second[0] == most_successful_modem ) {
 				modem_index = modem_details.first;
 				break;
@@ -87,7 +90,13 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		}
 
 		//FIXME: This solution is not checking for SSH modems
-		modem_index.empty() ? write_to_request_file( message, number ) : mmcli_send( message, number, modem_index );
+		if( modem_index.empty() ) {
+			//FIXME: Should check for another modem rather than send things back to the request file
+			helpers::write_to_request_file( message, number );
+		}
+		else {
+			mmcli_send( message, number, modem_index );
+		}
 	}
 }
 

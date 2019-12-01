@@ -70,7 +70,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 		else {
 			string message = request["message"];
 			string number = request["number"];
-			write_to_request_file( message, number );
+			helpers::write_to_request_file( message, number );
 		}
 	}
 
@@ -93,7 +93,6 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		Goal: Even distribution of workload across modems
 		*/
 
-		MODEM_WORKLOAD.insert(make
 		for(auto modem : MODEM_DAEMON) {
 			printf("%s=> Modems current workload: +workload[%d]\n", func_name.c_str(), MODEM_WORKLOAD[modem.first]); 
 			if(helpers::to_upper(modem.second) != isp) {
