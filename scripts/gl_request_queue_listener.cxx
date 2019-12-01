@@ -114,7 +114,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 	cout << func_name << "=> number of modems for ISP| {" << isp_modems.size() << "}" << endl;
 	if( isp_modems.size() < 1 ) {
-		cout << func_name << "=> No modem found for ISP, writing back to request file and going to sleep" <<endl;
+		cout << func_name << "=> No modem found for ISP, writing back to request file and going to sleep " <<endl;
 		//std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 		std::this_thread::sleep_for(std::chrono::seconds(10));
 
@@ -150,7 +150,6 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		else --i;
 	}
 }
-
 
 
 void gl_request_queue_listener(string func_name) {
