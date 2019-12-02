@@ -43,7 +43,7 @@ class Sebastian extends Events {
 			payload : ["reset", "--hard", "origin/master"]
 		}
 
-		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
 		
 		outputs = newProcess.stdout;
 		stderrs = newProcess.stderr;
@@ -57,7 +57,7 @@ class Sebastian extends Events {
 			payload : ["../scripts/daemon"]
 		}
 
-		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
 		
 		outputs = newProcess.stdout;
 		stderrs = newProcess.stderr;
@@ -88,7 +88,7 @@ class Sebastian extends Events {
 			payload : ["-C", "../scripts/"]
 		}
 
-		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
 		outputs = newProcess.stdout;
 		stderrs = newProcess.stderr;
 
