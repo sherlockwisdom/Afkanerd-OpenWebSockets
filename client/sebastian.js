@@ -1,5 +1,5 @@
 const Events = require('events');
-const {spawn,spawnSync,fork} = require('child_process');
+const {spawn,spawn,fork} = require('child_process');
 
 
 module.exports = 
@@ -34,22 +34,12 @@ class Sebastian extends Events {
 		}
 
 		var newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
-		
-		let outputs = newProcess.stdout;
-		let stderrs = newProcess.stderr;
-
 		data = {
 			type : "git",
 			payload : ["reset", "--hard", "origin/master"]
 		}
 
 		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
-		
-		outputs = newProcess.stdout;
-		stderrs = newProcess.stderr;
-
-		console.log("Sebastian:update=> outputs:", outputs)
-		console.log("Sebastian:update=> stderrs:", stderrs);
 
 		//Remove Daemon compiled script
 		data = {
@@ -58,26 +48,16 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
-		
-		outputs = newProcess.stdout;
-		stderrs = newProcess.stderr;
-
-		console.log("Sebastian:update=> outputs:", outputs)
-		console.log("Sebastian:update=> stderrs:", stderrs);
 		if(outputs.length < 1 && stderrs.length > 0) {
 			console.warn("Sebastian:make=> error has been detected...");
 			//TODO: something goes in here
 			data = {
-				type : "make",
+				type : "rm",
 				payload : ["-C", "scripts/daemon"]
 			}
 
-			newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
-			outputs = newProcess.stdout;
-			stderrs = newProcess.stderr;
+			newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
 
-			console.log("Sebastian:make=> outputs:", outputs)
-			console.log("Sebastian:make=> stderrs:", stderrs);
 		}
 
 		
@@ -89,13 +69,6 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
-		outputs = newProcess.stdout;
-		stderrs = newProcess.stderr;
-
-		console.log("Sebastian:make=> outputs:", outputs)
-		console.log("Sebastian:make=> stderrs:", stderrs);
-
-
 		if(outputs.length < 1 && stderrs.length > 0) {
 			console.warn("Sebastian:make=> error has been detected...");
 			//TODO: something goes in here
@@ -104,12 +77,7 @@ class Sebastian extends Events {
 				payload : ["-C", "scripts/"]
 			}
 
-			newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
-			outputs = newProcess.stdout;
-			stderrs = newProcess.stderr;
-
-			console.log("Sebastian:make=> outputs:", outputs)
-			console.log("Sebastian:make=> stderrs:", stderrs);
+			newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
 		}
 
 
