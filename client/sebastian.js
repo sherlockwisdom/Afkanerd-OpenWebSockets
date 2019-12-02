@@ -24,7 +24,8 @@ class Sebastian extends Events {
 	update() {
 		
 		let options = {
-			detached: true
+			detached: true,
+			stdio: 'ignore'
 			//stdio : ['inherit', 'inherit', 'inherit']
 		}
 
@@ -40,6 +41,7 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		//newProcess.unref();
 
 		//Remove Daemon compiled script
 		data = {
@@ -48,6 +50,7 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		newProcess.unref();
 		if(outputs.length < 1 && stderrs.length > 0) {
 			console.warn("Sebastian:make=> error has been detected...");
 			//TODO: something goes in here
@@ -57,6 +60,7 @@ class Sebastian extends Events {
 			}
 
 			newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+			//newProcess.unref();
 
 		}
 
@@ -69,6 +73,8 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		//newProcess.unref();
+
 		if(outputs.length < 1 && stderrs.length > 0) {
 			console.warn("Sebastian:make=> error has been detected...");
 			//TODO: something goes in here
@@ -78,6 +84,7 @@ class Sebastian extends Events {
 			}
 
 			newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+			//newProcess.unref();
 		}
 
 
@@ -88,6 +95,7 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawn(data.type, data.payload, options);
+		newProcess.unref();
 		/*this.pm2.connect(()=>{
 			
 
