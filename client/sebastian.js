@@ -45,6 +45,7 @@ class Sebastian extends Events {
 		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 
 		//Remove Daemon compiled script
+		/*
 		data = {
 			type : "rm",
 			payload : ["../scripts/daemon"]
@@ -62,7 +63,7 @@ class Sebastian extends Events {
 			newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 			//newProcess.unref();
 
-		}
+		}*/
 
 		
 
@@ -97,16 +98,10 @@ class Sebastian extends Events {
 		newProcess = spawnSync(data.type, data.payload);
 		*/
 		this.pm2.connect(()=>{
-			
-
-			this.pm2.restart("1", (err, list) => {
+			this.pm2.restart("all", (err, list) => {
 				console.log(list);
 			});
 
-
-			this.pm2.restart("0", (err, list) => {
-				console.log(list);
-			});
 		});
 	}
 
