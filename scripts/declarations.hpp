@@ -26,6 +26,9 @@ int GL_TR_SLEEP_TIME = 5;
 int GL_MMCLI_MODEM_SLEEP_TIME = 60; //Seconds
 
 string GL_SSH_IP_GATEWAY = "192.168.";
+string GL_TCP_HOST = "localhost";
+string GL_TCP_PORT = "3000";
+string GL_TCP_URL = "deku_daemon/message";
 string ENV_HOME = getenv("HOME");
 string SYS_FOLDER = ENV_HOME + "/deku";
 string SYS_FOLDER_MODEMS = SYS_FOLDER + "/modems";
