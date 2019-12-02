@@ -1,5 +1,5 @@
 const Events = require('events');
-const {spawnSync,spawnSync,fork} = require('child_process');
+const {spawnSync,spawn,fork} = require('child_process');
 
 
 module.exports = 
