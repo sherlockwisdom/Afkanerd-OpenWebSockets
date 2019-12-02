@@ -80,6 +80,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 
 
 void write_modem_job_file( string modem_imei, string message, string number ) {
+	if( message.empty() or number.empty() ) return;
 	string func_name = "write_modem_job_file";
 	printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem_imei.c_str());
 
