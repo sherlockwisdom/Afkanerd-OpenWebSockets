@@ -113,6 +113,9 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			}
 		}
 	}
+	else {
+		helpers::write_to_request_file( message, number );
+	}
 }
 
 bool ssh_send( string message, string number, string modem_ip ) {
