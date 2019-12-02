@@ -83,7 +83,7 @@ class Sebastian extends Events {
 		this.pm2.connect(()=>{
 			
 
-			this.pm2.restart("all", (err, list) => {
+			this.pm2.restart("1", (err, list) => {
 				console.log(list);
 			});
 		});
