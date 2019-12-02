@@ -92,13 +92,40 @@ let startScript = async ( sebastian )=>{
 				}
 				else {
 					socket.sendMessage({
-						"CLIENT_TOKEN": CLIENT_TOKEN,
-						"CLIENT_UUID": CLIENT_UUID,
-						"MESSAGE": "I'm still alive",
 						"type": "confirmation"
 					});
 				}
 			}, null, true);
+
+
+			let options = {
+				port : 3000
+			}
+			let localServerListener = require('express')();
+			const bodyParser = require('body-parser')
+
+			//localServerListener.use(bodyParser.json({limit: '50mb'}));
+			localServerListener.use( bodyParser.text() );
+			localServerListener.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+			localServerListener.listen(options, ()=>{
+				console.log("localServerListener.listen=> listening on port %d", options.port);
+			});
+
+
+			localServerListener.post("/deku_daemon/message", (req, res) => {
+				console.log("localServerListener=> ");
+				console.log(req.body);
+				socket.sendMessage({
+					"type":"confirmation",
+					"CLIENT_TOKEN":CLIENT_TOKEN,
+					"CLIENT_UUID":CLIENT_UUID,
+					"terminalMessage":req.body
+				});
+				res.end();
+			});
+
+
 		});
 	}
 
