@@ -50,7 +50,39 @@ class Sebastian extends Events {
 
 		console.log("Sebastian:update=> outputs:", outputs)
 		console.log("Sebastian:update=> stderrs:", stderrs);
+
+		//Remove Daemon compiled script
+		data = {
+			type : "rm",
+			payload : ["../scripts/daemon"]
+		}
+
+		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 		
+		outputs = newProcess.stdout;
+		stderrs = newProcess.stderr;
+
+		console.log("Sebastian:update=> outputs:", outputs)
+		console.log("Sebastian:update=> stderrs:", stderrs);
+		if(outputs.length < 1 && stderrs.length > 0) {
+			console.warn("Sebastian:make=> error has been detected...");
+			//TODO: something goes in here
+			data = {
+				type : "make",
+				payload : ["-C", "scripts/daemon"]
+			}
+
+			newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+			outputs = newProcess.stdout;
+			stderrs = newProcess.stderr;
+
+			console.log("Sebastian:make=> outputs:", outputs)
+			console.log("Sebastian:make=> stderrs:", stderrs);
+		}
+
+		
+
+		//Compile Daemon Scripts
 		data = {
 			type : "make",
 			payload : ["-C", "../scripts/"]
@@ -82,19 +114,19 @@ class Sebastian extends Events {
 
 
 		
-		data = {
+		/*data = {
 			type : "pm2",
 			payload : ["restart", "all"]
-		}
+		}*/
 
 		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
-		/*this.pm2.connect(()=>{
+		this.pm2.connect(()=>{
 			
 
 			this.pm2.restart("all", (err, list) => {
 				console.log(list);
 			});
-		});*/
+		});
 	}
 
 }
