@@ -83,6 +83,21 @@ let startScript = async ( sebastian )=>{
 						}
 					  }
 				})
+
+				if( socket.destroyed ) {
+					console.log("state=> unstable internet connection, trying to hook up with backup internet");
+					cron.stop();
+					socket = null;
+					sebastian.emit("safemenow!", sebastian);
+				}
+				else {
+					socket.sendMessage({
+						"CLIENT_TOKEN": CLIENT_TOKEN,
+						"CLIENT_UUID": CLIENT_UUID,
+						"MESSAGE": "I'm still alive",
+						"type": "confirmation"
+					});
+				}
 			}, null, true);
 		});
 	}
