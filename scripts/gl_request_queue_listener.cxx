@@ -48,9 +48,11 @@ vector<map<string,string>> de_queue_from_request_file() {
 			}
 			tmp_string_buffer += i;
 		}
-		if(!tmp_key.empty()) request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-		//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", "PARSED REQUEST", j.first.c_str(), j.second.c_str());
-		request_tuple_container.push_back(request_tuple);
+		if(!tmp_key.empty() and !tmp_string_buffer.empty()) {
+			request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
+			//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", "PARSED REQUEST", j.first.c_str(), j.second.c_str());
+			request_tuple_container.push_back(request_tuple);
+		}
 	}
 	sys_request_file_read.close();
 	return request_tuple_container;
