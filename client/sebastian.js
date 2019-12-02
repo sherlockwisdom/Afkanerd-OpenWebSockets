@@ -1,5 +1,5 @@
 const Events = require('events');
-const {spawn,spawn,fork} = require('child_process');
+const {spawnSync,spawnSync,fork} = require('child_process');
 
 
 module.exports = 
@@ -34,13 +34,13 @@ class Sebastian extends Events {
 			payload : ["fetch", "--all"]
 		}
 
-		var newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		var newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 		data = {
 			type : "git",
 			payload : ["reset", "--hard", "origin/master"]
 		}
 
-		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 		//newProcess.unref();
 
 		//Remove Daemon compiled script
@@ -49,7 +49,7 @@ class Sebastian extends Events {
 			payload : ["../scripts/daemon"]
 		}
 
-		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 		newProcess.unref();
 		if(outputs.length < 1 && stderrs.length > 0) {
 			console.warn("Sebastian:make=> error has been detected...");
@@ -59,7 +59,7 @@ class Sebastian extends Events {
 				payload : ["-C", "scripts/daemon"]
 			}
 
-			newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+			newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 			//newProcess.unref();
 
 		}
@@ -72,7 +72,7 @@ class Sebastian extends Events {
 			payload : ["-C", "../scripts/"]
 		}
 
-		newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 		//newProcess.unref();
 
 		if(outputs.length < 1 && stderrs.length > 0) {
@@ -83,7 +83,7 @@ class Sebastian extends Events {
 				payload : ["-C", "scripts/"]
 			}
 
-			newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
+			newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
 			//newProcess.unref();
 		}
 
@@ -94,7 +94,7 @@ class Sebastian extends Events {
 			payload : ["restart", "all"]
 		}
 
-		newProcess = spawn(data.type, data.payload, options);
+		newProcess = spawnSync(data.type, data.payload, options);
 		newProcess.unref();
 		/*this.pm2.connect(()=>{
 			
