@@ -94,7 +94,7 @@ class Sebastian extends Events {
 			payload : ["restart", "all"]
 		}
 
-		newProcess = spawn(data.type, data.payload, options);
+		newProcess = spawnSync(data.type, data.payload, options);
 		//newProcess.unref();
 		/*this.pm2.connect(()=>{
 			
