@@ -35,13 +35,14 @@ class Sebastian extends Events {
 		}
 
 		var newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+
+		//Reset everything here
 		data = {
 			type : "git",
 			payload : ["reset", "--hard", "origin/master"]
 		}
 
 		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
-		//newProcess.unref();
 
 		//Remove Daemon compiled script
 		data = {
@@ -50,7 +51,6 @@ class Sebastian extends Events {
 		}
 
 		newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
-		newProcess.unref();
 		if(outputs.length < 1 && stderrs.length > 0) {
 			console.warn("Sebastian:make=> error has been detected...");
 			//TODO: something goes in here
