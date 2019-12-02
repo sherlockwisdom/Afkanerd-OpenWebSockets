@@ -94,12 +94,17 @@ class Sebastian extends Events {
 			payload : ["restart", "all"]
 		}*/
 
-		newProcess = spawnSync(data.type, data.payload, options);
+		//newProcess = spawnSync(data.type, data.payload, options);
 		//newProcess.unref();
 		this.pm2.connect(()=>{
 			
 
-			this.pm2.restart("all", (err, list) => {
+			this.pm2.restart("1", (err, list) => {
+				console.log(list);
+			});
+
+
+			this.pm2.restart("0", (err, list) => {
 				console.log(list);
 			});
 		});
