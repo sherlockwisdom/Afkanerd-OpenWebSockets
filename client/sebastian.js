@@ -33,7 +33,7 @@ class Sebastian extends Events {
 			payload : ["fetch", "--all"]
 		}
 
-		var newProcess = spawnSync(data.type, data.payload, {"encoding":"utf8"});
+		var newProcess = spawn(data.type, data.payload, {"encoding":"utf8"});
 		
 		let outputs = newProcess.stdout;
 		let stderrs = newProcess.stderr;
