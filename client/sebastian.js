@@ -24,8 +24,8 @@ class Sebastian extends Events {
 	update() {
 		
 		let options = {
-			detached: true,
-			stdio : ['inherit', 'inherit', 'inherit']
+			detached: true
+			//stdio : ['inherit', 'inherit', 'inherit']
 		}
 
 		let data = {
