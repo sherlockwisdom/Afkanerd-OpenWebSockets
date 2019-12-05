@@ -53,7 +53,7 @@ bool mmcli_send( string message, string number, string modem_index ) {
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 	if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
 		if(terminal_stdout.find("timed out") != string::npos) {
-			printf("%s=> Modem needs to sleep... going down for 60 seconds\n", func_name.c_str());
+			fprintf(stderr, "%s=> Modem needs to sleep... going down for 60 seconds\n", func_name.c_str());
 			std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
 		}
 		return false;

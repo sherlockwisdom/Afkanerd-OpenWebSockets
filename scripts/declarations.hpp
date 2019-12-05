@@ -23,7 +23,7 @@ using namespace std;
 bool GL_MODEM_LISTENER_STATE = true;
 bool GL_SYSTEM_READY = false;
 int GL_TR_SLEEP_TIME = 5;
-int GL_MMCLI_MODEM_SLEEP_TIME = 60; //Seconds
+int GL_MMCLI_MODEM_SLEEP_TIME = 30; //Seconds
 
 string GL_SSH_IP_GATEWAY = "192.168.";
 string GL_TCP_HOST = "localhost";
