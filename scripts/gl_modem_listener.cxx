@@ -78,11 +78,12 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		string most_successful_modem;
 		auto it_GL_SUCCESS_MODEM_LIST = GL_SUCCESS_MODEM_LIST.begin();
 		int most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST->second;
+		string isp = MODEM_DAEMON[modem_imei];
 		++it_GL_SUCCESS_MODEM_LIST;
 
 		//FIXME: Something's wrong with this iterator
 		for( auto it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
-			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second > most_successful_modem_count ) {
+			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second > most_successful_modem_count and isp == MODEM_DAEMON[it_GL_SUCCESS_MODEM_LIST.first] ) {
 				most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST.second;
 				most_successful_modem = it_GL_SUCCESS_MODEM_LIST.first;
 			}
