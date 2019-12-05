@@ -155,6 +155,20 @@ void write_to_request_file( string message, string number ) {
 	write_to_request_file.close();	
 }
 
+void write_modem_job_file( string modem_imei, string message, string number ) {
+	if( message.empty() or number.empty() ) return;
+	string func_name = "write_modem_job_file";
+	printf("%s=> \tJob for modem with info: IMEI: %s\n", func_name.c_str(), modem_imei.c_str());
+
+	string rand_filename = helpers::random_string();
+	rand_filename = rand_filename.erase(rand_filename.size() -1, 1);
+	rand_filename += ".jb";
+
+	printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
+	ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei + "/" + rand_filename).c_str());
+	job_write << number << "\n" << message;
+	job_write.close();
+}
 }
 
 #endif

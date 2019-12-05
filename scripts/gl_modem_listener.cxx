@@ -118,6 +118,9 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 				}
 			}
 		}
+		else {
+			modem_index = most_successful_modem;
+		}
 
 		//FIXME: This solution is not checking for SSH modems
 		if( modem_index.empty() ) {
@@ -125,15 +128,7 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			helpers::write_to_request_file( message, number );
 		}
 		else {
-			bool message_sent = ssh_modem ? ssh_send( message, number, modem_index) : mmcli_send( message, number , modem_index);
-			if( message_sent ) {
-				update_modem_success_count( modem_imei );
-			}
-			else {
-				cerr << func_name << "=> urgent transmission failed, writing back to request file" << endl;
-				std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
-				helpers::write_to_request_file( message, number );
-			}
+			helpers::write_modem_job_file( modem_index, message, number );
 		}
 	}
 	else {
