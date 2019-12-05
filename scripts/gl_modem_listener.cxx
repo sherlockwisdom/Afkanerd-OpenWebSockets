@@ -126,6 +126,11 @@ bool ssh_send( string message, string number, string modem_ip ) {
 	string terminal_stdout = helpers::terminal_stdout(sms_command);
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 
+	if(terminal_stdout.find("failed") != string::npos ) {
+		cerr << func_name << "=> ssh failed to send message! Doing emergency re-routing..." << endl;
+		write_for_urgent_transmission( modem_ip, message, number );
+	}
+
 	return true; //FIXME: This is propaganda
 }
 

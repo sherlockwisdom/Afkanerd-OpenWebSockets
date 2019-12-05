@@ -123,7 +123,6 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 	cout << func_name << "=> number of modems for ISP| {" << isp_modems.size() << "}" << endl;
 
-
 	//Send this information to online socket server
 	string message = func_name + "=> number of modems for ISP| {" + to_string( isp_modems.size() ) + "}\n";
 	std::thread message_curl_server(curl_server, GL_TCP_HOST, GL_TCP_PORT, GL_TCP_URL, message);
