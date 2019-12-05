@@ -285,20 +285,16 @@ class SMS extends Modem{
 			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
 			let requestContainerDump = []; //This container takes a list of request and dumps to file
 			for(let i in request) {
-				//console.log("SMS.sendBulkSMS=> sending message: %d of %d",parseInt(i)+1,request.length);
-				//request[i].hasOwnProperty("number") ? await this.sendSMS(request[i].message, request[i].number) : await this.sendSMS(request[i].message, request[i].phonenumber)
 				let simpleRequest;
-				if( request[i].hasOwnProperty("number") ) {
-					//requestContainerDump.push( request[i] );
+				if( request[i].hasOwnProperty("number") && request[i].hasOwnProperty("message")) {
 					simpleRequest = "number=" + request[i].number + ",message=" + JSON.stringify(request[i].message);
 				}
-				else if(request[i].hasOwnProperty("phonenumber") ) {
+				else if(request[i].hasOwnProperty("phonenumber") && request[i].hasOwnProperty("message")) {
 					simpleRequest = "number=" + request[i].phonenumber + ",message="+ JSON.stringify(request[i].message);
 				}
 				requestContainerDump.push(simpleRequest);
 				//console.log(simpleRequest);
 			}
-			//console.log(requestContainerDump.join('\n'));
 			let HOME = process.env.HOME;
 			fs.appendFileSync(`${HOME}/deku/request_queue.dat`, requestContainerDump.join('\n') + "\n");
 			resolve("SMS.sendBulkSMS=> done.");
