@@ -307,7 +307,7 @@ void gl_modem_listener(string func_name) {
 			for(auto i : modem_indexes) {
 				//printf("%s=> working with index - %s\n", func_name.c_str(), i.c_str());
 				try {
-					if( is_ssh_modem( GL_SSH_IP_GATEWAY )) {
+					if( is_ssh_modem( i )) {
 						printf("%s=> found SSH MODEM :[%s]\n", func_name.c_str(), i.c_str());
 						std::thread tr_ssh_extractor(ssh_extractor, i);
 						tr_ssh_extractor.detach();
