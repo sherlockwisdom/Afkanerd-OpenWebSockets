@@ -116,7 +116,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 	map<string,string> isp_modems;
 	cout << func_name << "=> checking for modems for this ISP" << endl;
 	for( auto modem : MODEM_DAEMON ) {
-		if( modem.second.find( isp ) != string::npos ) {
+		if( helpers::to_upper(modem.second).find( helpers::to_upper( isp )) != string::npos ) {
 			isp_modems.insert( modem ); //FIXME: I doubt this
 		}
 	}
