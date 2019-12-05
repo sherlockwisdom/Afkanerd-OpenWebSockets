@@ -1,10 +1,13 @@
 #include "helpers.hpp"
 
+bool ssh_send(string,string,string);
+void write_for_urgent_transmission(string,string,string);
+
 using namespace std;
 
-
-
-
+bool is_ssh_modem( string ip ) {
+	return ip.find( GL_SSH_IP_GATEWAY ) != string::npos;
+}
 
 void modem_cleanse( string imei ) {
 	map<string,string>::iterator it_modem_daemon = MODEM_DAEMON.find(imei);
@@ -71,6 +74,21 @@ void update_modem_success_count( string modem_imei ) {
 	GL_SUCCESS_MODEM_LIST[modem_imei] += 1;
 }
 
+bool ssh_send( string message, string number, string modem_ip ) {
+	//TODO: Figure out how to make SSH tell if SMS has gone out or failed
+	string func_name = "ssh_send";
+	string sms_command = "ssh root@" + modem_ip + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + message + "\\\"\"";
+	string terminal_stdout = helpers::terminal_stdout(sms_command);
+	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
+
+	if(terminal_stdout.find("failed") != string::npos ) {
+		cerr << func_name << "=> ssh failed to send message! Doing emergency re-routing..." << endl;
+		write_for_urgent_transmission( modem_ip, message, number );
+	}
+
+	return true; //FIXME: This is propaganda
+}
+
 void write_for_urgent_transmission( string modem_imei, string message, string number ) {
 	//XXX: which modem has been the most successful
 	string func_name = "write_for_urgent_transmission";
@@ -104,7 +122,7 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			helpers::write_to_request_file( message, number );
 		}
 		else {
-			if( mmcli_send( message, number, modem_index ) ) {
+			if( is_ssh_modem( modem_index ) ? ssh_send( message, number, modem_index ) : mmcli_send( message, number, modem_index ) ) {
 				update_modem_success_count( modem_imei );
 			}
 			else {
@@ -118,23 +136,6 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		helpers::write_to_request_file( message, number );
 	}
 }
-
-bool ssh_send( string message, string number, string modem_ip ) {
-	//TODO: Figure out how to make SSH tell if SMS has gone out or failed
-	string func_name = "ssh_send";
-	string sms_command = "ssh root@" + modem_ip + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + message + "\\\"\"";
-	string terminal_stdout = helpers::terminal_stdout(sms_command);
-	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
-
-	if(terminal_stdout.find("failed") != string::npos ) {
-		cerr << func_name << "=> ssh failed to send message! Doing emergency re-routing..." << endl;
-		write_for_urgent_transmission( modem_ip, message, number );
-	}
-
-	return true; //FIXME: This is propaganda
-}
-
-
 
 void modem_listener(string func_name, string modem_imei, string modem_index, string ISP, bool watch_dog = true, string type = "MMCLI") {
 	//XXX: Just 1 instance should be running for every modem_imei
@@ -303,7 +304,7 @@ void gl_modem_listener(string func_name) {
 			for(auto i : modem_indexes) {
 				//printf("%s=> working with index - %s\n", func_name.c_str(), i.c_str());
 				try {
-					if(i.find(GL_SSH_IP_GATEWAY) != string::npos) {
+					if( is_ssh_modem( GL_SSH_IP_GATEWAY )) {
 						printf("%s=> found SSH MODEM :[%s]\n", func_name.c_str(), i.c_str());
 						std::thread tr_ssh_extractor(ssh_extractor, i);
 						tr_ssh_extractor.detach();
