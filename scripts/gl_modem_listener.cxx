@@ -107,6 +107,10 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			}
 		}
 		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), most_successful_modem_count);
+		if( most_successful_modem.empty()) {
+			//FIXME: Should check for another modem rather than send things back to the request file
+			helpers::write_to_request_file( message, number );
+		}
 
 		string modem_index;
 		bool ssh_modem = is_ssh_modem( most_successful_modem );
@@ -123,7 +127,7 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		}
 
 		//FIXME: This solution is not checking for SSH modems
-		if( modem_index.empty() ) {
+		if( modem_index.empty()) {
 			//FIXME: Should check for another modem rather than send things back to the request file
 			helpers::write_to_request_file( message, number );
 		}
