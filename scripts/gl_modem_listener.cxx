@@ -109,10 +109,13 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), most_successful_modem_count);
 
 		string modem_index;
-		for(auto modem_details : MODEM_POOL) {
-			if( modem_details.second[0] == most_successful_modem ) {
-				modem_index = modem_details.first;
-				break;
+		bool ssh_modem = is_ssh_modem( most_successful_modem );
+		if( !ssh_modem ) {
+			for(auto modem_details : MODEM_POOL) {
+				if( modem_details.second[0] == most_successful_modem ) {
+					modem_index = modem_details.first;
+					break;
+				}
 			}
 		}
 
@@ -122,8 +125,7 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			helpers::write_to_request_file( message, number );
 		}
 		else {
-			bool modem_type = is_ssh_modem( modem_index );
-			bool message_sent = modem_type ? ssh_send( message, number, modem_index) : mmcli_send( message, number , modem_index);
+			bool message_sent = ssh_modem ? ssh_send( message, number, modem_index) : mmcli_send( message, number , modem_index);
 			if( message_sent ) {
 				update_modem_success_count( modem_imei );
 			}
