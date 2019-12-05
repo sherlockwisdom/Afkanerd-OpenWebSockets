@@ -122,7 +122,9 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 			helpers::write_to_request_file( message, number );
 		}
 		else {
-			if( is_ssh_modem( modem_index ) ? ssh_send( message, number, modem_index ) : mmcli_send( message, number, modem_index ) ) {
+			bool modem_type = is_ssh_modem( modem_index );
+			bool message_sent = modem_type ? ssh_send( message, number, modem_index) : mmcli_send( message, number , modem_index);
+			if( message_sent ) {
 				update_modem_success_count( modem_imei );
 			}
 			else {
