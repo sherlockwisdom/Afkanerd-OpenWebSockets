@@ -108,6 +108,15 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		}
 		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), most_successful_modem_count);
 		if( most_successful_modem.empty()) {
+			for( auto it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
+				if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second >= most_successful_modem_count and helpers::to_upper(MODEM_DAEMON[it_GL_SUCCESS_MODEM_LIST.first]).find( helpers::to_upper(isp) ) != string::npos ) {
+					most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST.second;
+					most_successful_modem = it_GL_SUCCESS_MODEM_LIST.first;
+				}
+			}
+		}
+
+		if( most_successful_modem.empty() ) {
 			//FIXME: Should check for another modem rather than send things back to the request file
 			helpers::write_to_request_file( message, number );
 		}

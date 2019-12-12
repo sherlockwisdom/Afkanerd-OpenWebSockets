@@ -149,11 +149,24 @@ int read_log_calculate_work_load(string modem_path) {
 	return total_count;
 }
 
+
+string remove_carriage( string input, char location = 'B' ) {
+	//TODO: Make location determine where it takes the input file from
+	size_t space_location = input.find('\n');
+	while( space_location != string::npos and space_location == 0) {
+		input.erase( 0, 1);
+		space_location = input.find('\n');
+	}
+
+	return input;
+}
+
 void write_to_request_file( string message, string number ) {
 	ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);
 	write_to_request_file << "number=" << number << ",message=\"" << message << "\"" << endl;
 	write_to_request_file.close();	
 }
+
 
 void write_modem_job_file( string modem_imei, string message, string number ) {
 	if( message.empty() or number.empty() ) return;
@@ -166,7 +179,7 @@ void write_modem_job_file( string modem_imei, string message, string number ) {
 
 	printf("%s=> \tCreating job with filename - %s\n", func_name.c_str(), rand_filename.c_str());
 	ofstream job_write((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei + "/" + rand_filename).c_str());
-	job_write << number << "\n" << message;
+	job_write << number << "\n" << remove_carriage( message );
 	job_write.close();
 }
 }
