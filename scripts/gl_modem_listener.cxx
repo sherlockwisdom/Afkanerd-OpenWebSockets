@@ -51,7 +51,7 @@ map<string, string> read_request_file( string full_filename, string modem_imei) 
 
 bool mmcli_send( string message, string number, string modem_index ) {
 	string func_name = "mmcli_send";
-	string sms_command = "./modem_information_extraction.sh sms send \"" + message + "\" " + number + " " + modem_index;
+	string sms_command = "./modem_information_extraction.sh sms send \"" + helpers::remove_carriage( message ) + "\" " + number + " " + modem_index;
 	string terminal_stdout = helpers::terminal_stdout(sms_command);
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 	if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
@@ -77,7 +77,7 @@ void update_modem_success_count( string modem_imei ) {
 bool ssh_send( string message, string number, string modem_ip ) {
 	//TODO: Figure out how to make SSH tell if SMS has gone out or failed
 	string func_name = "ssh_send";
-	string sms_command = "ssh root@" + modem_ip + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + message + "\\\"\"";
+	string sms_command = "ssh root@" + modem_ip + " -T -o \"ConnectTimeout=20\" \"sendsms '" + number + "' \\\"" + helpers::remove_carriage( message ) + "\\\"\"";
 	string terminal_stdout = helpers::terminal_stdout(sms_command);
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
 
@@ -101,24 +101,17 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 
 		//FIXME: Something's wrong with this iterator
 		for( auto it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
-			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second > most_successful_modem_count and helpers::to_upper(MODEM_DAEMON[it_GL_SUCCESS_MODEM_LIST.first]).find( helpers::to_upper(isp) ) != string::npos ) {
+			if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second >= most_successful_modem_count and helpers::to_upper(MODEM_DAEMON[it_GL_SUCCESS_MODEM_LIST.first]).find( helpers::to_upper(isp) ) != string::npos ) {
 				most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST.second;
 				most_successful_modem = it_GL_SUCCESS_MODEM_LIST.first;
 			}
 		}
 		printf("%s=> Most successful modem | %s | count | %d\n", func_name.c_str(), most_successful_modem.c_str(), most_successful_modem_count);
-		if( most_successful_modem.empty()) {
-			for( auto it_GL_SUCCESS_MODEM_LIST : GL_SUCCESS_MODEM_LIST ) {
-				if( it_GL_SUCCESS_MODEM_LIST.first != modem_imei and it_GL_SUCCESS_MODEM_LIST.second >= most_successful_modem_count and helpers::to_upper(MODEM_DAEMON[it_GL_SUCCESS_MODEM_LIST.first]).find( helpers::to_upper(isp) ) != string::npos ) {
-					most_successful_modem_count = it_GL_SUCCESS_MODEM_LIST.second;
-					most_successful_modem = it_GL_SUCCESS_MODEM_LIST.first;
-				}
-			}
-		}
-
 		if( most_successful_modem.empty() ) {
 			//FIXME: Should check for another modem rather than send things back to the request file
+			fprintf( stderr, "%s=> No modem found for emergency transmission... writing back to request file\n", func_name.c_str() );
 			helpers::write_to_request_file( message, number );
+			return;
 		}
 
 		string modem_index;
