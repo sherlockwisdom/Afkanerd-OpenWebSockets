@@ -58,6 +58,7 @@ bool mmcli_send( string message, string number, string modem_index ) {
 		if(terminal_stdout.find("timed out") != string::npos) {
 			fprintf(stderr, "%s=> Modem needs to sleep... going down for %d seconds\n", func_name.c_str(), GL_MMCLI_MODEM_SLEEP_TIME);
 			std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
+			return true;
 		}
 		return false;
 	}
@@ -142,9 +143,21 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 	}
 }
 
+
+void write_modem_details( string modem_imei, string isp ) {
+	string func_name = "write_modem_details";
+	printf("%s=> Writing modem details to modem [%s] file...\n", func_name.c_str(), modem_imei.c_str());
+	ofstream write_modem_file( SYS_FOLDER_MODEMS + "/" + modem_imei + "/.details.dek", ios::trunc);
+	write_modem_file << isp << endl;
+	write_modem_file.close();
+}
+
 void modem_listener(string func_name, string modem_imei, string modem_index, string ISP, bool watch_dog = true, string type = "MMCLI") {
 	//XXX: Just 1 instance should be running for every modem_imei
 	printf("%s=> Started instance of modem=> \n+imei[%s] +index[%s] +isp[%s] +type[%s]\n\n", func_name.c_str(), modem_imei.c_str(), modem_index.c_str(), ISP.c_str(), type.c_str());
+
+	//XXX: Log details of this instance
+	write_modem_details( modem_imei, ISP );
 
 	MODEM_DAEMON.insert(make_pair(modem_imei, ISP));
 	while(GL_MODEM_LISTENER_STATE) {
@@ -244,10 +257,35 @@ void ssh_extractor( string ip_gateway ) {
 	return;
 }
 
+vector<string> extract_modem_details ( string modem_imei ) {
+	string func_name = "extracat_modem_details";
+
+	ifstream read_modem_file ( SYS_FOLDER_MODEMS + "/" + modem_imei + "/.details.dek");
+	vector<string> file_details;
+	
+	if( !read_modem_file.good()) {
+		cerr << func_name << "=> No detail file for modem " << modem_imei << endl;
+	}
+
+	else {
+		string tmp_string;
+		while( getline( read_modem_file, tmp_string ) ) file_details.push_back( tmp_string );
+	}
+	
+	read_modem_file.close();
+	
+	return file_details;
+}
+
 
 void modem_extractor(string func_name, string modem_index ) {
 	string str_stdout = helpers::terminal_stdout((string)("./modem_information_extraction.sh extract " + modem_index));
+	string modem_service_provider = "";
+
 	vector<string> modem_information = helpers::split(str_stdout, '\n', true);
+	string modem_imei = helpers::split(modem_information[0], ':', true)[1];
+	string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
+
 	if(modem_information.size() != 3) {
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 		printf("%s=> modem information extracted - incomplete [%lu]\n", func_name.c_str(), modem_information.size());
@@ -258,9 +296,17 @@ void modem_extractor(string func_name, string modem_index ) {
 	bool sanitation_check = false;
 	for(auto j: modem_information) {
 		if(helpers::split(j, ':', true).size() != 2) {
-			cerr << func_name << "=> sanitation check failed! Could not extract modem info" << endl;
-			cerr << func_name << "=> failed info: " << j << endl << endl;
-			sanitation_check = false;
+			cerr << func_name << "=> sanitation check failed! [" << modem_index << "]" << endl;
+			cout << func_name << "=> extracting details from details file..." << endl;
+
+			if( !modem_sig_quality.empty()) {
+				vector<string> details = extract_modem_details( modem_imei );
+				//Details format [0] = ISP
+				if( !details.empty() )  modem_service_provider = details[0];
+				else sanitation_check = false;
+			}
+			else sanitation_check = false;
+
 			break;
 		} else {
 			sanitation_check = true;
@@ -269,16 +315,15 @@ void modem_extractor(string func_name, string modem_index ) {
 	
 	if(!sanitation_check) return;
 	//printf("%s=> modem information... [%s]\n", func_name.c_str(), modem_information[2].c_str());
-	string modem_imei = helpers::split(modem_information[0], ':', true)[1];
 	//XXX: Check if another an instance of the modem is already running
 	if(MODEM_DAEMON.find(modem_imei) != MODEM_DAEMON.end()) {
 		cout << func_name << "=> Instance of Modem already running... watch dog reset!" << endl;
-
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
 		return;
 	}
-	string modem_sig_quality = helpers::split(modem_information[1], ':', true)[1];
-	string modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
+	if(modem_service_provider.empty()) 
+		modem_service_provider = helpers::split(modem_information[2], ':', true)[1]; //FIXME: What happens when cannot get ISP
+
 	printf("%s=> +ISP[%s] +index[%s] - ", func_name.c_str(), modem_service_provider.c_str(), modem_index.c_str());
 	if(mkdir((char*)(SYS_FOLDER_MODEMS + "/" + modem_imei).c_str(), STD_DIR_MODE) != 0 && errno != EEXIST) {
 		char str_error[256];
