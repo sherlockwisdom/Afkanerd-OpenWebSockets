@@ -194,8 +194,8 @@ void gl_request_queue_listener(string func_name) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
 
 				//TODO: Thread this!! No need sitting and waiting for one ISP before using the other
-				//std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.first, i.second);
-				//tr_isp_distribution.detach();
+				std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.first, i.second);
+				tr_isp_distribution.detach();
 			}	
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
