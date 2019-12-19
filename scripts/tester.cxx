@@ -14,5 +14,7 @@ int main() {
 
 	for( auto i : tuple) 
 		cout << i.first << ":" << i.second << endl;
+
+	cout << helpers::escape_string( test_string2 ) << endl;
 	return 0;
 }

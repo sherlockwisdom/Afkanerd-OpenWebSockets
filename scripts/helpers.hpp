@@ -148,6 +148,16 @@ namespace helpers {
 		return total_count;
 	}
 
+	string escape_string( string input ) {
+		for(size_t i=0;i<input.size();++i) {
+			if( input[i] == '\n' ) {
+				input.erase(i, 1);
+				input.insert(i, "\\n");
+			}
+		}
+		return input;
+	}
+
 
 	string remove_carriage( string input, char location = 'B' ) {
 		//TODO: Make location determine where it takes the input file from
