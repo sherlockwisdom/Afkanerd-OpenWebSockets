@@ -136,6 +136,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 
 	size_t request_index = 0;
 	for( map<string,string>::iterator i = isp_modems.begin();i != isp_modems.end();++i ) {
+		begin:
 		string modem_imei = i->first;
 		string modem_isp = i->second;
 
@@ -154,10 +155,9 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		string number = request["number"];
 		
 		helpers::write_modem_job_file( modem_imei, message, number );
-		++i;
-		if(i== isp_modems.end()) {
+		if( ++i; i == isp_modems.end() ) {
 			i = isp_modems.begin();
-			--i;
+			goto begin;
 		}
 		else --i;
 	}
