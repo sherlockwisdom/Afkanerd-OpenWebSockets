@@ -125,7 +125,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		std::this_thread::sleep_for(std::chrono::seconds(10));
 
 		for(auto request_container : isp_request) {
-			string message = request_container["message"];
+			string message = helpers::escape_string( request_container["message"] );
 			string number = request_container["number"];
 			helpers::write_to_request_file( message, number );
 		}

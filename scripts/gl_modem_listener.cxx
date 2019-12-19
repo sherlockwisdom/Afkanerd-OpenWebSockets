@@ -37,7 +37,8 @@ map<string, string> read_request_file( string full_filename, string modem_imei) 
 	while(getline(read_job, tmp_buffer)) {
 		if(line_counter == 0) number = tmp_buffer;
 		else if(line_counter > 0) {
-			message += "\n" + tmp_buffer;
+			if( line_counter == 1) message = tmp_buffer;
+			else message += "\n" + tmp_buffer;
 			line_counter = 0;
 		}
 		++line_counter;
