@@ -55,15 +55,17 @@ bool mmcli_send( string message, string number, string modem_index ) {
 	string sms_command = "./modem_information_extraction.sh sms send \"" + helpers::remove_carriage( message ) + "\" " + number + " " + modem_index;
 	string terminal_stdout = helpers::terminal_stdout(sms_command);
 	cout << func_name << "=> sending sms message...\n" << func_name << "=> \t\tStatus " << terminal_stdout << endl << endl;
-	if(terminal_stdout.find("success") == string::npos or terminal_stdout.find("Success") == string::npos) {
+	if(terminal_stdout.find("success") == string::npos and terminal_stdout.find("Success") == string::npos) {
 		if(terminal_stdout.find("timed out") != string::npos) {
 			fprintf(stderr, "%s=> Modem needs to sleep... going down for %d seconds\n", func_name.c_str(), GL_MMCLI_MODEM_SLEEP_TIME);
 			std::this_thread::sleep_for(std::chrono::seconds(GL_MMCLI_MODEM_SLEEP_TIME));
 			return true;
 		}
+		cerr << func_name << "=> MMCLI send failed" << endl;
 		return false;
 	}
 
+	cout << func_name << "=> MMCLI send success" << endl;
 	return true;
 }
 

@@ -8,13 +8,7 @@ using namespace std;
 
 
 int main() {
-	string test_string2 = "number=652156811,message=\"\nBAH EMMANUEL\n682687508\nBAMENDA RH\nMTB DETECTED\nSat Nov 02 2019\nNot yet recorded as starting TB Rx\nN’est pas enregistrer a commencer le T3 TB\nHelpline 670656041\"";
-
-	auto tuple = parser( test_string2 );
-
-	for( auto i : tuple) 
-		cout << i.first << ":" << i.second << endl;
-
-	cout << helpers::escape_string( test_string2 ) << endl;
+	string test = "hello successful world";
+	cout << test.find("success") << endl;
 	return 0;
 }

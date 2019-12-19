@@ -140,6 +140,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		string modem_isp = i->second;
 
 		if( request_index >= isp_request.size() ) break;
+		cout << func_name << "=> request index at: " << request_index << endl;
 
 		if(!helpers::modem_is_available(modem_imei)) {
 			printf("%s=> Not available modem: ISP for +imei[%s] +ISP[%s]\n", func_name.c_str(), modem_imei.c_str(), modem_isp.c_str());
@@ -153,8 +154,11 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 		string number = request["number"];
 		
 		helpers::write_modem_job_file( modem_imei, message, number );
-
-		if( ++i; i== isp_modems.end()) i = isp_modems.begin();
+		++i;
+		if(i== isp_modems.end()) {
+			i = isp_modems.begin();
+			--i;
+		}
 		else --i;
 	}
 }
