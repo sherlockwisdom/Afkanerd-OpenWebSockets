@@ -2,7 +2,50 @@
 
 #include "declarations.hpp"
 
-vector<map<string,string>> de_queue_from_request_file() {
+
+auto parser( string string_to_parse ) {
+	string tmp_string_buffer = "";
+	string tmp_key = "";
+	map<string, string> request_tuple;
+	bool ignore = false;
+	bool safe = false;
+	for(auto i : string_to_parse) {
+		//XXX: checks for seperator
+		if(i == 'n' and safe and ignore) {
+			tmp_string_buffer += '\n';
+			safe = false;
+			continue;
+		}
+		if(i == '=' and !ignore) {
+			tmp_key = tmp_string_buffer;
+			tmp_string_buffer = "";
+			continue;
+		}
+		if(i == ',' and !ignore) {
+			request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
+			tmp_key = "";
+			tmp_string_buffer = "";
+			continue;
+		}
+		if(i == '"') {
+			ignore = !ignore;
+			continue;
+		}
+		if(i == '\\' and ignore) {
+			safe = true;
+			continue;
+		}
+		tmp_string_buffer += i;
+	}
+
+	if(!tmp_key.empty() and !tmp_string_buffer.empty()) {
+		request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
+	}
+
+	return request_tuple;
+}
+
+vector<map<string,string>> de_queue_from_request_file( ) { //TODO: make filename an arg
 
 	string tmp_ln_buffer;
 	ifstream sys_request_file_read(SYS_JOB_FILE.c_str());
@@ -11,48 +54,10 @@ vector<map<string,string>> de_queue_from_request_file() {
 	vector<map<string,string>> request_tuple_container;
 	while(getline(sys_request_file_read, tmp_ln_buffer)) {
 		if(tmp_ln_buffer.empty() or tmp_ln_buffer[0] == '#') continue;
-		//printf("%s=> request line: [%s]\n", func_name.c_str(), tmp_ln_buffer.c_str());
-		//XXX: calculate work load - assumption is simcards in modems won't be changed! So calculations go to modem
-		//XXX: custom parser
-		//cout << func_name << "=> parsing request...";
-		string tmp_string_buffer = "";
-		string tmp_key = "";
-		map<string, string> request_tuple;
-		bool ignore = false;
-		bool safe = false;
-		for(auto i : tmp_ln_buffer) {
-			//XXX: checks for seperator
-			if(i == 'n' and safe and ignore) {
-				tmp_string_buffer += '\n';
-				safe = false;
-				continue;
-			}
-			if(i == '=' and !ignore) {
-				tmp_key = tmp_string_buffer;
-				tmp_string_buffer = "";
-				continue;
-			}
-			if(i == ',' and !ignore) {
-				request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-				tmp_key = "";
-				tmp_string_buffer = "";
-				continue;
-			}
-			if(i == '"') {
-				ignore = !ignore;
-				continue;
-			}
-			if(i == '\\' and ignore) {
-				safe = true;
-				continue;
-			}
-			tmp_string_buffer += i;
-		}
-		if(!tmp_key.empty() and !tmp_string_buffer.empty()) {
-			request_tuple.insert(make_pair(tmp_key, tmp_string_buffer));
-			//for(auto j : request_tuple) printf("%s=> REQUEST-TUPLE: [%s => %s]\n", "PARSED REQUEST", j.first.c_str(), j.second.c_str());
+
+		map<string,string> request_tuple = parser( tmp_ln_buffer);
+		if( !request_tuple.empty()) 
 			request_tuple_container.push_back(request_tuple);
-		}
 	}
 	sys_request_file_read.close();
 	return request_tuple_container;
