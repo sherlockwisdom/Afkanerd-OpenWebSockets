@@ -172,6 +172,7 @@ namespace helpers {
 
 	void write_to_request_file( string message, string number ) {
 		string func_name = "write_to_request_file";
+		if( message.empty() or number.empty() ) return;
 		ofstream write_to_request_file(SYS_REQUEST_FILE, ios::app);
 		printf("%s=> message[%s] : number [%s]\n", func_name.c_str(), message.c_str(), number.c_str());
 		write_to_request_file << "number=" << number << ",message=\"" << remove_carriage( message ) << "\"" << endl;

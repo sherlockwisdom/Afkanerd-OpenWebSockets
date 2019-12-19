@@ -44,7 +44,10 @@ map<string, string> read_request_file( string full_filename, string modem_imei) 
 	}
 	read_job.close();
 
-	return (map<string,string>){{"message", message}, {"number", number}};
+	map<string,string> message_tuple = {{"message", message}, {"number", number}};
+	if( message.empty() or number.empty()) return map<string,string>{};
+	
+	return message_tuple;
 }
 
 
