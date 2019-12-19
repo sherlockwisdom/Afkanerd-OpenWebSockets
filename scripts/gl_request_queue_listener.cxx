@@ -74,7 +74,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 			isp_sorted_request_container[isp].push_back(request);
 		}
 		else {
-			string message = request["message"];
+			string message = helpers::escape_string( helpers::remove_carriage( request["message"] ) );
 			string number = request["number"];
 			helpers::write_to_request_file( message, number );
 		}
