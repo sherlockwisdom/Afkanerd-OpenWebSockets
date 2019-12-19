@@ -172,11 +172,11 @@ void gl_request_queue_listener(string func_name) {
 			continue;
 		}
 
-		/*
+		
 		if( struct stat buffer;(stat (SYS_JOB_FILE.c_str(), &buffer) == 0) ) {
 			cout << func_name << "=> WARNING: OLD JOBS PRESENT IN SYSTEM... JUMPING CHECKS AND DEQUEING!!!" << endl;
 			goto DEQUEUE_JOBS;
-		}*/
+		}
 
 		if( struct stat buffer;!(stat (SYS_REQUEST_FILE.c_str(), &buffer) == 0) ) 
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
@@ -186,7 +186,7 @@ void gl_request_queue_listener(string func_name) {
 			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
 
 			//goto statement here because sometimes shit has to continue from where it stopped
-			//DEQUEUE_JOBS: 
+			DEQUEUE_JOBS: 
 			vector<map<string,string>> request_tuple_container = de_queue_from_request_file();
 			cout << func_name << "=> Job file contains: " << request_tuple_container.size() << " request..." << endl;
 
