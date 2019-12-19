@@ -65,6 +65,7 @@ vector<map<string,string>> de_queue_from_request_file( ) { //TODO: make filename
 
 
 auto determine_isp_for_request(vector<map<string,string>> request_tuple_container) {
+	string func_name = "determine_isp_for_request" ;
 	map<string,vector<map<string,string>>> isp_sorted_request_container; //ISP=>container of messages
 	for(int i=0;i<request_tuple_container.size();++i) {
 		map<string, string> request = request_tuple_container[i];
@@ -74,6 +75,7 @@ auto determine_isp_for_request(vector<map<string,string>> request_tuple_containe
 			isp_sorted_request_container[isp].push_back(request);
 		}
 		else {
+			cout << func_name << "=> Could not determine ISP... writing back to request file" << endl;
 			string message = helpers::escape_string( helpers::remove_carriage( request["message"] ) );
 			string number = request["number"];
 			helpers::write_to_request_file( message, number );
