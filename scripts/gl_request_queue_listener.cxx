@@ -96,7 +96,7 @@ void isp_distribution(string func_name, string isp, vector<map<string, string>> 
 	if(MODEM_DAEMON.empty()) {
 		cout << func_name << "=> No modem found, writing back to request file..." << endl;
 		for(auto request_container : isp_request) {
-			string message = request_container["message"];
+			string message = helpers::escape_string( request_container["message"] );
 			string number = request_container["number"];
 			helpers::write_to_request_file( message, number );
 		}
@@ -166,10 +166,11 @@ void gl_request_queue_listener(string func_name) {
 			continue;
 		}
 
+		/*
 		if( struct stat buffer;(stat (SYS_JOB_FILE.c_str(), &buffer) == 0) ) {
 			cout << func_name << "=> WARNING: OLD JOBS PRESENT IN SYSTEM... JUMPING CHECKS AND DEQUEING!!!" << endl;
 			goto DEQUEUE_JOBS;
-		}
+		}*/
 
 		if( struct stat buffer;!(stat (SYS_REQUEST_FILE.c_str(), &buffer) == 0) ) 
 			cout << func_name << "=> no request file, thus no request yet..." << endl;
@@ -179,7 +180,7 @@ void gl_request_queue_listener(string func_name) {
 			rename(SYS_REQUEST_FILE.c_str(), SYS_JOB_FILE.c_str());
 
 			//goto statement here because sometimes shit has to continue from where it stopped
-			DEQUEUE_JOBS: 
+			//DEQUEUE_JOBS: 
 			vector<map<string,string>> request_tuple_container = de_queue_from_request_file();
 			cout << func_name << "=> Job file contains: " << request_tuple_container.size() << " request..." << endl;
 
@@ -193,8 +194,8 @@ void gl_request_queue_listener(string func_name) {
 				printf("%s=> For ISP[%s]----\n", func_name.c_str(), i.first.c_str());
 
 				//TODO: Thread this!! No need sitting and waiting for one ISP before using the other
-				std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.first, i.second);
-				tr_isp_distribution.detach();
+				//std::thread tr_isp_distribution(isp_distribution, "ISP Distribution", i.first, i.second);
+				//tr_isp_distribution.detach();
 			}	
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(GL_TR_SLEEP_TIME));
