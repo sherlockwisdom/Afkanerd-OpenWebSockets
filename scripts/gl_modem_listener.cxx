@@ -137,7 +137,7 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		//FIXME: This solution is not checking for SSH modems
 		if( modem_index.empty()) {
 			//FIXME: Should check for another modem rather than send things back to the request file
-			helpers::write_to_request_file( message, number );
+			helpers::write_to_request_file( helpers::escape_string( message ), number );
 		}
 		else {
 			helpers::write_modem_job_file( modem_index, message, number );
