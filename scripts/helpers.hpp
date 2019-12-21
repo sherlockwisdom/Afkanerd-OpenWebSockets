@@ -68,6 +68,7 @@ namespace helpers {
 				break;
 
 				case '8':
+				case '6':
 					  switch(number[2]) {
 						case '0':
 						case '1':
@@ -82,7 +83,7 @@ namespace helpers {
 						case '7':
 						case '8':
 						case '9':
-							return "NEXTEL";
+							return "NEXTTEL";
 						break;
 					  }
 				break;
