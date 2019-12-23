@@ -144,7 +144,7 @@ void write_for_urgent_transmission( string modem_imei, string message, string nu
 		}
 	}
 	else {
-		helpers::write_to_request_file( message, number );
+		helpers::write_to_request_file( helpers::escape_string( message, number ));
 	}
 }
 
