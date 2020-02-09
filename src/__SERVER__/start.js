@@ -12,6 +12,12 @@ console.log( RETURN_VALUES );
 console.log("===============================");
 console.log( component );
 
+if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
+	console.error("=> CONFIGS NOT PROPERLY LOADED");
+	return;
+}
+
+
 /*
 app.post(component, (req, res)=>{
 	let __BODY__ = req.body;
