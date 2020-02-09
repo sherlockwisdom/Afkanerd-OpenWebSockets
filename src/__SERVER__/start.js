@@ -63,7 +63,12 @@ app.get(component + "/user/:token/request/:id", (req, res)=>{
 
 	//Get request data
 	let __REQUEST__ = await requestCollection.find( __ID__ );
-	if( !__REQUEST__.valid() ) {}
+	if( !__REQUEST__.valid() ) {
+		res.status(__REQUEST__.getErrorCode() );
+		res.end();
+
+		return;
+	}
 
 	res.status( RETURN_VALUES['SUCCESS'] );
 	res.send( __REQUEST__.data() );
