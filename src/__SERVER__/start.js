@@ -66,5 +66,5 @@ app.get(component + "/user/:token/request/:id", (req, res)=>{
 	if( !__REQUEST__.valid() ) {}
 
 	res.status( RETURN_VALUES['SUCCESS'] );
-	res.send( __REQUEST__ );
+	res.send( __REQUEST__.data() );
 });
