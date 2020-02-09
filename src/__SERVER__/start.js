@@ -1,8 +1,6 @@
 //TODO: Make request for SMS
 //TODO: Retrieve stored request for SMS
 
-const path = process.env.HOME + "/deku/whoami.env";
-require('dotenv').config({path: path.toString()})
 'use strict';
 
 let CONFIGS = readConfigs('system_configs');
