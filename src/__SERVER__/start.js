@@ -4,7 +4,6 @@
 let CONFIGS = readConfigs('system_configs');
 let RETURN_VALUES = readConfigs('return_values');
 
-
 var component = CONFIGS['COMPONENT'];
 app.post(component, (req, res)=>{
 	let __BODY__ = req.body;
@@ -43,7 +42,7 @@ app.post(component, (req, res)=>{
 	let __PHONENUMBER__ = __SMS__.__PHONENUMBER__;
 
 	//They should be some open socket it wants to send information to
-	let __SOCKET__ = SocketCollection.find(__ID__, __TOKEN__);
+	let __SOCKET__ = await socketCollection.find(__ID__, __TOKEN__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 		res.status(__SOCKET__.getErrorCode() );
 		res.end();
@@ -55,6 +54,17 @@ app.post(component, (req, res)=>{
 	res.end();
 });
 
-app.get(component + "/:id", (req, res)=>{
+app.get(component + "/user/:token/request/:id", (req, res)=>{
+	let __ID__ = req.id;
 
+	let __TOKEN__ = req.token;
+
+	if( await !DBClient.validateTokenOnly( __TOKEN__ ) ) {}
+
+	//Get request data
+	let __REQUEST__ = await requestCollection.find( __ID__ );
+	if( !__REQUEST__.valid() ) {}
+
+	res.status( RETURN_VALUES['SUCCESS'] );
+	res.send( __REQUEST__ );
 });
