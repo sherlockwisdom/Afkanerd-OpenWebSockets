@@ -28,7 +28,8 @@ app.post(component, (req, res)=>{
 	//They should be some open socket it wants to send information to
 	let __SOCKET__ = SocketCollection.find(__ID__, __TOKEN__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
-		
+		res.status(__SOCKET__.getErrorCode() );
+		res.end();
 	}
 	
 	res.status( RETURN_VALUES['SUCCESS'] );
