@@ -4,13 +4,15 @@ const READCONFIGS = require('./start_routines.js');
 let CONFIGS = READCONFIGS('system_configs');
 let RETURN_VALUES = READCONFIGS('return_values');
 
-var component = CONFIGS['COMPONENT'];
+var COMPONENT = CONFIGS['COMPONENT'];
 
+/*
 console.log( CONFIGS );
 console.log("===============================");
 console.log( RETURN_VALUES );
 console.log("===============================");
 console.log( component );
+*/
 
 if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	console.error("=> CONFIGS NOT PROPERLY LOADED");
@@ -19,7 +21,7 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 
 
 /*
-app.post(component, (req, res)=>{
+app.post(COMPONENT, (req, res)=>{
 	let __BODY__ = req.body;
 
 	console.log(__BODY__);
@@ -68,7 +70,7 @@ app.post(component, (req, res)=>{
 	res.end();
 });
 
-app.get(component + "/user/:token/request/:id", (req, res)=>{
+app.get(COMPONENT + "/user/:token/request/:id", (req, res)=>{
 	let __ID__ = req.id;
 
 	let __TOKEN__ = req.token;
