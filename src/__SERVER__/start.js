@@ -1,12 +1,18 @@
-//TODO: Make request for SMS
-//TODO: Retrieve stored request for SMS
-
+const READCONFIGS = require('./start_routines.js');
 'use strict';
 
-let CONFIGS = readConfigs('system_configs');
-let RETURN_VALUES = readConfigs('return_values');
+let CONFIGS = READCONFIGS('system_configs');
+let RETURN_VALUES = READCONFIGS('return_values');
 
 var component = CONFIGS['COMPONENT'];
+
+console.log( CONFIGS );
+console.log("===============================");
+console.log( RETURN_VALUES );
+console.log("===============================");
+console.log( component );
+
+/*
 app.post(component, (req, res)=>{
 	let __BODY__ = req.body;
 
@@ -75,3 +81,5 @@ app.get(component + "/user/:token/request/:id", (req, res)=>{
 	res.status( RETURN_VALUES['SUCCESS'] );
 	res.send( __REQUEST__.data() );
 });
+
+*/
