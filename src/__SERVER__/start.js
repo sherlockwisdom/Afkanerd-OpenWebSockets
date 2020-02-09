@@ -1,7 +1,8 @@
 //TODO: Make request for SMS
 //TODO: Retrieve stored request for SMS
 
-let CONFIGS = readConfigs();
+let CONFIGS = readConfigs('system_configs');
+let RETURN_VALUES = readConfigs('return_values');
 
 
 var component = CONFIGS['COMPONENT'];
@@ -25,6 +26,13 @@ app.post(component, (req, res)=>{
 	let __PHONENUMBER__ = __SMS__.__PHONENUMBER__;
 
 	//They should be some open socket it wants to send information to
+	let __SOCKET__ = SocketCollection.find(__ID__, __TOKEN__);
+	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
+		
+	}
+	
+	res.status( RETURN_VALUES['SUCCESS'] );
+	res.end();
 });
 
 app.get(component + "/:id", (req, res)=>{
