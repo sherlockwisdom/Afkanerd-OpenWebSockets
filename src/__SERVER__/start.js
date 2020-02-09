@@ -12,11 +12,28 @@ app.post(component, (req, res)=>{
 	console.log(__BODY__);
 
 	let __CLIENT__ = __BODY__.__CLIENT__;
+
+	if(
+		!__CLIENT__.hasAttribute("__ID__") ||
+		!__CLIENT__.hasAttribute("__TOKEN__")
+	) {
+		console.log("-- Invalid request made --");
+		res.status( RETURN_VALUES['INVALID_REQUEST'] );
+		res.end();
+		
+		return;
+	}
+		
 	let __ID__ = __CLIENT__.__ID__;
 	let __TOKEN__ = __CLIENT__.__TOKEN__;
 
 	//Let's validate this client
-	if( await !DBClient.validate(__ID__, __TOKEN__) ) {}
+	if( await !DBClient.validate(__ID__, __TOKEN__) ) {
+		res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
+		res.end();
+
+		return;
+	}
 	
 	//Now let's validate the request
 	let __REQUEST__ = __BODY__.__REQUEST__;
@@ -30,6 +47,8 @@ app.post(component, (req, res)=>{
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 		res.status(__SOCKET__.getErrorCode() );
 		res.end();
+
+		return;
 	}
 	
 	res.status( RETURN_VALUES['SUCCESS'] );
