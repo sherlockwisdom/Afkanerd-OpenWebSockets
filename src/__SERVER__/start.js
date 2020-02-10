@@ -82,12 +82,17 @@ app.post(COMPONENT, async (req, res)=>{
 
 	//Let's validate this client
 	let DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, __ID__, __TOKEN__);
-	let validated_client = await DBClient.validate(__ID__, __TOKEN__);
-	if( !validated_client) {
-		res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
-		res.end();
 
-		return;
+	try{
+		let validated_client = await DBClient.validate(__ID__, __TOKEN__);
+		if( !validated_client) {
+			res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
+			res.end();
+		}
+	}
+	catch( error ) {
+		console.log(error);
+		res.end();
 	}
 	
 	/*
