@@ -1,22 +1,47 @@
 const express = require('express');
 const bodyParser = require('body-parser')
-const mysql = require ( 'mysql' );
 
 const READCONFIGS = require('./start_routines.js');
 
 var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
+var mysql = require ( 'mysql' );
 
 //===============
 'use strict';
 //===============
 
-
 //================================================
+let getMysqlConnection = ()=>{
+	return new Promise ( (resolve, reject) => {
+		let path = "__COMMON_FILES__/mysql.env";
+		require('dotenv').config({path: path.toString()})
+		try{
+			let mysql_connection = mysql.createConnection({
+				host : process.env.MYSQL_HOST,
+				user : process.env.MYSQL_USER,
+				password : process.env.MYSQL_PASSWORD
+			});
+			resolve(mysql_connection);
+		}
+		catch(error) {
+			reject(error)
+		}
+	});
+}
+
+(async ()=>{
+	try{
+		mysql= await getMysqlConnection();
+	}
+	catch(error) {
+		console.log(error);
+	}
+})()
+
 var app = express();
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 //================================================
-
 
 //=======================================================
 let CONFIGS = READCONFIGS('system_configs');
@@ -28,18 +53,6 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	return;
 }
 
-mysql = (async ()=>{
-	return new Promise ( resolve => {
-		let path = "__COMMON_FILES__/mysql.env";
-		require('dotenv').config({path: path.toString()})
-		let mysql_connection = mysql.createConnection({
-			host : process.env.MYSQL_HOST,
-			user : process.env.MYSQL_USER,
-			password : process.env.MYSQL_PASSWORD
-		});
-		resolve(mysql_connection);
-	});
-})();
 
 //=======================================================
 
