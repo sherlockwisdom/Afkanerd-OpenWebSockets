@@ -1,40 +1,24 @@
 const express = require('express');
 const bodyParser = require('body-parser')
 
-const READCONFIGS = require('./start_routines.js');
+const START_ROUTINES = require('./start_routines.js');
 
 var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
-var mysql = require ( 'mysql' );
 
 //===============
 'use strict';
 //===============
 
 //================================================
-let getMysqlConnection = ()=>{
-	return new Promise ( (resolve, reject) => {
-		let path = "__COMMON_FILES__/mysql.env";
-		require('dotenv').config({path: path.toString()})
-		try{
-			let mysql_connection = mysql.createConnection({
-				host : process.env.MYSQL_HOST,
-				user : process.env.MYSQL_USER,
-				password : process.env.MYSQL_PASSWORD
-			});
-			resolve(mysql_connection);
-		}
-		catch(error) {
-			reject(error)
-		}
-	});
-}
-
+var __MYSQL_CONNECTION__;
 (async ()=>{
 	try{
-		mysql= await getMysqlConnection();
+		__MYSQL_CONNECTION__ = await START_ROUTINES.GET_MYSQL_CONNECTION();
+		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
 		console.log(error);
+		return;
 	}
 })()
 
@@ -44,8 +28,8 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 //================================================
 
 //=======================================================
-let CONFIGS = READCONFIGS('system_configs');
-let RETURN_VALUES = READCONFIGS('return_values');
+let CONFIGS = START_ROUTINES.READCONFIGS('system_configs');
+let RETURN_VALUES = START_ROUTINES.READCONFIGS('return_values');
 var COMPONENT = CONFIGS['COMPONENT'];
 
 if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
@@ -97,7 +81,7 @@ app.post(COMPONENT, async (req, res)=>{
 	let __TOKEN__ = __CLIENT__.TOKEN;
 
 	//Let's validate this client
-	let DBClient = new __DBCLIENT__( __ID__, __TOKEN__ );
+	let DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, __ID__, __TOKEN__);
 	let validated_client = await DBClient.validate(__ID__, __TOKEN__);
 	if( !validated_client) {
 		res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
