@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser')
 const READCONFIGS = require('./start_routines.js');
 
 //===============
@@ -33,8 +34,16 @@ console.log( component );
 /*///=======================================================
 
 
+//=================================
+let options = {
+	port : 3000
+}
 
-/*
+app.listen(options, ()=>{
+	console.log("=> RECEIVING API BEGAN, RUNNING ON PORT [%d]", options.port);
+});
+//=================================
+
 app.post(COMPONENT, (req, res)=>{
 	let __BODY__ = req.body;
 
@@ -52,6 +61,8 @@ app.post(COMPONENT, (req, res)=>{
 		
 		return;
 	}
+
+	/*
 		
 	let __ID__ = __CLIENT__.__ID__;
 	let __TOKEN__ = __CLIENT__.__TOKEN__;
@@ -79,11 +90,12 @@ app.post(COMPONENT, (req, res)=>{
 
 		return;
 	}
-	
+	*/
 	res.status( RETURN_VALUES['SUCCESS'] );
 	res.end();
 });
 
+/*
 app.get(COMPONENT + "/user/:token/request/:id", (req, res)=>{
 	let __ID__ = req.id;
 
