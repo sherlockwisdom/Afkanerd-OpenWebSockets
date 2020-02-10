@@ -36,7 +36,7 @@ console.log( component );
 
 //=================================
 let options = {
-	port : 3000
+	port : 8000
 }
 
 app.listen(options, ()=>{
@@ -52,8 +52,8 @@ app.post(COMPONENT, (req, res)=>{
 	let __CLIENT__ = __BODY__.__CLIENT__;
 
 	if(
-		!__CLIENT__.hasAttribute("__ID__") ||
-		!__CLIENT__.hasAttribute("__TOKEN__")
+		typeof __CLIENT__["__ID__"] == "undefined" ||
+		typeof __CLIENT__["__TOKEN__"] == "undefined"
 	) {
 		console.log("-- Invalid request made --");
 		res.status( RETURN_VALUES['INVALID_REQUEST'] );
