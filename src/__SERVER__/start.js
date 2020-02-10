@@ -52,8 +52,8 @@ app.post(COMPONENT, (req, res)=>{
 	let __CLIENT__ = __BODY__.__CLIENT__;
 
 	if(
-		typeof __CLIENT__["__ID__"] == "undefined" ||
-		typeof __CLIENT__["__TOKEN__"] == "undefined"
+		typeof __CLIENT__["ID"] == "undefined" ||
+		typeof __CLIENT__["TOKEN"] == "undefined"
 	) {
 		console.log("-- Invalid request made --");
 		res.status( RETURN_VALUES['INVALID_REQUEST'] );
