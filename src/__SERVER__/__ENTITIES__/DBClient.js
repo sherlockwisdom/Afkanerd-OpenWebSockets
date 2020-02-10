@@ -42,8 +42,14 @@ class DBCLIENT {
 					reject(error);
 				}
 
-				if( result[0].__ID__ == __ID__ && result[0].__TOKEN__ == __TOKEN__ ) resolve( true );
-				resolve( false );
+				if( typeof result[0].__TOKEN__ == "undefined"){ 
+					console.error("=> Cannot find __ID__ or __TOKEN__ in results");
+					resolve(false);
+				}
+
+				if( result[0].__TOKEN__ == __TOKEN__ ) resolve( true );
+				
+				resolve(false);
 			})	
 		});
 	}
