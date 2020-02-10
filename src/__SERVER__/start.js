@@ -1,23 +1,37 @@
+const express = require('express');
 const READCONFIGS = require('./start_routines.js');
-'use strict';
 
+//===============
+'use strict';
+//===============
+
+
+//================================================
+var app = express();
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+//================================================
+
+
+//=======================================================
 let CONFIGS = READCONFIGS('system_configs');
 let RETURN_VALUES = READCONFIGS('return_values');
-
 var COMPONENT = CONFIGS['COMPONENT'];
-
-/*
-console.log( CONFIGS );
-console.log("===============================");
-console.log( RETURN_VALUES );
-console.log("===============================");
-console.log( component );
-*/
 
 if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	console.error("=> CONFIGS NOT PROPERLY LOADED");
 	return;
 }
+//=======================================================
+
+/*/=======================================================
+console.log( CONFIGS );
+console.log("===============================");
+console.log( RETURN_VALUES );
+console.log("===============================");
+console.log( component );
+/*///=======================================================
+
 
 
 /*
