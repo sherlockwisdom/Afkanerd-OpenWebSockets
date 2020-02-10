@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser')
 const READCONFIGS = require('./start_routines.js');
 
+var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
+
 //===============
 'use strict';
 //===============
@@ -23,6 +25,7 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	console.error("=> CONFIGS NOT PROPERLY LOADED");
 	return;
 }
+
 //=======================================================
 
 /*/=======================================================
@@ -44,7 +47,7 @@ app.listen(options, ()=>{
 });
 //=================================
 
-app.post(COMPONENT, (req, res)=>{
+app.post(COMPONENT, async (req, res)=>{
 	let __BODY__ = req.body;
 
 	console.log(__BODY__);
@@ -62,19 +65,20 @@ app.post(COMPONENT, (req, res)=>{
 		return;
 	}
 
-	/*
-		
-	let __ID__ = __CLIENT__.__ID__;
-	let __TOKEN__ = __CLIENT__.__TOKEN__;
+	let __ID__ = __CLIENT__.ID;
+	let __TOKEN__ = __CLIENT__.TOKEN;
 
 	//Let's validate this client
-	if( await !DBClient.validate(__ID__, __TOKEN__) ) {
+	let DBClient = new __DBCLIENT__( __ID__, __TOKEN__ );
+	let validated_client = await DBClient.validate(__ID__, __TOKEN__);
+	if( !validated_client) {
 		res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
 		res.end();
 
 		return;
 	}
 	
+	/*
 	//Now let's validate the request
 	let __REQUEST__ = __BODY__.__REQUEST__;
 	let __SMS__ = __REQUEST__.__SMS__;
