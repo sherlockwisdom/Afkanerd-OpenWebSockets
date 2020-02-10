@@ -18,12 +18,16 @@ class DBCLIENT {
 
 					return;
 				}
-				console.log(result);
-				/*
-				if( typeof result["__ID__"] == "undefined" || typeof result["__TOKEN__"] == "undefined"){ 
-					if( result.__ID__ == __ID__ && result.__TOKEN__ == __TOKEN__ ) resolve( true );
+				//console.log(result);
+				//console.log(result[0].__ID__);
+				//console.log(result[0].__TOKEN__);
+				if( typeof result[0].__ID__ == "undefined" || typeof result[0].__TOKEN__ == "undefined"){ 
+					console.error("=> Cannot find __ID__ or __TOKEN__ in results");
+					resolve(false);
 				}
-				*/
+
+				if( result[0].__ID__ == __ID__ && result[0].__TOKEN__ == __TOKEN__ ) resolve( true );
+				
 				resolve(false);
 			})	
 		});
