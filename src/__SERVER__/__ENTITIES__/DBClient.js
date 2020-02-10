@@ -10,7 +10,7 @@ class DBCLIENT {
 
 	validate( __ID__, __TOKEN__ ) {
 		return new Promise((resolve, reject)=>{
-			let query = "SELECT __ID__, __TOKEN__ FROM __DEKU_CLIENT__ WHERE __DEKU_CLIENT__.__ID__ = ? AND __DEKU_CLIENT__.__TOKEN__ = ?";
+			let query = "SELECT __ID__, __TOKEN__ FROM __DEKU__.__CLIENTS__ WHERE __CLIENTS__.__ID__ = ? AND __CLIENTS__.__TOKEN__ = ?";
 			this.__MYSQL_CONNECTION__.query( query, [ __ID__, __TOKEN__ ], (error, result)=>{ //TODO: Not sure about this
 				if( error ) {
 					//TODO: Only notice
@@ -31,7 +31,7 @@ class DBCLIENT {
 
 	async validateTokenOnly( __TOKEN__ ) {
 		return new Promise((resolve, reject)=>{
-			let query = "SELECT __ID__ FROM __DEKU_CLIENT__ WHERE __DEKU_CLIENT__.__TOKEN__ = ?";
+			let query = "SELECT __ID__ FROM __DEKU__.__CLIENTS__ WHERE __CLIENTS__.__TOKEN__ = ?";
 			this.__MYSQL_CONNECTION__.query( query, [ __TOKEN__ ], (results, error)=>{ //TODO: Not sure about this
 				if( error ) {
 					//TODO: Only notice
