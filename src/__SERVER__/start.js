@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser')
+const mysql = require ( 'mysql' );
+
 const READCONFIGS = require('./start_routines.js');
 
 var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
@@ -25,6 +27,19 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	console.error("=> CONFIGS NOT PROPERLY LOADED");
 	return;
 }
+
+mysql = (async ()=>{
+	return new Promise ( resolve => {
+		let path = "__COMMON_FILES__/mysql.env";
+		require('dotenv').config({path: path.toString()})
+		let mysql_connection = mysql.createConnection({
+			host : process.env.MYSQL_HOST,
+			user : process.env.MYSQL_USER,
+			password : process.env.MYSQL_PASSWORD
+		});
+		resolve(mysql_connection);
+	});
+})();
 
 //=======================================================
 
