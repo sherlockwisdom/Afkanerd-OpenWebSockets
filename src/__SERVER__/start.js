@@ -73,8 +73,6 @@ app.post(COMPONENT, async (req, res)=>{
 		console.log("-- Invalid request made --");
 		res.status( RETURN_VALUES['INVALID_REQUEST'] );
 		res.end();
-		
-		return;
 	}
 
 	let __ID__ = __CLIENT__.ID;
@@ -95,15 +93,28 @@ app.post(COMPONENT, async (req, res)=>{
 		res.end();
 	}
 	
-	/*
 	//Now let's validate the request
 	let __REQUEST__ = __BODY__.__REQUEST__;
+	if(
+		typeof __REQUEST__["__REQUEST__"] == "undefined"
+	) {
+		res.status( RETURN_VALUES['INVALID_REQUEST'] ).end();
+	}
+
 	let __SMS__ = __REQUEST__.__SMS__;
 
+	if(
+		typeof __SMS__["MESSAGE"] == "undefined" ||
+		typeof __SMS__["PHONENUMBER"] == "undefined"
+	) {
+		res.status( RETURN_VALUES['INVALID_REQUEST']).end();
+	}
+	
 	let __MESSAGE__ = __SMS__.__MESSAGE__;
 	let __PHONENUMBER__ = __SMS__.__PHONENUMBER__;
 
 	//They should be some open socket it wants to send information to
+	/*
 	let __SOCKET__ = await socketCollection.find(__ID__, __TOKEN__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 		res.status(__SOCKET__.getErrorCode() );
@@ -112,7 +123,8 @@ app.post(COMPONENT, async (req, res)=>{
 		return;
 	}
 	*/
-	res.status( RETURN_VALUES['SUCCESS'] );
+	
+	res.status( RETURN_VALUES['FAILED'] );
 	res.end();
 });
 
