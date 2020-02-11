@@ -1,6 +1,6 @@
-var __DBREQUEST__ = require('./../__ENTITIES__/Request.js');
 
-class REQUEST {
+module.exports = 
+class DBREQUEST {
 	constructor( __MYSQL_CONNECTION__, __ID__  ) {
 		this.__MYSQL_CONNECTION__ = __MYSQL_CONNECTION__;
 		this.__ID__ = __ID__;

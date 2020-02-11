@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const START_ROUTINES = require('./start_routines.js');
 
 var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
+var __DBREQUEST__ = require('./__ENTITIES__/DBRequest.js');
 var SOCKETS = require('./__ENTITIES__/Socket.js');
 
 //===============
@@ -130,7 +131,8 @@ app.post(COMPONENT, async (req, res)=>{
 
 	//They should be some open socket it wants to send information to
 	//TODO: Register it, then take the ID and user for transmission
-	
+
+	let DBRequest = new __DBREQUEST__(__MYSQL_CONNECTION__);
 	let DBRequestID = await DBRequest.insert(__ID__, __MESSGAGE__, __PHONENUMBER__);
 	let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__, __MSG_ID__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
