@@ -114,7 +114,7 @@ app.post(COMPONENT, async (req, res)=>{
 	let __PHONENUMBER__ = __SMS__.__PHONENUMBER__;
 
 	//They should be some open socket it wants to send information to
-	/*
+	
 	let __SOCKET__ = await socketCollection.find(__ID__, __TOKEN__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 		res.status(__SOCKET__.getErrorCode() );
@@ -122,7 +122,6 @@ app.post(COMPONENT, async (req, res)=>{
 
 		return;
 	}
-	*/
 	
 	res.status( RETURN_VALUES['FAILED'] );
 	res.end();
