@@ -19,14 +19,17 @@ class SOCKETS {
 			__NUMBER__ : __NUMBER__,
 			__ID__ : __ID__
 		}
+		let returnValue = false;
 		client.sendMessage( transmission, ( error )=>{
 			if( error) {
 				console.log("=> SOMETHING WENT WRONG WITH TRANSMISSION...");
 				console.log( error );
-				return;
 			}
 			console.log("=> TRANSMISSION SUCCESSFUL");
+			returnValue = true;
 		})
+
+		return returnValue;
 	}
 	
 	find( __ID__, __TOKEN__ ) {
