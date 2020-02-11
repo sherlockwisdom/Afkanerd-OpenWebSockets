@@ -62,7 +62,11 @@ console.log( component );
 
 //=================================
 let options = {
-	port : 8000
+	port : (()=>{
+			let path = "__COMMON_FILES__/system_configs.env";
+			require('dotenv').config({path: path.toString()})
+			return process.env.API_PORT;
+	})()
 }
 
 app.listen(options, ()=>{
