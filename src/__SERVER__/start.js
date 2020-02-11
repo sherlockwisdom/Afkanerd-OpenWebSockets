@@ -126,8 +126,8 @@ app.post(COMPONENT, async (req, res)=>{
 		res.status( RETURN_VALUES['INVALID_REQUEST']).end();
 	}
 	
-	let __MESSAGE__ = __SMS__.__MESSAGE__;
-	let __PHONENUMBER__ = __SMS__.__PHONENUMBER__;
+	let __MESSAGE__ = __SMS__.MESSAGE;
+	let __PHONENUMBER__ = __SMS__.PHONENUMBER;
 
 	//They should be some open socket it wants to send information to
 	//TODO: Register it, then take the ID and user for transmission
@@ -140,6 +140,7 @@ app.post(COMPONENT, async (req, res)=>{
 	}
 	else {
 		let DBRequestID = await DBRequest.insert(__ID__, __MESSAGE__, __PHONENUMBER__);
+		console.log("=> REQUEST STORED IN DATABASE ID[%d]", DBRequestID);1
 		let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__, __MSG_ID__);
 		if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 			res.status(__SOCKET__.getErrorCode() );

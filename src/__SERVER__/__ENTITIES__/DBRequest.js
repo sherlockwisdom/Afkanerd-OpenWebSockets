@@ -25,7 +25,7 @@ class DBREQUEST {
 				}
 				
 				console.log(result);
-				resolve( result )
+				resolve( result.insertId )
 			});
 		});
 	}
