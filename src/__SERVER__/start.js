@@ -94,10 +94,10 @@ app.post(COMPONENT, async (req, res)=>{
 	let __TOKEN__ = __CLIENT__.TOKEN;
 
 	//Let's validate this client
-	let DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, __ID__, __TOKEN__);
+	let DBDeku = new __DBCLIENT__( __MYSQL_CONNECTION__, __ID__, __TOKEN__);
 
 	try{
-		let validated_client = await DBClient.validate(__ID__, __TOKEN__);
+		let validated_client = await DBDeku.validate(__ID__, __TOKEN__);
 		if( !validated_client) {
 			res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
 			res.end();
@@ -129,8 +129,10 @@ app.post(COMPONENT, async (req, res)=>{
 	let __PHONENUMBER__ = __SMS__.__PHONENUMBER__;
 
 	//They should be some open socket it wants to send information to
+	//TODO: Register it, then take the ID and user for transmission
 	
-	let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__);
+	let DBRequestID = await DBRequest.insert(__ID__, __MESSGAGE__, __PHONENUMBER__);
+	let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__, __MSG_ID__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 		res.status(__SOCKET__.getErrorCode() );
 		res.end();
@@ -148,7 +150,7 @@ app.get(COMPONENT + "/user/:token/request/:id", (req, res)=>{
 
 	let __TOKEN__ = req.token;
 
-	if( await !DBClient.validateTokenOnly( __TOKEN__ ) ) {}
+	if( await !DBDeku.validateTokenOnly( __TOKEN__ ) ) {}
 
 	//Get request data
 	let __REQUEST__ = await requestCollection.find( __ID__ );

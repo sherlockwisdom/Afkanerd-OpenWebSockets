@@ -1,20 +1,41 @@
+var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
+const JsonSocket = require('json-socket');
+const Socket = require ('net');
 'use strict'
 
 module.exports =
 class SOCKETS {
-	transmit( __MESSAGE__, __NUMBER__ ) {
+	constructor(__ID__, __TOKEN__){
+		this.__ID__ = __ID__;
+		this.__TOKEN__ = __TOKEN__;
+		this.collection = {};
+	}
+
+	transmit( __MESSAGE__, __NUMBER__, __ID__ ) {
 		//TODO: Send this information
+		let client = this.collection[this.__ID__ + this.__TOKEN_];
+		let transmission = {
+			__MESSAGE__ : __MESSAGE__,
+			__NUMBER__ : __NUMBER__,
+			__ID__ : __ID__
+		}
+		client.sendMessage( transmission, ( error )=>{
+			if( error) {
+				console.log("=> SOMETHING WENT WRONG WITH TRANSMISSION...");
+				console.log( error );
+				return;
+			}
+			console.log("=> TRANSMISSION SUCCESSFUL");
+		})
 	}
 	
 	find( __ID__, __TOKEN__ ) {
+		return new SOCKETS(__ID__, __TOKEN__);
 	}
 
 	get getErrorCode() {}
 
 	startSockets() {
-		var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
-		const JsonSocket = require('json-socket');
-		const Socket = require ('net');
 		this.socket = new Socket.Server();
 
 		let pendingPromise = new Promise( async (resolve, reject) => {
