@@ -11,12 +11,24 @@ var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
 
 //================================================
 var __MYSQL_CONNECTION__;
+var __SOCKET_COLLECTION__;
 (async ()=>{
 	try{
 		__MYSQL_CONNECTION__ = await START_ROUTINES.GET_MYSQL_CONNECTION();
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
+		console.log(error);
+		return;
+	}
+})()
+
+(async ()=>{
+	try {
+		__SOCKET_COLLECTION__ = await SOCKETS.startSockets();
+		console.log("=> SOCKETS ESTABLISHED");
+	}
+	catch( error ) {
 		console.log(error);
 		return;
 	}
@@ -115,7 +127,7 @@ app.post(COMPONENT, async (req, res)=>{
 
 	//They should be some open socket it wants to send information to
 	
-	let __SOCKET__ = await socketCollection.find(__ID__, __TOKEN__);
+	let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__);
 	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
 		res.status(__SOCKET__.getErrorCode() );
 		res.end();
