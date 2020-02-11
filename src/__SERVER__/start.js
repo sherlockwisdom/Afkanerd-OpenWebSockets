@@ -133,17 +133,22 @@ app.post(COMPONENT, async (req, res)=>{
 	//TODO: Register it, then take the ID and user for transmission
 
 	let DBRequest = new __DBREQUEST__(__MYSQL_CONNECTION__);
-	let DBRequestID = await DBRequest.insert(__ID__, __MESSGAGE__, __PHONENUMBER__);
-	let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__, __MSG_ID__);
-	if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
-		res.status(__SOCKET__.getErrorCode() );
-		res.end();
 
-		return;
+	if( !DBRequest.valid( __MESSAGE__, __PHONENUMBER__ ) ) {
+		console.log("=> REQUEST NOT WELL FORMED");
+		res.status(RETURN_VALUES['INVALID_REQUEST']).end();
 	}
-	
-	res.status( RETURN_VALUES['FAILED'] );
-	res.end();
+	else {
+		let DBRequestID = await DBRequest.insert(__ID__, __MESSAGE__, __PHONENUMBER__);
+		let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__, __MSG_ID__);
+		if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
+			res.status(__SOCKET__.getErrorCode() );
+			res.end();
+		}
+		
+		res.status( RETURN_VALUES['FAILED'] );
+		res.end();
+	}
 });
 
 /*
