@@ -1,11 +1,7 @@
+'use strict'
 
-
+module.exports =
 class SOCKETS {
-	constructor( __ID__ ) {
-		this.__ID__ = __ID__;
-	}
-
-
 	transmit( __MESSAGE__, __NUMBER__ ) {
 		//TODO: Send this information
 	}
@@ -15,11 +11,17 @@ class SOCKETS {
 
 	get getErrorCode() {}
 
-	start() {
-		var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
+	startSockets() {
+		var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
+		const JsonSocket = require('json-socket');
+		const Socket = require ('net');
+		this.socket = new Socket.Server();
+
 		let pendingPromise = new Promise( async (resolve, reject) => {
+			let path = "../__COMMON_FILES__/system_configs.env";
+			require('dotenv').config({path: path.toString()})
 			let __CONNECTION_OPTIONS__ = {
-				port = process.env.SOCKET_PORT;	
+				port : process.env.SOCKET_PORT	
 			}
 			
 			this.socket.listen(__CONNECTION_OPTIONS__, ()=>{
@@ -40,7 +42,7 @@ class SOCKETS {
 				else console.log("=> BROADCASTING WAY");
 			});
 
-			client.on('message', ( data )=>{
+			client.on('message', async ( data )=>{
 				if( !data.hasOwnProperty("__MESSAGE_TYPE__") ) return;
 
 				//AUTHENTICATING
