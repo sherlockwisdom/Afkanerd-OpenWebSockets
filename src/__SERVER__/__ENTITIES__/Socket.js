@@ -17,8 +17,14 @@ class SOCKETS {
 
 	start() {
 		var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
-		return new Promise( async (resolve, reject) => {
-			this.socket.listen(this.socketConnectionOptions, ()=>{});
+		let pendingPromise = new Promise( async (resolve, reject) => {
+			let __CONNECTION_OPTIONS__ = {
+				port = process.env.SOCKET_PORT;	
+			}
+			
+			this.socket.listen(__CONNECTION_OPTIONS__, ()=>{
+				resolve();
+			});
 		})
 
 		this.socket.on('connection', ( client )=>{
@@ -35,74 +41,40 @@ class SOCKETS {
 			});
 
 			client.on('message', ( data )=>{
-				if( typeof data.__MESSAGE_TYPE__ == "undefined" ) return;
+				if( !data.hasOwnProperty("__MESSAGE_TYPE__") ) return;
 
+				//AUTHENTICATING
 				if( data.__MESSAGE_TYPE__ == "__AUTH__" ) {
 					let DBClient = new __DBCLIENT__( data.ID, data.TOKEN );
-					let validated_client = await DBClient.validate( data.ID, data.TOKEN );
-					if( !validated_client) {
-						client.sendEndMessage( "IDKY" );
+					if( this.collection.hasOwnProperty(data.ID + data.TOKEN) ) {
+						console.log("=> CLIENT NOT BEING SURE...");
+						client.sendMessage("=> I GOT YOU");
 					}
 
-					this.collection[data.ID + data.TOKEN] = client;
-					console.log("=> AUTHENTICATED ESTABLISHED");
+					else {
+						let validated_client = await DBClient.validate( data.ID, data.TOKEN );
+						if( !validated_client) {
+							client.sendEndMessage( "IDKY" );
+						}
+
+						this.collection[data.ID + data.TOKEN] = client;
+						console.log("=> AUTHENTICATION ESTABLISHED");
+					}
 				}
-						
+
+				//TODO: What happens if it's an authenticated user
+			})
+
+			client.on("error",async ()=>{
+				console.log("=> ERROR WITH CONNECTED CLIENT");
+				this.removeClient( client );
+			})
+
+			client.on("close",async ()=>{
+				console.log("=> CLIENT CONNECTION CLOSED");
+				this.removeClient( client );
 			})
 		})
-
-		socketClient.on("message", ( jsData )=>{
-			try{
-				switch( jsData.type ) {
-					case "auth":
-					case "Auth":
-					case "AUTH":
-						if(!jsData.hasOwnProperty("UUID") || !jsData.hasOwnProperty("clientToken") || !jsData.hasOwnProperty("appType")) {
-							console.log("socket:on:message=> not a valid socket client");
-							console.log(jsData);
-							socket.end();
-							throw new Error("invalid client");
-							return;
-						}
-						else {
-							console.log("socket:on:message=> socket authentication token:", jsData.clientToken);
-							socketClient.clientToken = jsData.clientToken;
-							socketClient.clientUUID = jsData.UUID;
-							socketClient.appType = jsData.appType; //This is still JSON object
-							this.addClientSocket(socketClient);
-							console.log("socket:on:message=> number of client sockets:", this.size());
-						}
-					break;
-
-					case "confirmation":
-						console.log("socket.on:message=> confirmation from client|||");
-						console.log(jsData);
-					break;
-
-					default:
-						throw new Error("invalid message type");
-					break;
-				}
-			}
-			catch(error) {
-				console.log("socket:on:message:error=> ", error.message);
-			}
-		})
-
-
-			socketClient.on("error",async ()=>{
-				console.log("socket:on:disconnect=> a socket just ended");
-				socketClient.end();
-				await this.removeClientSocket(socketClient.clientUUID, socketClient.clientToken)
-				console.log("socket:on:close=> number of client sockets:", this.size());
-			})
-			socketClient.on("close",async ()=>{
-				console.log("socket:on:disconnect=> a socket just disconnected");
-				socketClient.end();
-				await this.removeClientSocket(socketClient.clientUUID, socketClient.clientToken)
-				console.log("socket:on:close=> number of client sockets:", this.size());
-			})
-		resolve();
-	})
+		return pendingPromise;
 	}
 }
