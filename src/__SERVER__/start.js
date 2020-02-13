@@ -91,14 +91,14 @@ app.post(COMPONENT, async (req, res)=>{
 		res.end();
 	}
 
-	let __ID__ = __CLIENT__.ID;
+	let __USER_ID__ = __CLIENT__.ID;
 	let __TOKEN__ = __CLIENT__.TOKEN;
 
 	//Let's validate this client
-	let DBDeku = new __DBCLIENT__( __MYSQL_CONNECTION__, __ID__, __TOKEN__);
+	let DBDeku = new __DBCLIENT__( __MYSQL_CONNECTION__, __USER_ID__, __TOKEN__);
 
 	try{
-		let validated_client = await DBDeku.validate(__ID__, __TOKEN__);
+		let validated_client = await DBDeku.validate(__USER_ID__, __TOKEN__);
 		if( !validated_client) {
 			res.status( RETURN_VALUES['NOT_AUTHORIZED'] );
 			res.end();
@@ -117,32 +117,19 @@ app.post(COMPONENT, async (req, res)=>{
 		res.status( RETURN_VALUES['INVALID_REQUEST'] ).end();
 	}
 
-	let __SMS__ = __REQUEST__.__SMS__;
-
-	if(
-		typeof __SMS__["MESSAGE"] == "undefined" ||
-		typeof __SMS__["PHONENUMBER"] == "undefined"
-	) {
-		res.status( RETURN_VALUES['INVALID_REQUEST']).end();
-	}
-	
-	let __MESSAGE__ = __SMS__.MESSAGE;
-	let __PHONENUMBER__ = __SMS__.PHONENUMBER;
-
-	//They should be some open socket it wants to send information to
-	//TODO: Register it, then take the ID and user for transmission
+	let __SMS_COLLECTION__ = __REQUEST__.__SMS__;
 
 	let DBRequest = new __DBREQUEST__(__MYSQL_CONNECTION__);
 
-	if( !DBRequest.valid( __MESSAGE__, __PHONENUMBER__ ) ) {
+	if( !DBRequest.valid( __SMS_COLLECTION__ ) ) {
 		console.log("=> REQUEST NOT WELL FORMED");
 		res.status(RETURN_VALUES['INVALID_REQUEST']).end();
 	}
 	else {
-		let DBRequestID = await DBRequest.insert(__ID__, __MESSAGE__, __PHONENUMBER__);
-		console.log("=> REQUEST STORED IN DATABASE ID[%d]", DBRequestID);
-		let __SOCKET__ = await __SOCKET_COLLECTION__.find(__ID__, __TOKEN__, __MSG_ID__);
-		if( !__SOCKET__.transmit( __MESSAGE__, __PHONENUMBER__ ) ){
+		let DBRequestID = await DBRequest.insert(__USER_ID__, __SMS_COLLECTION__);
+		console.log("=> REQUEST STORED IN DATABASE ID - [%d]", DBRequestID);
+		let __SOCKET__ = await __SOCKET_COLLECTION__.find(__USER_ID__, __TOKEN__, __MSG_ID__);
+		if( !__SOCKET__.transmit( __SMS_COLLECTION__ ) ){
 			res.status(__SOCKET__.getErrorCode() );
 			res.end();
 		}
