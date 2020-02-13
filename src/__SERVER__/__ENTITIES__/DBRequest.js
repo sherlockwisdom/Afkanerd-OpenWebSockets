@@ -14,7 +14,7 @@ class DBREQUEST {
 	insert(__USER_ID__, __SMS_COLLECTION__) {
 		let smsRequest = [];
 		for(let i=0;i<__SMS_COLLECTION__.length;++i)
-			smsRequest.push([__USER_ID__, __SMS_COLLECTION__[0].__MESSAGE__, __SMS_COLLECTION__[0].__PHONENUMBER__]);
+			smsRequest.push([__USER_ID__, __SMS_COLLECTION__[i].__MESSAGE__, __SMS_COLLECTION__[i].__PHONENUMBER__]);
 		return new Promise((resolve,reject)=>{
 			let query = "INSERT INTO __DEKU__.__REQUEST__ (__USER_ID__, __MESSAGE__, __PHONENUMBER__) VALUES ?";
 			this.__MYSQL_CONNECTION__.query(query, [smsRequest], ( error, result )=>{
