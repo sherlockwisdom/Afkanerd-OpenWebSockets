@@ -23,8 +23,8 @@ class DBREQUEST {
 					reject( error );
 				}
 				
-				console.log(result);
-				resolve( result.insertId )
+				//console.log(result);
+				resolve( result )
 			});
 		});
 	}

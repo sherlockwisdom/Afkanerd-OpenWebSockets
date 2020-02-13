@@ -127,7 +127,7 @@ app.post(COMPONENT, async (req, res)=>{
 	}
 	else {
 		let DBRequestID = await DBRequest.insert(__USER_ID__, __SMS_COLLECTION__);
-		console.log("=> REQUEST STORED IN DATABASE ID - [%d]", DBRequestID);
+		console.log("=> REQUEST STORED IN DATABASE - [%d]", DBRequestID.affectedRows);
 		let __SOCKET__ = await __SOCKET_COLLECTION__.find(__USER_ID__, __TOKEN__, __MSG_ID__);
 		if( !__SOCKET__.transmit( __SMS_COLLECTION__ ) ){
 			res.status(__SOCKET__.getErrorCode() );
