@@ -22,28 +22,16 @@
 
 ### **Server Setup**
 
-- Switch to server folder.
-
-  > `cd server`
-
 - Start server script.
 
-  > `start main.js`
+  > `npm run start-server`
 
 ### **Client Setup**
 
-- Switch to client folder.
-
-  > `cd ../client`
-
 - Start client script.
 
-  > `start main.js`
+  > `npm run start-client`
 
 ### **Daemon setup**
 
-Running scripts as daemons provides benefits like autorestart on failure and better log output and monitoring. To run as daemons PM2 can be used.
-
-PM2 is a production process manager for Node.js applications with a built-in load balancer. It allows you to keep applications alive forever, to reload them without downtime and to facilitate common system admin tasks.
-
-[Learn more](https://www.npmjs.com/package/pm2)
+Running scripts as daemons provides benefits like autorestart on failure and better log output and monitoring. To run as daemons, [PM2](https://www.npmjs.com/package/pm2), [forever](https://www.npmjs.com/package/forever), [nodemon](https://www.npmjs.com/package/nodemon) and [supervisor](https://www.npmjs.com/package/supervisor) can be used.
