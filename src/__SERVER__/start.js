@@ -3,9 +3,9 @@ const bodyParser = require('body-parser')
 
 const START_ROUTINES = require('./start_routines.js');
 
-var __DBCLIENT__ = require('./__ENTITIES__/DBClient.js');
-var __DBREQUEST__ = require('./__ENTITIES__/DBRequest.js');
-var SOCKETS = require('./__ENTITIES__/Socket.js');
+var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
+var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
+var SOCKETS = require('./../__ENTITIES__/Socket.js');
 
 //===============
 'use strict';
