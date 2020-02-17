@@ -14,11 +14,11 @@
 
 - Grant execute permission to install script.
 
-  > `sudo chmod 777 install.sh`
+  > `chmod a+x install.sh`
 
 - Run install script to configure client.
 
-  > `sudo ./install.sh`
+  > `./install.sh`
 
 ### **Server Setup**
 
@@ -26,13 +26,9 @@
 
   > `cd server`
 
-- Start server script with pm2.
+- Start server script.
 
-  > `pm2 start main.js -n "name your server instance"`
-
-- To view server log run pm2 log "number assigned to server instance by pm2 here".
-
-  > `pm2 log 0`
+  > `start main.js`
 
 ### **Client Setup**
 
@@ -40,10 +36,14 @@
 
   > `cd ../client`
 
-- Start client script with pm2.
+- Start client script.
 
-  > `pm2 start main.js -n "name your client instance"`
+  > `start main.js`
 
-- To view client log run pm2 log "number assigned to client instance by pm2 here".
+### **Daemon setup**
 
-  > `pm2 log 1`
+Running scripts as daemons provides benefits like autorestart on failure and better log output and monitoring. To run as daemons PM2 can be used.
+
+PM2 is a production process manager for Node.js applications with a built-in load balancer. It allows you to keep applications alive forever, to reload them without downtime and to facilitate common system admin tasks.
+
+[Learn more](https://www.npmjs.com/package/pm2)
