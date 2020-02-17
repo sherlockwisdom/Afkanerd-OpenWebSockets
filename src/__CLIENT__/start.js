@@ -68,9 +68,6 @@ SOCKETS = new SOCKETS;
 		try {
 			let socketConnectionPromise = await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
 			if( socketConnectionPromise == false){
-				//return false;
-				// recursion ??
-
 				console.error("=> FAILED CONNECTION TO SERVER");
 
 				let reconnectionTimeout = 5000;

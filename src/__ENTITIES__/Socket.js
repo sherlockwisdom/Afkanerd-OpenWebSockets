@@ -119,8 +119,8 @@ class SOCKETS {
 			});
 
 			this.clientSocket.on('close', ()=>{
-				console.log("=> Reconnection should be established");
 			});
+
 			resolve(false);
 		});
 
