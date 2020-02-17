@@ -22,6 +22,13 @@ const __TCP_HOST_PORT__ = START_ROUTINES["SERVER_PORT"];
 const __CLIENT_TOKEN__ = START_ROUTINES["TOKEN"];
 const __CLIENT_UUID__ = START_ROUTIENS["UUID"];
 const __APP_TYPE__ = START_ROUTINES["APP_TYPE"].split(',')
+
+// Checks
+console.log("__TCP_HOST_NAME__: %s", __TCP_HOST_NAME__);
+console.log("__TCP_HOST_PORT__: %s", __TCP_HOST_PORT__);
+console.log("__CLIENT_TOKEN__: %s", __CLIENT_TOKEN__);
+console.log("__CLIENT_UUID__: %s", __CLIENT_UUID__);
+console.log("__APP_TYPE__: %s", __APP_TYPE__);
 //=======================================================
 
 //================================================
