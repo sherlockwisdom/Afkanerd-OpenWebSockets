@@ -62,14 +62,21 @@ SOCKETS = new SOCKETS;
 
 (async ()=>{
 	try {
-		if( await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__) == false){
-			console.error("=> FAILED CONNECTION TO SERVER");
-			return;
+		let socketConnection = async ()=>{
+			if( await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__) == false){
+				console.error("=> FAILED CONNECTION TO SERVER");
+				let reconnectionTimeout = 5000;
+				console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS");
+
+				setTimeout(()=>{
+					console.log("=> RE-ESTABLISHING CONNECTION");
+					socketConnection();
+				}, reconnectionTimeout)
+			}
+			console.log("=> SERVER CONNECTION ESTABLISHED");
 		}
-		console.log("=> SERVER CONNECTION ESTABLISHED");
 	}
 	catch( error ) {
-		console.log("=> CLIENT CONNECTION CLOSED");
 		console.log(error);
 		return;
 	}
