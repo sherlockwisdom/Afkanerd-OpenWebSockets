@@ -1,3 +1,4 @@
+//console.log(process.env);
 const bodyParser = require('body-parser')
 
 const START_ROUTINES = require('./start_routines.js');
