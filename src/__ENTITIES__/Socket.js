@@ -119,9 +119,9 @@ class SOCKETS {
 			});
 
 			this.clientSocket.on('close', ()=>{
+				//resolve(false);
 			});
 
-			resolve(false);
 		});
 
 	}

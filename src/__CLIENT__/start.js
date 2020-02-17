@@ -67,19 +67,17 @@ SOCKETS = new SOCKETS;
 	let startSocketConnection = async ()=>{
 		try {
 			let socketConnectionPromise = await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
-			if( socketConnectionPromise == false){
-				console.error("=> FAILED CONNECTION TO SERVER");
-
-				let reconnectionTimeout = 5000;
-				console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS")
-
-				await snooze( reconnectionTimeout );
-				await startSocketConnection();
-			}
-			else console.log("=> SERVER CONNECTION ESTABLISHED");
+			console.log("=> SERVER CONNECTION ESTABLISHED");
 		}
 		catch (error) {
 			console.error("=> CONNECTION ERROR:", error);
+			console.error("=> FAILED CONNECTION TO SERVER");
+
+			let reconnectionTimeout = 5000;
+			console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS")
+
+			await snooze( reconnectionTimeout );
+			await startSocketConnection();
 			return false;
 		}
 	} 
