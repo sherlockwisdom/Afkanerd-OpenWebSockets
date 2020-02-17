@@ -113,6 +113,7 @@ class SOCKETS {
 			//console.log("... connecting tcp port: %s", __SERVER_PORT__);
 
 			this.clientSocket.connect(__SERVER_PORT__, __SERVER_HOST__);
+
 			this.clientSocket.on('connect', ()=>{
 				resolve( true);
 			});
