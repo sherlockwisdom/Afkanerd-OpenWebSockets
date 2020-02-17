@@ -7,6 +7,9 @@ var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
 var SOCKETS = require('./../__ENTITIES__/Socket.js');
 
+//es7 async/await`
+const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 //===============
 'use strict';
 //===============
@@ -61,23 +64,31 @@ SOCKETS = new SOCKETS;
 })();
 
 (async ()=>{
-	try {
-		let socketConnection = async ()=>{
-			if( await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__) == false){
-				console.error("=> FAILED CONNECTION TO SERVER");
-				let reconnectionTimeout = 5000;
-				console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS");
-
-				setTimeout(()=>{
-					console.log("=> RE-ESTABLISHING CONNECTION");
-					socketConnection();
-				}, reconnectionTimeout)
+	let startSocketConnection = async ()=>{
+		try {
+			let socketConnectionPromise = await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
+			if( socketConnectionPromise == false){
+				return false;
 			}
-			console.log("=> SERVER CONNECTION ESTABLISHED");
+			return true;
 		}
+		catch (error) {
+			console.error("=> CONNECTION ERROR:", error);
+			return false;
+		}
+	} 
+
+	if( startSocketConnection() == false ) 
+		console.error("=> FAILED CONNECTION TO SERVER");
+
+		let reconnectionTimeout = 5000;
+		console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS")
+
+		await snooze( reconnectionTimeout );
+		startSocketConnection();
 	}
-	catch( error ) {
-		console.log(error);
-		return;
+	else {
+		console.log("=> SERVER CONNECTION ESTABLISHED");
 	}
+
 })();
