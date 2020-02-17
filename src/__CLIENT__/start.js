@@ -68,27 +68,23 @@ SOCKETS = new SOCKETS;
 		try {
 			let socketConnectionPromise = await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
 			if( socketConnectionPromise == false){
-				return false;
+				//return false;
+				// recursion ??
+
+				console.error("=> FAILED CONNECTION TO SERVER");
+
+				let reconnectionTimeout = 5000;
+				console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS")
+
+				await snooze( reconnectionTimeout );
+				await startSocketConnection();
 			}
-			return true;
+			else console.log("=> SERVER CONNECTION ESTABLISHED");
 		}
 		catch (error) {
 			console.error("=> CONNECTION ERROR:", error);
 			return false;
 		}
 	} 
-
-	if( startSocketConnection() == false ) 
-		console.error("=> FAILED CONNECTION TO SERVER");
-
-		let reconnectionTimeout = 5000;
-		console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS")
-
-		await snooze( reconnectionTimeout );
-		startSocketConnection();
-	}
-	else {
-		console.log("=> SERVER CONNECTION ESTABLISHED");
-	}
-
+	startSocketConnection();
 })();
