@@ -7,14 +7,14 @@ module.exports = {
 		let path = "";
 		switch( config ) {
 			case 'system_configs':
-				path = "__COMMON_FILES__/system_configs.env";
+				path = "src/__SERVER__/__COMMON_FILES__/system_configs.env";
 				require('dotenv').config({path: path.toString()})
 				
 				return process.env;
 			break;
 
 			case 'return_values':
-				path = "__COMMON_FILES__/return_values.env";
+				path = "src/__SERVER__/__COMMON_FILES__/return_values.env";
 				require('dotenv').config({path: path.toString()})
 
 				return process.env;
@@ -24,7 +24,7 @@ module.exports = {
 
 	GET_MYSQL_CONNECTION : ()=> {
 		return new Promise ( (resolve, reject) => {
-			let path = "__COMMON_FILES__/mysql.env";
+			let path = "src/__SERVER__/__COMMON_FILES__/mysql.env";
 			require('dotenv').config({path: path.toString()})
 			try{
 				let mysql_connection = __MYSQL_CONNECTION__.createConnection({

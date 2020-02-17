@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start_server": "node src/__SERVER__/start.js",
-    "start_client": "node src/__CLIENT__/start.js"
+    "start-server": "node src/__SERVER__/start.js",
+    "start-client": "node src/__CLIENT__/start.js"
   },
   "author": "",
   "license": "ISC",

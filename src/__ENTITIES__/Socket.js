@@ -109,7 +109,9 @@ class SOCKETS {
 		return new Promise((resolve, reject)=>{
 			this.clientSocket = new JsonSocket( new Socket.Socket() );	
 			
-			this.clientSocket.connect(__SERVER_HOST__, __SERVER_PORT__);
+			this.clientSocket.connect(__SERVER_PORT__, __SERVER_HOST__);
+			console.log("... connecting tcp host: %s", __SERVER_HOST__);
+			console.log("... connecting tcp port: %s", __SERVER_PORT__);
 			this.clientSocket.on('connect', ()=>{
 				resolve( true);
 			});
