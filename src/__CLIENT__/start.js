@@ -63,12 +63,13 @@ SOCKETS = new SOCKETS;
 (async ()=>{
 	try {
 		if( await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__) == false){
-			console.log("=> FAILED CONNECTION TO SERVER");
+			console.error("=> FAILED CONNECTION TO SERVER");
 			return;
 		}
 		console.log("=> SERVER CONNECTION ESTABLISHED");
 	}
 	catch( error ) {
+		console.log("=> CLIENT CONNECTION CLOSED");
 		console.log(error);
 		return;
 	}
