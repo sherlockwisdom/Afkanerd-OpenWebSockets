@@ -18,11 +18,12 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	console.error("=> CONFIGS NOT PROPERLY LOADED");
 	return;
 }
-const __TCP_HOST_NAME__ = START_ROUTINES["SERVER_HOST"];
-const __TCP_HOST_PORT__ = START_ROUTINES["SERVER_PORT"];
-const __CLIENT_TOKEN__ = START_ROUTINES["TOKEN"];
-const __CLIENT_UUID__ = START_ROUTIENS["UUID"];
-const __APP_TYPE__ = START_ROUTINES["APP_TYPE"].split(',')
+const __TCP_HOST_NAME__ = CONFIGS["SERVER_HOST"];
+const __TCP_HOST_PORT__ = CONFIGS["SERVER_PORT"];
+const __CLIENT_TOKEN__ = CONFIGS["TOKEN"];
+const __CLIENT_UUID__ = CONFIGS["UUID"];
+const __APP_TYPE__ = CONFIGS["APP_TYPE"].split(',')
+//TODO: Check all this variables before starting
 
 // Checks
 console.log("__TCP_HOST_NAME__: %s", __TCP_HOST_NAME__);

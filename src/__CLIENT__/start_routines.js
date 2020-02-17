@@ -8,6 +8,7 @@ module.exports = {
 		switch( config ) {
 			case 'system_configs':
 				path = process.env.OLDPWD + "/src/__CLIENT__/__COMMON_FILES__/system_configs.env";
+				console.log("=> %s: %s", config, path);
 				require('dotenv').config({path: path.toString()})
 				
 				return process.env;
@@ -15,6 +16,7 @@ module.exports = {
 
 			case 'return_values':
 				path = process.env.OLDPWD + "/src/__CLIENT__/__COMMON_FILES__/return_values.env";
+				console.log("=> %s: %s", config, path);
 				require('dotenv').config({path: path.toString()})
 
 				return process.env;
