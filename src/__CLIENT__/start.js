@@ -25,12 +25,12 @@ const __CLIENT_UUID__ = CONFIGS["UUID"];
 const __APP_TYPE__ = CONFIGS["APP_TYPE"].split(',')
 //TODO: Check all this variables before starting
 
-// Checks
-console.log("__TCP_HOST_NAME__: %s", __TCP_HOST_NAME__);
-console.log("__TCP_HOST_PORT__: %s", __TCP_HOST_PORT__);
-console.log("__CLIENT_TOKEN__: %s", __CLIENT_TOKEN__);
-console.log("__CLIENT_UUID__: %s", __CLIENT_UUID__);
-console.log("__APP_TYPE__: %s", __APP_TYPE__);
+//TODO: Checks ( this should not be empty )
+console.log("=> __TCP_HOST_NAME__: %s", __TCP_HOST_NAME__);
+console.log("=> __TCP_HOST_PORT__: %s", __TCP_HOST_PORT__);
+console.log("=> __CLIENT_TOKEN__: %s", __CLIENT_TOKEN__);
+console.log("=> __CLIENT_UUID__: %s", __CLIENT_UUID__);
+console.log("=> __APP_TYPE__: %s", __APP_TYPE__);
 //=======================================================
 
 //================================================
@@ -53,6 +53,17 @@ SOCKETS = new SOCKETS;
 	try {
 		__SOCKET_COLLECTION__ = await SOCKETS.startSockets();
 		console.log("=> SOCKETS ESTABLISHED");
+	}
+	catch( error ) {
+		console.log(error);
+		return;
+	}
+})();
+
+(async ()=>{
+	try {
+		await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
+		console.log("=> SERVER CONNECTION ESTABLISHED");
 	}
 	catch( error ) {
 		console.log(error);
