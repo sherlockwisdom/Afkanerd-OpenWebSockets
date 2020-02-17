@@ -111,14 +111,15 @@ class SOCKETS {
 			
 			this.clientSocket.connect(__SERVER_HOST__, __SERVER_PORT__);
 			this.clientSocket.on('connect', ()=>{
-				this.clientSocket.on('error', ()=>{
-					reject( error );
-				});
-
-				this.clientSocket.on('close', ()=>{
-					console.log("=> Reconnection should be established");
-				});
 				resolve( true);
+			});
+
+			this.clientSocket.on('error', ( error )=>{
+				reject( error );
+			});
+
+			this.clientSocket.on('close', ()=>{
+				console.log("=> Reconnection should be established");
 			});
 			resolve(false);
 		});
