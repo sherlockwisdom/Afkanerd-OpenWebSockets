@@ -26,6 +26,7 @@ const __TCP_HOST_PORT__ = CONFIGS["SERVER_PORT"];
 const __CLIENT_TOKEN__ = CONFIGS["TOKEN"];
 const __CLIENT_UUID__ = CONFIGS["UUID"];
 const __APP_TYPE__ = CONFIGS["APP_TYPE"].split(',')
+const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_UUID__ : __CLIENT_UUID__, __APP_TYPE__ : __APP_TYPE__ };
 //TODO: Check all this variables before starting
 
 //TODO: Checks ( this should not be empty )
@@ -74,6 +75,18 @@ var SOCKET = new SOCKETS;
 					return;
 				}
 				console.log("=> NEW MESSAGE:", message);
+				if(message.type == "__AUTH__") {
+					console.log("=> __AUTH__ required");
+					if(message.data == "W.A.Y.") {
+						SOCKET.clientSocket.sendMessage( __MYSELF__, ()=>{console.log("=> WAY ACK SENT")});
+					}
+					else {
+						console.error("=> __AUTH__ unknown data requested");
+					}
+				}
+				else if(message.type == "__REQUEST__") {
+					console.log("=> __REQUEST__ required");
+				}
 			});
 		}
 		catch (error) {
