@@ -24,16 +24,16 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 const __TCP_HOST_NAME__ = CONFIGS["SERVER_HOST"];
 const __TCP_HOST_PORT__ = CONFIGS["SERVER_PORT"];
 const __CLIENT_TOKEN__ = CONFIGS["TOKEN"];
-const __CLIENT_UUID__ = CONFIGS["UUID"];
+const __CLIENT_ID__ = CONFIGS["ID"];
 const __APP_TYPE__ = CONFIGS["APP_TYPE"].split(',')
-const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_UUID__ : __CLIENT_UUID__, __APP_TYPE__ : __APP_TYPE__, __TYPE__ : "__AUTH__"}
+const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_ID__ : __CLIENT_ID__, __APP_TYPE__ : __APP_TYPE__, __TYPE__ : "__AUTH__"}
 //TODO: Check all this variables before starting
 
 //TODO: Checks ( this should not be empty )
 console.log("=> __TCP_HOST_NAME__: %s", __TCP_HOST_NAME__);
 console.log("=> __TCP_HOST_PORT__: %s", __TCP_HOST_PORT__);
 console.log("=> __CLIENT_TOKEN__: %s", __CLIENT_TOKEN__);
-console.log("=> __CLIENT_UUID__: %s", __CLIENT_UUID__);
+console.log("=> __CLIENT_ID__: %s", __CLIENT_ID__);
 console.log("=> __APP_TYPE__: %s", __APP_TYPE__);
 //=======================================================
 

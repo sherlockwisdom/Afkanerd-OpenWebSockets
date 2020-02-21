@@ -72,21 +72,27 @@ class SOCKETS {
 
 				//AUTHENTICATING
 				if( data.__TYPE__ == "__AUTH__" ) {
-					let DBClient = new __DBCLIENT__( data.__UUID__, data.__TOKEN__ );
+					if( !data.hasOwnProperty("__CLIENT_TOKEN__") || !data.hasOwnProperty("__CLIENT_ID__")) {
+						console.error("=> INVALID AUTH REQUEST");
+						return;
+					}
+
+					let DBClient = new __DBCLIENT__( data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
+
 					//IF ALREADY VALIDATED
-					if( this.collection.hasOwnProperty(data.__UUID__ + data.__TOKEN__) ) {
+					if( this.collection.hasOwnProperty(data.__CLIENT_ID__ + data.__CLIENT_TOKEN__) ) {
 						console.log("=> CLIENT NOT BEING SURE...");
 						client.sendMessage("=> I GOT YOU");
 					}
 
 					//IF NOT ALREADY VALIDATED
 					else {
-						let validated_client = await DBClient.validate( data.ID, data.TOKEN );
+						let validated_client = await DBClient.validate( data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
 						if( !validated_client) {
 							client.sendEndMessage( "IDKY" );
 						}
 
-						this.collection[data.ID + data.TOKEN] = client;
+						this.collection[data.__CLIENT_ID__ + data.__CLIENT_TOKEN__] = client;
 						console.log("=> AUTHENTICATION ESTABLISHED");
 					}
 				}
