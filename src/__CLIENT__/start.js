@@ -69,6 +69,10 @@ var SOCKET = new SOCKETS;
 			let socketConnection = await SOCKET.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			SOCKET.clientSocket.on('message', function( message ){
+				if(!message.hasOwnProperty("type") || !message.hasOwnProperty("data")) {
+					SOCKET.clientSocket.sendMessage( __INVALID_MESSAGE__ );
+					return;
+				}
 				console.log("=> NEW MESSAGE:", message);
 			});
 		}
