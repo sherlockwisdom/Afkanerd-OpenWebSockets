@@ -1,4 +1,3 @@
-const __MYSQL_CONNECTION__ = require ( 'mysql' );
 
 'use strict'
 

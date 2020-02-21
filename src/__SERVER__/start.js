@@ -13,6 +13,7 @@ var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
 //===============
 
 //=======================================================
+const __MYSQL_ENV_PATH__ = "__COMMON_FILES/mysql.env"
 let CONFIGS = START_ROUTINES.READCONFIGS('system_configs');
 let RETURN_VALUES = START_ROUTINES.READCONFIGS('return_values');
 var COMPONENT = CONFIGS['COMPONENT'];
@@ -28,7 +29,7 @@ var __SOCKET_COLLECTION__;
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION();
+		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(__MYSQL_ENV_PATH__);
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
