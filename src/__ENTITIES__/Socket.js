@@ -78,8 +78,18 @@ class SOCKETS {
 						console.error("=> INVALID AUTH REQUEST");
 						return;
 					}
-					let __MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION();
-					let DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
+					let __MYSQL_ENV_PATH__ = "__SERVER__/mysql.env"; //TODO: Remove this line to make things more dynamic
+					let __MYSQL_CONNECTION__ 
+					let DBClient
+					try {
+						__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(__MYSQL_ENV_PATH__);
+						DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
+					}
+					catch( error ) {
+						console.error ( error );
+						console.log("=> ISSUE GETTING MYSQL CONNECTION");
+						return
+					}
 
 					//IF ALREADY VALIDATED
 					if( this.collection.hasOwnProperty(data.__CLIENT_ID__ + data.__CLIENT_TOKEN__) ) {

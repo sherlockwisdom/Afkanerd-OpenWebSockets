@@ -3,8 +3,8 @@ const __MYSQL_CONNECTION__ = require ( 'mysql' );
 
 module.exports = {
 	GET_MYSQL_CONNECTION : (env_path)=> {
+		require('dotenv').config({path: env_path.toString()})
 		return new Promise ( (resolve, reject) => {
-			require('dotenv').config({path: env_path.toString()})
 			try{
 				let mysql_connection = __MYSQL_CONNECTION__.createConnection({
 					host : process.env.MYSQL_HOST,
