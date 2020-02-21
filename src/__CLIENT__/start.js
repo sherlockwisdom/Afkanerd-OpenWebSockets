@@ -21,6 +21,7 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 	console.error("=> CONFIGS NOT PROPERLY LOADED");
 	return;
 }
+const __MYSQL_ENV_PATH__ = "__COMMON_FILES/mysql.env"
 const __TCP_HOST_NAME__ = CONFIGS["SERVER_HOST"];
 const __TCP_HOST_PORT__ = CONFIGS["SERVER_PORT"];
 const __CLIENT_TOKEN__ = CONFIGS["TOKEN"];
@@ -43,7 +44,7 @@ var __SOCKET_COLLECTION__;
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION();
+		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(__MYSQL_ENV_PATH__);
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
