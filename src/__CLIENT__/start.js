@@ -39,7 +39,7 @@ console.log("=> __APP_TYPE__: %s", __APP_TYPE__);
 //================================================
 var __MYSQL_CONNECTION__;
 var __SOCKET_COLLECTION__;
-SOCKETS = new SOCKETS;
+var SOCKET = new SOCKETS;
 
 (async ()=>{
 	try{
@@ -54,7 +54,7 @@ SOCKETS = new SOCKETS;
 
 (async ()=>{
 	try {
-		__SOCKET_COLLECTION__ = await SOCKETS.startSockets();
+		__SOCKET_COLLECTION__ = await SOCKET.startSockets();
 		console.log("=> SOCKETS ESTABLISHED");
 	}
 	catch( error ) {
@@ -66,8 +66,11 @@ SOCKETS = new SOCKETS;
 (async ()=>{
 	let startSocketConnection = async ()=>{
 		try {
-			let socketConnectionPromise = await SOCKETS.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
+			let socketConnection = await SOCKET.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
+			SOCKET.clientSocket.on('message', function( message ){
+				console.log("=> NEW MESSAGE:", message);
+			});
 		}
 		catch (error) {
 			console.error("=> CONNECTION ERROR:", error);
@@ -83,3 +86,4 @@ SOCKETS = new SOCKETS;
 	} 
 	startSocketConnection();
 })();
+
