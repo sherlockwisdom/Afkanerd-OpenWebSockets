@@ -6,7 +6,7 @@ const START_ROUTINES = require('./start_routines.js');
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
 var SOCKETS = require('./../__ENTITIES__/Socket.js');
-
+var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
 //es7 async/await`
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -40,11 +40,10 @@ console.log("=> __APP_TYPE__: %s", __APP_TYPE__);
 //================================================
 var __MYSQL_CONNECTION__;
 var __SOCKET_COLLECTION__;
-var SOCKET = new SOCKETS;
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await START_ROUTINES.GET_MYSQL_CONNECTION();
+		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION();
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
@@ -52,6 +51,8 @@ var SOCKET = new SOCKETS;
 		return;
 	}
 })();
+//Because has to wait for mysql to connect first - singleton pattern design
+var SOCKET = new SOCKETS( __MYSQL_CONNECTION__ );
 
 (async ()=>{
 	try {

@@ -1,14 +1,16 @@
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
+var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
 const JsonSocket = require('json-socket');
 const Socket = require ('net');
 'use strict'
 
 module.exports =
 class SOCKETS {
-	constructor(__ID__, __TOKEN__){
+	constructor(__MYSQL_CONNECTION__, __ID__, __TOKEN__){
 		this.__ID__ = __ID__;
 		this.__TOKEN__ = __TOKEN__;
 		this.collection = {};
+		this.__MYSQL_CONNECTION__ = __MYSQL_CONNECTION__;
 	}
 
 	transmit( __MESSAGE__, __NUMBER__, __ID__ ) {
@@ -76,8 +78,8 @@ class SOCKETS {
 						console.error("=> INVALID AUTH REQUEST");
 						return;
 					}
-
-					let DBClient = new __DBCLIENT__( data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
+					let __MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION();
+					let DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
 
 					//IF ALREADY VALIDATED
 					if( this.collection.hasOwnProperty(data.__CLIENT_ID__ + data.__CLIENT_TOKEN__) ) {

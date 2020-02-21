@@ -6,6 +6,7 @@ const START_ROUTINES = require('./start_routines.js');
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
 var SOCKETS = require('./../__ENTITIES__/Socket.js');
+var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
 
 //===============
 'use strict';
@@ -24,11 +25,10 @@ if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
 //================================================
 var __MYSQL_CONNECTION__;
 var __SOCKET_COLLECTION__;
-SOCKETS = new SOCKETS;
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await START_ROUTINES.GET_MYSQL_CONNECTION();
+		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION();
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
@@ -36,6 +36,8 @@ SOCKETS = new SOCKETS;
 		return;
 	}
 })();
+//Because has to wait for mysql to connect first - singleton pattern design
+var SOCKETS = new SOCKETS(__MYSQL_CONNECTION__);
 
 (async ()=>{
 	try {
