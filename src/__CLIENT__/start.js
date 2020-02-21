@@ -26,7 +26,7 @@ const __TCP_HOST_PORT__ = CONFIGS["SERVER_PORT"];
 const __CLIENT_TOKEN__ = CONFIGS["TOKEN"];
 const __CLIENT_UUID__ = CONFIGS["UUID"];
 const __APP_TYPE__ = CONFIGS["APP_TYPE"].split(',')
-const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_UUID__ : __CLIENT_UUID__, __APP_TYPE__ : __APP_TYPE__ };
+const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_UUID__ : __CLIENT_UUID__, __APP_TYPE__ : __APP_TYPE__, __TYPE__ : "__AUTH__"}
 //TODO: Check all this variables before starting
 
 //TODO: Checks ( this should not be empty )

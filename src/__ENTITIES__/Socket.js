@@ -58,7 +58,8 @@ class SOCKETS {
 			client = new JsonSocket ( client );
 
 			//AUTHENTICATE IT
-			client.sendMessage( "WAY", ( error )=>{
+			let __AUTH_REQUEST__ = { type : "__AUTH__", data : "W.A.Y." }
+			client.sendMessage( __AUTH_REQUEST__, ( error )=>{
 				if( error ) {
 					console.log("=> FAILED T0 BROADCASET WAY");
 					client.end();
@@ -67,16 +68,18 @@ class SOCKETS {
 			});
 
 			client.on('message', async ( data )=>{
-				if( !data.hasOwnProperty("__MESSAGE_TYPE__") ) return;
+				if( !data.hasOwnProperty("__TYPE__") ) return;
 
 				//AUTHENTICATING
-				if( data.__MESSAGE_TYPE__ == "__AUTH__" ) {
-					let DBClient = new __DBCLIENT__( data.ID, data.TOKEN );
-					if( this.collection.hasOwnProperty(data.ID + data.TOKEN) ) {
+				if( data.__TYPE__ == "__AUTH__" ) {
+					let DBClient = new __DBCLIENT__( data.__UUID__, data.__TOKEN__ );
+					//IF ALREADY VALIDATED
+					if( this.collection.hasOwnProperty(data.__UUID__ + data.__TOKEN__) ) {
 						console.log("=> CLIENT NOT BEING SURE...");
 						client.sendMessage("=> I GOT YOU");
 					}
 
+					//IF NOT ALREADY VALIDATED
 					else {
 						let validated_client = await DBClient.validate( data.ID, data.TOKEN );
 						if( !validated_client) {
