@@ -10,7 +10,7 @@
 `DBRequest.valid([array])`\
 `DBRequest.insert(string, [array])`
 
-#### DBRequest.js
+#### Socket.js
 `Socket = new SOCKETS(mysqConnection, string, string)`\
 `Socket.transmit( string, string, string )`\
 `Socket.find( string, string )`\
