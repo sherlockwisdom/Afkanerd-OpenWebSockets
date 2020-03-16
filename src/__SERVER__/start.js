@@ -16,8 +16,8 @@ var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
 //XXX
 let configs = {
 	COMPONENT : 'SMS',
-	SOCKET_PORT : '8000',
-	API_PORT : '3000'
+	SOCKET_PORT : '3000',
+	API_PORT : '8000'
 }
 
 //XXX
@@ -141,25 +141,3 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	}
 });
 
-/*
-app.get(COMPONENT + "/user/:token/request/:id", (req, res)=>{
-	let __ID__ = req.id;
-
-	let __TOKEN__ = req.token;
-
-	if( await !DBDeku.validateTokenOnly( __TOKEN__ ) ) {}
-
-	//Get request data
-	let __REQUEST__ = await requestCollection.find( __ID__ );
-	if( !__REQUEST__.valid() ) {
-		res.status(__REQUEST__.getErrorCode() );
-		res.end();
-
-		return;
-	}
-
-	res.status( RETURN_VALUES['SUCCESS'] );
-	res.send( __REQUEST__.data() );
-});
-
-*/

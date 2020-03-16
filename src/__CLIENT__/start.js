@@ -17,10 +17,10 @@ const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 //=======================================================
 //XXX
 let configs = {
-	SOCKET_PORT : '3000',
+	SOCKET_PORT : '4000',
 	DIR_REQUEST_FILE : "",
 	SERVER_HOST : 'localhost',
-	SERVER_PORT : '8000',
+	SERVER_PORT : '3000',
 	TOKEN : 'DEVELOPER_TOKEN',
 	ID : 'DEVELOPER_ID',
 	APP_TYPE : 'SMS'
@@ -79,6 +79,7 @@ var SOCKET = new SOCKETS( __MYSQL_CONNECTION__ );
 (async ()=>{
 	let startSocketConnection = async ()=>{
 		try {
+			console.log(configs)
 			let socketConnection = await SOCKET.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			SOCKET.clientSocket.on('message', function( message ){
