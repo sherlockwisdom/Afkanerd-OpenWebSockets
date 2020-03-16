@@ -15,27 +15,37 @@ const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 //===============
 
 //=======================================================
-let CONFIGS = START_ROUTINES.READCONFIGS('system_configs');
-let RETURN_VALUES = START_ROUTINES.READCONFIGS('return_values');
-if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
-	console.error("=> CONFIGS NOT PROPERLY LOADED");
-	return;
+//XXX
+let configs = {
+	SOCKET_PORT : '3000',
+	DIR_REQUEST_FILE : "",
+	SERVER_HOST : 'localhost',
+	SERVER_PORT : '8000',
+	TOKEN : 'DEVELOPER_TOKEN',
+	ID : 'DEVELOPER_ID',
+	APP_TYPE : 'SMS'
 }
+
+//XXX
+let return_values = {
+	SUCCESS : '200',
+	INVALID_REQUEST : '400',
+	NOT_AUTHORIZED : '400',
+	FAILED : '400'
+}
+
 const __MYSQL_ENV_PATH__ = "__COMMON_FILES/mysql.env"
-const __TCP_HOST_NAME__ = CONFIGS["SERVER_HOST"];
-const __TCP_HOST_PORT__ = CONFIGS["SERVER_PORT"];
-const __CLIENT_TOKEN__ = CONFIGS["TOKEN"];
-const __CLIENT_ID__ = CONFIGS["ID"];
-const __APP_TYPE__ = CONFIGS["APP_TYPE"].split(',')
+const __TCP_HOST_NAME__ = configs.SERVER_HOST;
+const __TCP_HOST_PORT__ = configs.SERVER_PORT;
+const __CLIENT_TOKEN__ = configs.TOKEN;
+const __CLIENT_ID__ = configs.ID;
+const __APP_TYPE__ = configs.APP_TYPE.split(',')
+
 const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_ID__ : __CLIENT_ID__, __APP_TYPE__ : __APP_TYPE__, __TYPE__ : "__AUTH__"}
 //TODO: Check all this variables before starting
 
 //TODO: Checks ( this should not be empty )
-console.log("=> __TCP_HOST_NAME__: %s", __TCP_HOST_NAME__);
-console.log("=> __TCP_HOST_PORT__: %s", __TCP_HOST_PORT__);
-console.log("=> __CLIENT_TOKEN__: %s", __CLIENT_TOKEN__);
-console.log("=> __CLIENT_ID__: %s", __CLIENT_ID__);
-console.log("=> __APP_TYPE__: %s", __APP_TYPE__);
+console.log(__MYSELF__)
 //=======================================================
 
 //================================================
@@ -69,7 +79,7 @@ var SOCKET = new SOCKETS( __MYSQL_CONNECTION__ );
 (async ()=>{
 	let startSocketConnection = async ()=>{
 		try {
-			let socketConnection = await SOCKET.connect(__TCP_HOST_NAME__, __TCP_HOST_PORT__);
+			let socketConnection = await SOCKET.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			SOCKET.clientSocket.on('message', function( message ){
 				if(!message.hasOwnProperty("type") || !message.hasOwnProperty("data")) {
