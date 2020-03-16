@@ -13,23 +13,31 @@ var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
 //===============
 
 //=======================================================
-const __MYSQL_ENV_PATH__ = "__COMMON_FILES/mysql.env"
-let CONFIGS = START_ROUTINES.READCONFIGS('system_configs');
-let RETURN_VALUES = START_ROUTINES.READCONFIGS('return_values');
-var COMPONENT = CONFIGS['COMPONENT'];
-if(typeof CONFIGS["__DEFAULT__"] == "undefined") {
-	console.error("=> CONFIGS NOT PROPERLY LOADED");
-	return;
+//XXX
+let configs = {
+	COMPONENT : 'SMS',
+	SOCKET_PORT : '8000',
+	API_PORT : '3000'
 }
+
+//XXX
+let return_values = {
+	SUCCESS : '200',
+	INVALID_REQUEST : '400',
+	NOT_AUTHORIZED : '400',
+	FAILED : '400'
+}
+
 //=======================================================
 
 //================================================
+let mysql_env_path = "__COMMON_FILES__/mysql.env";
 var __MYSQL_CONNECTION__;
 var __SOCKET_COLLECTION__;
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(__MYSQL_ENV_PATH__);
+		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(mysql_env_path);
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
@@ -37,6 +45,7 @@ var __SOCKET_COLLECTION__;
 		return;
 	}
 })();
+
 //Because has to wait for mysql to connect first - singleton pattern design
 var SOCKETS = new SOCKETS(__MYSQL_CONNECTION__);
 
@@ -53,16 +62,6 @@ var SOCKETS = new SOCKETS(__MYSQL_CONNECTION__);
 var app = express();
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-//================================================
-
-/*/=======================================================
-console.log( CONFIGS );
-console.log("===============================");
-console.log( RETURN_VALUES );
-console.log("===============================");
-console.log( component );
-/*///=======================================================
-
 
 //=================================
 let options = {
@@ -78,7 +77,7 @@ app.listen(options, ()=>{
 });
 //=================================
 
-app.post(COMPONENT, async (req, res)=>{
+app.post(configs.COMPONENT, async (req, res)=>{
 	let __BODY__ = req.body;
 
 	console.log(__BODY__);

@@ -1,4 +1,5 @@
 const __MYSQL_CONNECTION__ = require ( 'mysql' );
+const __GLOBAL_PATH__ = require( 'path' );
 
 'use strict'
 
@@ -7,7 +8,11 @@ module.exports = {
 		let path = "";
 		switch( config ) {
 			case 'system_configs':
-				path = "src/__SERVER__/__COMMON_FILES__/system_configs.env";
+				// path = "src/__SERVER__/__COMMON_FILES__/system_configs.env";
+				let path = __GLOBAL_PATH__.resolve( __dirname );
+				console.log(__GLOBAL_PATH__)
+				console.log( __GLOBAL_PATH__.resolve( __basename ))
+				console.log("=> Config path:", path)
 				require('dotenv').config({path: path.toString()})
 				
 				return process.env;
