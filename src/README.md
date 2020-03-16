@@ -1,12 +1,18 @@
-##### important notes to self
-<br>
-- __ DEFAULT __ is a value checked in almost all the .env files to confirm being read
-<br>
-- Git command to stop credentials from being published after initial framework is created
-<br>
-<i>git update-index --assume-unchanged [path to file]</i>
-<br>
-- Undo the above command with this one
-<br>
-<i>git update-index --no-assume-unchanged [path to file]</i>
+### Development Notes
 
+#### DBClient.js
+ `DBClient = new DBCLIENT( mysqlConnection, string, string)`\
+ `DBClient.validate( string, string )`\
+ `DBClient.validateTokenOnly( string )`
+ 
+#### DBRequest.js
+`DBRequest = new DBREQUEST( mysqlConnection, string)`\
+`DBRequest.valid([array])`\
+`DBRequest.insert(string, [array])`
+
+#### Socket.js
+`Socket = new SOCKETS(mysqConnection, string, string)`\
+`Socket.transmit( string, string, string )`\
+`Socket.find( string, string )`\
+`Socket.startSockets() | return new Promise`\
+`Socket.connect( string, string) | return new Promise`
