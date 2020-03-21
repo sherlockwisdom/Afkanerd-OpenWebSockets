@@ -43,6 +43,30 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 
 (async ()=>{
+
+	let writeToDatabase = ( message )=>{ // message = [Object]
+		let messages = (()=>{
+			let v_data = []
+			for( let i in message ) {
+				let msg = message[i].message
+				let number = message[i].number
+				v_data.push([msg, number]);
+			}
+			return v_data;
+		})();
+
+
+		let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (__MESSAGE__, __PHONENUMBER__) VALUES ?";
+		mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
+			if( error ) {
+				console.error( error );
+				return;
+			}
+
+			console.log("=> REQUEST STORED IN DATABASE");
+		});
+	}
+
 	let startSocketConnection = async ()=>{
 		try {
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
@@ -57,26 +81,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				}
 
 				// Convert Objects to [Array]
-				let messages = (()=>{
-					let v_data = []
-					for( let i in message ) {
-						let msg = message[i].message
-						let number = message[i].number
-						v_data.push([msg, number]);
-					}
-					return v_data;
-				})();
-
-
-				let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (__MESSAGE__, __PHONENUMBER__) VALUES ?";
-				mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
-					if( error ) {
-						console.error( error );
-						return;
-					}
-
-					console.log("=> REQUEST STORED IN DATABASE");
-				});
+				writeToDatabase( message );
 			});
 		}
 		catch (error) {
