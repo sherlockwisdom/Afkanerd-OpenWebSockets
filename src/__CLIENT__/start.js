@@ -48,8 +48,8 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 		return new Promise((resolve, reject)=> {
 			let messages = (()=>{
 				let v_data = []
-				for( let i in message ) {
-					let req_id = message[i].req_id
+				for(let i=0; i < message.length -1; ++i ) {
+					let req_id = message[message.length -1].req_id
 					let msg = message[i].message
 					let number = message[i].number
 					v_data.push([req_id, msg, number]);
@@ -86,7 +86,8 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 					let response = {
 						type : 'ack',
-						message : 'invalid request'
+						message : 'invalid request',
+						data : message
 					}
 					clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 				}
@@ -97,13 +98,15 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					let writeState = await writeToDatabase( message );
 					response = {
 						type : 'ack',
-						message : 'processed'
+						message : 'processed',
+						req_id : message[message.length-1].req_id
 					}
 				}
 				catch( error ) {
 					response = {
 						type : 'ack',
 						message : 'failed process',
+						req_id : message[message.length-1].req_id,
 						error : error
 					}
 				}
