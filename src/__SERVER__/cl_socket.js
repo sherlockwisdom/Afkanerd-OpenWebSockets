@@ -62,6 +62,7 @@ class Cl_Sockets {
 			// Request standard 
 			// Format = [Array]
 			// Important note: Last request contains the req_id, should not be left out
+			/*
 			const testRequestSample = [
 				{
 					message : new Date().toDateString(),
@@ -72,6 +73,7 @@ class Cl_Sockets {
 				}
 			]
 			client.sendMessage( testRequestSample, ( something ) => { console.log( "=> TEST REQUEST SENT" ) } );
+			*/
 
 			client.on('message', async ( data )=>{
 				console.log("=> NEW MESSAGE");
