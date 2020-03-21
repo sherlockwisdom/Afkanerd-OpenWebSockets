@@ -20,7 +20,7 @@ let return_values = {
 	FAILED : '400'
 }
 
-let mysql_env_path = "__COMMON_FILES__/mysql.env";
+const mysql_env_path = "__COMMON_FILES__/mysql.env";
 var mysqlConnection;
 var sockets;
 
