@@ -48,7 +48,35 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			clientSocket.on('message', function( message ){
-				console.log("=> NEW MESSAGE:", message);
+				console.log("=> NEW MESSAGE");
+				// console.log( message );
+
+				if( !Array.isArray( message ) ) {
+					console.error("=> INVALID REQUEST");
+					// console.log( message )
+				}
+
+				// Convert Objects to [Array]
+				let messages = (()=>{
+					let v_data = []
+					for( let i in message ) {
+						let msg = message[i].message
+						let number = message[i].number
+						v_data.push([msg, number]);
+					}
+					return v_data;
+				})();
+
+
+				let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (__MESSAGE__, __PHONENUMBER__) VALUES ?";
+				mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
+					if( error ) {
+						console.error( error );
+						return;
+					}
+
+					console.log("=> REQUEST STORED IN DATABASE");
+				});
 			});
 		}
 		catch (error) {
