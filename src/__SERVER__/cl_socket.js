@@ -59,7 +59,15 @@ class Cl_Sockets {
 			client = new JsonSocket ( client );
 
 			// Sample test messages could go here while developing
-			//client.sendMessage("Welcome", ( something ) => { console.log( something ) } );
+			// Request standard 
+			// Format = [Array]
+			const testRequestSample = [
+				{
+					message : new Date().toDateString(),
+					number : '000000000'
+				}
+			]
+			client.sendMessage( testRequestSample, ( something ) => { console.log( "-- Test Request Sent" ) } );
 
 			client.on('message', async ( data )=>{
 				console.log("=> NEW MESSAGE");
