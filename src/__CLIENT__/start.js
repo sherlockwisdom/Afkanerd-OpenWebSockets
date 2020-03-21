@@ -92,6 +92,10 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 				}
 
+				message.length - 1 > 1 ? 
+					console.log("=> PROCESSING [%d] MESSAGES", message.length -1) :
+					console.log("=> PROCESSING [%d] MESSAGE", message.length -1)
+
 				// Convert Objects to [Array]
 				let response = {}
 				try {
