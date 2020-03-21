@@ -56,6 +56,21 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 //=================================
 
+var writeToDatabase = ( messages ) {
+	return new Promise((resolve, reject)=> {
+		let insertQuery = "INSERT INTO __DEKU_SERVER__.__REQUEST__ (__MESSAGE__, __PHONENUMBER__) VALUES ?";
+		mysqlConnection.query( insertQuery, [ messages ], (error, result) => {
+			if( error ) {
+				console.error("=> FAILED TO STORE SMS REQUEST");
+				reject( error );
+			}
+
+			console.log("=> STORED IN DATABASE");
+			resolve( result );
+		})
+	});
+}
+
 app.listen(APIOptions, ()=>{
 	console.log("=> RECEIVING API BEGAN, RUNNING ON PORT [%d]", APIOptions.port);
 });
@@ -71,6 +86,14 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	}
 
 	console.log("=> PROCESSING NEW REQUEST");
+	// Store request and extract ID
+	try {
+		let writeState = writeToDatabase( messages );
+		res.status( 200 ).send ( writeState );
+	}
+	catch ( error ) {
+		res.status( 400 ).send( error )
+	}
 	res.status(200).end();
 });
 
