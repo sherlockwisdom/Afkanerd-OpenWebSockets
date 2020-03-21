@@ -1,21 +1,12 @@
-//console.log(process.env);
 const bodyParser = require('body-parser')
-
 const START_ROUTINES = require('./start_routines.js');
-
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
 const Cl_Socket = require('./cl_socket.js');
 const MySQLConnector = require('./../MYSQL_CONNECTION.js');
-//es7 async/await`
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-//===============
 'use strict';
-//===============
-
-//=======================================================
-//XXX
 let configs = {
 	SOCKET_PORT : '4000',
 	DIR_REQUEST_FILE : "",
@@ -26,7 +17,6 @@ let configs = {
 	APP_TYPE : 'SMS'
 }
 
-//XXX
 let return_values = {
 	SUCCESS : '200',
 	INVALID_REQUEST : '400',
@@ -34,22 +24,17 @@ let return_values = {
 	FAILED : '400'
 }
 
-const path_mysql_env = "__COMMON_FILES/mysql.env"
-const CLIENT_TOKEN = configs.TOKEN;
-const CLIENT_ID = configs.ID;
-
+/*
 const auth_details = {
 	client_token : CLIENT_TOKEN,
 	client_id : CLIENT_ID
 }
+*/
 
-//TODO: Checks ( this should not be empty )
-console.log( auth_details )
-//=======================================================
-
-//================================================
 var mysql_connection;
 var cl_socket = new Cl_Socket;
+
+const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 (async ()=>{
 	try{
@@ -66,7 +51,6 @@ var cl_socket = new Cl_Socket;
 (async ()=>{
 	let startSocketConnection = async ()=>{
 		try {
-			console.log(configs)
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			clientSocket.on('message', function( message ){
