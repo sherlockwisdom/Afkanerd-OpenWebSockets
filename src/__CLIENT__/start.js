@@ -45,26 +45,30 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 (async ()=>{
 
 	let writeToDatabase = ( message )=>{ // message = [Object]
-		let messages = (()=>{
-			let v_data = []
-			for( let i in message ) {
-				let req_id = message[i].req_id
-				let msg = message[i].message
-				let number = message[i].number
-				v_data.push([req_id, msg, number]);
-			}
-			return v_data;
-		})();
+		return new Promise((resolve, reject)=> {
+			let messages = (()=>{
+				let v_data = []
+				for( let i in message ) {
+					let req_id = message[i].req_id
+					let msg = message[i].message
+					let number = message[i].number
+					v_data.push([req_id, msg, number]);
+				}
+				return v_data;
+			})();
 
 
-		let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (REQ_ID, __MESSAGE__, __PHONENUMBER__) VALUES ?";
-		mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
-			if( error ) {
-				console.error( error );
-				return;
-			}
+			let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (REQ_ID, __MESSAGE__, __PHONENUMBER__) VALUES ?";
+			mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
+				if( error ) {
+					console.error( error );
+					reject( error );
+					return;
+				}
 
-			console.log("=> REQUEST STORED IN DATABASE");
+				console.log("=> REQUEST STORED IN DATABASE");
+				resolve( true );
+			});
 		});
 	}
 
@@ -72,7 +76,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 		try {
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
-			clientSocket.on('message', function( message ){
+			clientSocket.on('message', async function( message ){
 				console.log("=> NEW MESSAGE");
 				// console.log( message );
 
@@ -88,10 +92,20 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				}
 
 				// Convert Objects to [Array]
-				writeToDatabase( message );
-				let response = {
-					type : 'ack',
-					message : 'processed'
+				let response = {}
+				try {
+					let writeState = await writeToDatabase( message );
+					response = {
+						type : 'ack',
+						message : 'processed'
+					}
+				}
+				catch( error ) {
+					response = {
+						type : 'ack',
+						message : 'failed process',
+						error : error
+					}
 				}
 				clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 			});
