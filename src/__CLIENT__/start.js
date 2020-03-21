@@ -5,8 +5,8 @@ const START_ROUTINES = require('./start_routines.js');
 
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
-var SOCKETS = require('./../__ENTITIES__/Socket.js');
-var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
+const Cl_Socket = require('./cl_socket.js');
+const MySQLConnector = require('./../MYSQL_CONNECTION.js');
 //es7 async/await`
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -34,14 +34,15 @@ let return_values = {
 	FAILED : '400'
 }
 
-const __MYSQL_ENV_PATH__ = "__COMMON_FILES/mysql.env"
-const __TCP_HOST_NAME__ = configs.SERVER_HOST;
-const __TCP_HOST_PORT__ = configs.SERVER_PORT;
-const __CLIENT_TOKEN__ = configs.TOKEN;
-const __CLIENT_ID__ = configs.ID;
-const __APP_TYPE__ = configs.APP_TYPE.split(',')
+const path_mysql_env = "__COMMON_FILES/mysql.env"
+const TCP_HOST_ADDRESS = configs.SERVER_HOST;
+const CLIENT_TOKEN = configs.TOKEN;
+const CLIENT_ID = configs.ID;
 
-const __MYSELF__ = { __CLIENT_TOKEN__ : __CLIENT_TOKEN__, __CLIENT_ID__ : __CLIENT_ID__, __APP_TYPE__ : __APP_TYPE__, __TYPE__ : "__AUTH__"}
+const auth_details = {
+	client_token : CLIENT_TOKEN,
+	client_id : CLIENT_ID
+}
 //TODO: Check all this variables before starting
 
 //TODO: Checks ( this should not be empty )
@@ -49,12 +50,12 @@ console.log(__MYSELF__)
 //=======================================================
 
 //================================================
-var __MYSQL_CONNECTION__;
-var __SOCKET_COLLECTION__;
+var mysql_connection;
+var cl_socket = 
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(__MYSQL_ENV_PATH__);
+		mysql_connection = await MySQLConnector.getConnection( path_mysql_env );
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
@@ -62,44 +63,21 @@ var __SOCKET_COLLECTION__;
 		return;
 	}
 })();
-//Because has to wait for mysql to connect first - singleton pattern design
-var SOCKET = new SOCKETS( __MYSQL_CONNECTION__ );
 
-(async ()=>{
-	try {
-		__SOCKET_COLLECTION__ = await SOCKET.startSockets();
-		console.log("=> SOCKETS ESTABLISHED");
-	}
-	catch( error ) {
-		console.log(error);
-		return;
-	}
-})();
 
 (async ()=>{
 	let startSocketConnection = async ()=>{
 		try {
 			console.log(configs)
-			let socketConnection = await SOCKET.connect( configs.SERVER_HOST, configs.SERVER_PORT);
+			let clientSocket = await Cl_Socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
-			SOCKET.clientSocket.on('message', function( message ){
+			clientSocket.on('message', function( message ){
 				if(!message.hasOwnProperty("type") || !message.hasOwnProperty("data")) {
-					SOCKET.clientSocket.sendMessage( __INVALID_MESSAGE__ );
+					clientSocket.sendMessage( __INVALID_MESSAGE__ );
 					return;
 				}
+
 				console.log("=> NEW MESSAGE:", message);
-				if(message.type == "__AUTH__") {
-					console.log("=> __AUTH__ required");
-					if(message.data == "W.A.Y.") {
-						SOCKET.clientSocket.sendMessage( __MYSELF__, ()=>{console.log("=> WAY ACK SENT")});
-					}
-					else {
-						console.error("=> __AUTH__ unknown data requested");
-					}
-				}
-				else if(message.type == "__REQUEST__") {
-					console.log("=> __REQUEST__ required");
-				}
 			});
 		}
 		catch (error) {

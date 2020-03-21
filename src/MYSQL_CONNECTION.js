@@ -2,7 +2,7 @@ const __MYSQL_CONNECTION__ = require ( 'mysql' );
 'use strict'
 
 module.exports = {
-	GET_MYSQL_CONNECTION : (env_path)=> {
+	getConnection : (env_path)=> {
 		require('dotenv').config({path: env_path.toString()})
 		return new Promise ( (resolve, reject) => {
 			try{
