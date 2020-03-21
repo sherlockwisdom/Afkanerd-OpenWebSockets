@@ -35,7 +35,6 @@ let return_values = {
 }
 
 const path_mysql_env = "__COMMON_FILES/mysql.env"
-const TCP_HOST_ADDRESS = configs.SERVER_HOST;
 const CLIENT_TOKEN = configs.TOKEN;
 const CLIENT_ID = configs.ID;
 
@@ -43,15 +42,14 @@ const auth_details = {
 	client_token : CLIENT_TOKEN,
 	client_id : CLIENT_ID
 }
-//TODO: Check all this variables before starting
 
 //TODO: Checks ( this should not be empty )
-console.log(__MYSELF__)
+console.log( auth_details )
 //=======================================================
 
 //================================================
 var mysql_connection;
-var cl_socket = 
+var cl_socket = new Cl_Socket;
 
 (async ()=>{
 	try{
@@ -69,9 +67,11 @@ var cl_socket =
 	let startSocketConnection = async ()=>{
 		try {
 			console.log(configs)
-			let clientSocket = await Cl_Socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
+			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			clientSocket.on('message', function( message ){
+
+				//XXX: Introduces a standard
 				if(!message.hasOwnProperty("type") || !message.hasOwnProperty("data")) {
 					clientSocket.sendMessage( __INVALID_MESSAGE__ );
 					return;
