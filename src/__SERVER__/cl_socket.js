@@ -93,5 +93,13 @@ class Cl_Sockets {
 		return PromisedSocket;
 	}
 
+	sendMessage( message, socket ) {
+		// Register all of them in database, then send them to clients
+		console.log("=> SENDING MESSAGE TO SPECIFIED SOCKET");
+		console.log( message );
+
+		// TODO: Continue from here tomorrow
+	}
+
 
 }

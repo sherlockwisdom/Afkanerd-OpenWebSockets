@@ -26,6 +26,7 @@ const APIOptions = {
 }
 var mysqlConnection;
 var sockets;
+var in_cache_sockets = []
 var app = express();
 
 app.use(bodyParser.json({limit: '50mb'}));
@@ -46,7 +47,8 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 (async ()=>{
 	try {
 		sockets = new Cl_Socket(mysqlConnection);
-		socket = await sockets.start();
+		let socket = await sockets.start();
+		in_cache_sockets.push( socket );
 	}
 	catch( error ) {
 		console.log(error);
@@ -56,24 +58,14 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 //=================================
 
-var writeToDatabase = ( message ) {
+var meta_request_write = ( message )=> {
 	return new Promise((resolve, reject)=> {
-		let messages = (()=>{
-			let v_data = []
-			for(let i=0; i < message.length -1; ++i ) {
-				let req_id = message[message.length -1].req_id
-				let msg = message[i].message
-				let number = message[i].number
-				v_data.push([req_id, msg, number]);
-			}
-			return v_data;
-		})();
-
-		let insertQuery = "INSERT INTO __DEKU_SERVER__.__REQUEST__ (__MESSAGE__, __PHONENUMBER__) VALUES ?";
-		mysqlConnection.query( insertQuery, [ messages ], (error, result) => {
+		let insertQuery = "INSERT INTO __DEKU_SERVER__.REQUEST (__NUMBER__) VALUES (?)";
+		mysqlConnection.query( insertQuery, message.length, (error, result) => {
 			if( error ) {
 				console.error("=> FAILED TO STORE SMS REQUEST");
 				reject( error );
+				return;
 			}
 
 			console.log("=> STORED IN DATABASE");
@@ -90,7 +82,7 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	let request_body = req.body;
 	console.log(request_body);
 
-	if( !Array.isArray( request_body ) ) {
+	if( !Array.isArray( request_body.messages ) ) {
 		console.error("=> NOT VALID REQUEST!");
 		res.status(400).end();
 		return;
@@ -102,14 +94,22 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	 * request_body.message
 	 *
 	*/
-	let message = request_body.message;
+	let message = request_body.messages;
 	try {
-		let writeState = writeToDatabase( message );
-		res.status( 200 ).send ( writeState );
+		let metaRequestWriteState = await meta_request_write( message );
+		message.push( { req_id : metaRequestWriteState.insertId })
+		res.status( 200 ).send ( metaRequestWriteState );
+
+		// Send this to socket
+		// Sends to first client it can find
+		console.log("=> NUMBER OF CLIENTS: [%d]", in_cache_sockets.length );
+		let socket = in_cache_sockets[0];
+		sockets.sendMessage( message, socket );
 	}
 	catch ( error ) {
 		res.status( 400 ).send( error )
 	}
-	res.status(200).end();
+
+	res.end();
 });
 
