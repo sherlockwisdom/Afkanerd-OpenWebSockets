@@ -24,13 +24,6 @@ let return_values = {
 	FAILED : '400'
 }
 
-/*
-const auth_details = {
-	client_token : CLIENT_TOKEN,
-	client_id : CLIENT_ID
-}
-*/
-
 var mysql_connection;
 var cl_socket = new Cl_Socket;
 
@@ -54,13 +47,6 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			clientSocket.on('message', function( message ){
-
-				//XXX: Introduces a standard
-				if(!message.hasOwnProperty("type") || !message.hasOwnProperty("data")) {
-					clientSocket.sendMessage( __INVALID_MESSAGE__ );
-					return;
-				}
-
 				console.log("=> NEW MESSAGE:", message);
 			});
 		}
