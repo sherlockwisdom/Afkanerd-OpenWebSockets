@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')
 const START_ROUTINES = require('./start_routines.js');
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
-var Cl_Socket = require('./../__ENTITIES__/Socket.js');
+var Cl_Socket = require('./cl_socket.js');
 var MySQLConnector = require('./../MYSQL_CONNECTION.js');
 
 'use strict';
