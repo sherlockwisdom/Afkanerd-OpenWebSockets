@@ -43,7 +43,6 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 	try {
 		sockets = new Cl_Socket(mysqlConnection);
 		socket = await sockets.start();
-		console.log("=> SOCKETS ESTABLISHED");
 	}
 	catch( error ) {
 		console.log(error);

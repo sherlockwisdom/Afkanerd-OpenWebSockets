@@ -58,6 +58,9 @@ class Cl_Sockets {
 			console.log("==================\n=> NEW CLIENT CONNECTION MADE\n===================");
 			client = new JsonSocket ( client );
 
+			// Sample test messages could go here while developing
+			//client.sendMessage("Welcome", ( something ) => { console.log( something ) } );
+
 			client.on('message', async ( data )=>{
 				console.log("=> NEW MESSAGE");
 				console.log( data );
