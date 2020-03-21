@@ -32,6 +32,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 (async ()=>{
 	try{
 		mysql_connection = await MySQLConnector.getConnection( path_mysql_env );
+		mysql_connection.connect();
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {

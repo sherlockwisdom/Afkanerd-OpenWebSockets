@@ -31,6 +31,7 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 (async ()=>{
 	try{
 		mysqlConnection = await MySQLConnector.getConnection(mysql_env_path);
+		mysqlConnection.connect();
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
