@@ -78,12 +78,9 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 			clientSocket.on('message', async function( message ){
 				console.log("=> NEW MESSAGE");
-				// console.log( message );
-
 				if( !Array.isArray( message ) ) {
 					console.error("=> INVALID REQUEST");
 					// console.log( message )
-
 					let response = {
 						type : 'ack',
 						message : 'invalid request',
@@ -96,7 +93,6 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					console.log("=> PROCESSING [%d] MESSAGES", message.length -1) :
 					console.log("=> PROCESSING [%d] MESSAGE", message.length -1)
 
-				// Convert Objects to [Array]
 				let response = {}
 				try {
 					let writeState = await writeToDatabase( message );
