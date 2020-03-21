@@ -5,7 +5,7 @@ const Socket = require ('net');
 'use strict'
 
 module.exports =
-class SOCKETS {
+class Cl_Sockets {
 	constructor(__MYSQL_CONNECTION__, __ID__, __TOKEN__){
 		this.__ID__ = __ID__;
 		this.__TOKEN__ = __TOKEN__;
@@ -40,18 +40,17 @@ class SOCKETS {
 
 	get getErrorCode() {}
 
-	startSockets() {
+	start() {
 		this.socket = new Socket.Server();
 
-		let pendingPromise = new Promise( async (resolve, reject) => {
-			let path = "../__COMMON_FILES__/system_configs.env";
-			require('dotenv').config({path: path.toString()})
-			let __CONNECTION_OPTIONS__ = {
-				port : process.env.SOCKET_PORT	
+		let PromisedSocket = new Promise( async (resolve, reject) => {
+			const connectionOptions = {
+				port : '3000'
 			}
 			
-			this.socket.listen(__CONNECTION_OPTIONS__, ()=>{
-				resolve();
+			this.socket.listen(connectionOptions, ()=>{
+				resolve(this.socket);
+				console.log("=> SOCKET SERVER STARTED ON PORT [%s]", connectionOptions.port);
 			});
 		})
 
@@ -59,57 +58,9 @@ class SOCKETS {
 			console.log("==================\n=> NEW CLIENT CONNECTION MADE\n===================");
 			client = new JsonSocket ( client );
 
-			//AUTHENTICATE IT
-			let __AUTH_REQUEST__ = { type : "__AUTH__", data : "W.A.Y." }
-			client.sendMessage( __AUTH_REQUEST__, ( error )=>{
-				if( error ) {
-					console.log("=> FAILED T0 BROADCASET WAY");
-					client.end();
-				}
-				else console.log("=> BROADCASTING WAY");
-			});
-
 			client.on('message', async ( data )=>{
-				if( !data.hasOwnProperty("__TYPE__") ) return;
-
-				//AUTHENTICATING
-				if( data.__TYPE__ == "__AUTH__" ) {
-					if( !data.hasOwnProperty("__CLIENT_TOKEN__") || !data.hasOwnProperty("__CLIENT_ID__")) {
-						console.error("=> INVALID AUTH REQUEST");
-						return;
-					}
-					let __MYSQL_ENV_PATH__ = "__SERVER__/mysql.env"; //TODO: Remove this line to make things more dynamic
-					let __MYSQL_CONNECTION__ 
-					let DBClient
-					try {
-						__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(__MYSQL_ENV_PATH__);
-						DBClient = new __DBCLIENT__( __MYSQL_CONNECTION__, data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
-					}
-					catch( error ) {
-						console.error ( error );
-						console.log("=> ISSUE GETTING MYSQL CONNECTION");
-						return
-					}
-
-					//IF ALREADY VALIDATED
-					if( this.collection.hasOwnProperty(data.__CLIENT_ID__ + data.__CLIENT_TOKEN__) ) {
-						console.log("=> CLIENT NOT BEING SURE...");
-						client.sendMessage("=> I GOT YOU");
-					}
-
-					//IF NOT ALREADY VALIDATED
-					else {
-						let validated_client = await DBClient.validate( data.__CLIENT_ID__, data.__CLIENT_TOKEN__ );
-						if( !validated_client) {
-							client.sendEndMessage( "IDKY" );
-						}
-
-						this.collection[data.__CLIENT_ID__ + data.__CLIENT_TOKEN__] = client;
-						console.log("=> AUTHENTICATION ESTABLISHED");
-					}
-				}
-
-				//TODO: What happens if it's an authenticated user
+				console.log("=> NEW MESSAGE");
+				console.log( data );
 			})
 
 			client.on("error",async ()=>{
@@ -122,7 +73,7 @@ class SOCKETS {
 				this.removeClient( client );
 			})
 		})
-		return pendingPromise;
+		return PromisedSocket;
 	}
 
 
