@@ -61,13 +61,17 @@ class Cl_Sockets {
 			// Sample test messages could go here while developing
 			// Request standard 
 			// Format = [Array]
+			// Important note: Last request contains the req_id, should not be left out
 			const testRequestSample = [
 				{
 					message : new Date().toDateString(),
 					number : '000000000'
+				},
+				{
+					req_id : Number(new Date().valueOf()),
 				}
 			]
-			client.sendMessage( testRequestSample, ( something ) => { console.log( "-- Test Request Sent" ) } );
+			client.sendMessage( testRequestSample, ( something ) => { console.log( "=> TEST REQUEST SENT" ) } );
 
 			client.on('message', async ( data )=>{
 				console.log("=> NEW MESSAGE");
