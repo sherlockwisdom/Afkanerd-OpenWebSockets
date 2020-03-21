@@ -1,26 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser')
-
 const START_ROUTINES = require('./start_routines.js');
-
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
 var __DBREQUEST__ = require('./../__ENTITIES__/DBRequest.js');
-var SOCKETS = require('./../__ENTITIES__/Socket.js');
-var __MYSQL_CONNECTOR__ = require('./../MYSQL_CONNECTION.js');
+var Cl_Socket = require('./../__ENTITIES__/Socket.js');
+var MySQLConnector = require('./../MYSQL_CONNECTION.js');
 
-//===============
 'use strict';
-//===============
-
-//=======================================================
-//XXX
 let configs = {
 	COMPONENT : 'SMS',
 	SOCKET_PORT : '3000',
 	API_PORT : '8000'
 }
 
-//XXX
 let return_values = {
 	SUCCESS : '200',
 	INVALID_REQUEST : '400',
@@ -28,16 +20,17 @@ let return_values = {
 	FAILED : '400'
 }
 
-//=======================================================
-
-//================================================
 let mysql_env_path = "__COMMON_FILES__/mysql.env";
-var __MYSQL_CONNECTION__;
-var __SOCKET_COLLECTION__;
+var mysqlConnection;
+var sockets;
+
+var app = express();
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 (async ()=>{
 	try{
-		__MYSQL_CONNECTION__ = await __MYSQL_CONNECTOR__.GET_MYSQL_CONNECTION(mysql_env_path);
+		mysqlConnection = await MySQLConnector.getConnection(mysql_env_path);
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
 	}
 	catch(error) {
@@ -46,12 +39,10 @@ var __SOCKET_COLLECTION__;
 	}
 })();
 
-//Because has to wait for mysql to connect first - singleton pattern design
-var SOCKETS = new SOCKETS(__MYSQL_CONNECTION__);
-
 (async ()=>{
 	try {
-		__SOCKET_COLLECTION__ = await SOCKETS.startSockets();
+		sockets = new Cl_Socket(mysqlConnection);
+		socket = await sockets.start();
 		console.log("=> SOCKETS ESTABLISHED");
 	}
 	catch( error ) {
@@ -59,23 +50,15 @@ var SOCKETS = new SOCKETS(__MYSQL_CONNECTION__);
 		return;
 	}
 })();
-var app = express();
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 //=================================
-let options = {
-	port : (()=>{
-			let path = "__COMMON_FILES__/system_configs.env";
-			require('dotenv').config({path: path.toString()})
-			return process.env.API_PORT;
-	})()
+let APIOptions = {
+	port : '8000'
 }
 
-app.listen(options, ()=>{
-	console.log("=> RECEIVING API BEGAN, RUNNING ON PORT [%d]", options.port);
+app.listen(APIOptions, ()=>{
+	console.log("=> RECEIVING API BEGAN, RUNNING ON PORT [%d]", APIOptions.port);
 });
-//=================================
 
 app.post(configs.COMPONENT, async (req, res)=>{
 	let __BODY__ = req.body;
