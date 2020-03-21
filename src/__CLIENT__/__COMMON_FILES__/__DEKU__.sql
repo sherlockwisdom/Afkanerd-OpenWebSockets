@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 21, 2020 at 08:43 PM
+-- Generation Time: Mar 21, 2020 at 09:13 PM
 -- Server version: 5.7.29-0ubuntu0.18.04.1
 -- PHP Version: 7.2.24-0ubuntu0.18.04.3
 
@@ -43,6 +43,7 @@ CREATE TABLE `__CLIENTS__` (
 
 CREATE TABLE `__REQUEST__` (
   `__ID__` int(11) NOT NULL,
+  `REQ_ID` int(11) NOT NULL,
   `__MESSAGE__` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `__PHONENUMBER__` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `__DATE__` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
