@@ -78,10 +78,21 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				if( !Array.isArray( message ) ) {
 					console.error("=> INVALID REQUEST");
 					// console.log( message )
+
+					let response = {
+						type : 'ack',
+						message : 'invalid request'
+					}
+					clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 				}
 
 				// Convert Objects to [Array]
 				writeToDatabase( message );
+				let response = {
+					type : 'ack',
+					message : 'processed'
+				}
+				clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 			});
 		}
 		catch (error) {
