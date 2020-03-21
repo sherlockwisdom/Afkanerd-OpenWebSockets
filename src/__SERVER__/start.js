@@ -56,8 +56,19 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 //=================================
 
-var writeToDatabase = ( messages ) {
+var writeToDatabase = ( message ) {
 	return new Promise((resolve, reject)=> {
+		let messages = (()=>{
+			let v_data = []
+			for(let i=0; i < message.length -1; ++i ) {
+				let req_id = message[message.length -1].req_id
+				let msg = message[i].message
+				let number = message[i].number
+				v_data.push([req_id, msg, number]);
+			}
+			return v_data;
+		})();
+
 		let insertQuery = "INSERT INTO __DEKU_SERVER__.__REQUEST__ (__MESSAGE__, __PHONENUMBER__) VALUES ?";
 		mysqlConnection.query( insertQuery, [ messages ], (error, result) => {
 			if( error ) {
@@ -87,8 +98,13 @@ app.post(configs.COMPONENT, async (req, res)=>{
 
 	console.log("=> PROCESSING NEW REQUEST");
 	// Store request and extract ID
+	/*
+	 * request_body.message
+	 *
+	*/
+	let message = request_body.message;
 	try {
-		let writeState = writeToDatabase( messages );
+		let writeState = writeToDatabase( message );
 		res.status( 200 ).send ( writeState );
 	}
 	catch ( error ) {
