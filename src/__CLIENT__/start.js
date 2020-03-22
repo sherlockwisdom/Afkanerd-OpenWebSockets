@@ -48,17 +48,18 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 		return new Promise((resolve, reject)=> {
 			let messages = (()=>{
 				let v_data = []
-				for(let i=0; i < message.length -1; ++i ) {
-					let req_id = message[message.length -1].req_id
+				for(let i=0; i < message.length; ++i ) {
+					let id = message[i].id
+					let req_id = message[i].req_id
 					let msg = message[i].message
 					let number = message[i].number
-					v_data.push([req_id, msg, number]);
+					v_data.push([id, req_id, msg, number]);
 				}
 				return v_data;
 			})();
 
 
-			let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (REQ_ID, __MESSAGE__, __PHONENUMBER__) VALUES ?";
+			let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (__ID__, REQ_ID, __MESSAGE__, __PHONENUMBER__) VALUES ?";
 			mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
 				if( error ) {
 					console.error( error );
