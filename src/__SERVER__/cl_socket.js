@@ -61,6 +61,21 @@ class Cl_Sockets {
 		});
 	}
 
+
+	changePendingStates( messages ) {
+		return new Promise((resolve, reject) => {
+			for(let i in messages ) {
+				let changeStates = "UPDATE __DEKU_SERVER__.__REQUEST__ SET __STATUS__ = 'sent' WHERE __ID__ = ?";
+				this.mysqlConnection.query(changeStates, messages[i].id, (error, results) => {
+					if( error ) {
+						reject( error );
+					}
+				});
+			}
+			resolve();
+		});
+	}
+
 	start() {
 		this.socket = new Socket.Server();
 
@@ -113,7 +128,8 @@ class Cl_Sockets {
 									
 									//Once transmistted to client, should change all their states
 									client.sendMessage( messages );
-									await changePendingStates( messages );
+									let results = await this.changePendingStates( messages );
+									console.log( results );
 								}
 								catch( error ) {
 									console.log( error ) ;
