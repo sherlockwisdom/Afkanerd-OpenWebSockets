@@ -142,6 +142,12 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	
 	// TODO: Each message request could have an ID, but seems like an overkill for now
 	let clientSocket = socket.connectedClients[0]; // TODO: Search for which socket this request is being sent to
-	cl_sockets.signal( clientSocket );
+	
+	// Assumption: if client is currently connected
+	let new_request_notification = {
+		type : 'notification',
+		message : 'new_request'
+	}
+	clientSocket.sendMessage( new_request_notification );
 });
 

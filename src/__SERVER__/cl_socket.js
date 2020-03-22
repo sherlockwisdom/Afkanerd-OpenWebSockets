@@ -73,8 +73,6 @@ class Cl_Sockets {
 			client.sendMessage( testRequestSample, ( something ) => { console.log( "=> TEST REQUEST SENT" ) } );
 			*/
 
-			client.addListener('request_signal', client);
-
 			client.on('message', async ( data )=>{
 				console.log("CLIENT:=> NEW MESSAGE");
 				console.log( data );
@@ -96,18 +94,4 @@ class Cl_Sockets {
 		})
 		return PromisedSocket;
 	}
-
-
-	signal( socket ) {
-		socket.emit("request_signal");
-		// TODO: Figure every message which hasn't been transmitted to the client and re-transmit them again
-	}
-
-	sendMessage( message, socket ) {
-		// Register all of them in database, then send them to clients
-		console.log("=> SENDING MESSAGE TO SPECIFIED SOCKET");
-		console.log( message );
-	}
-
-
 }
