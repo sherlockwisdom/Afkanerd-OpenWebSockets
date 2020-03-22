@@ -22,11 +22,10 @@ class Cl_Socket {
 			});
 
 			clientSocket.on('error', ( error )=>{
+				// reject( error );
+				console.error("=> SOCKET ERROR");
+				// throw error;
 				reject( error );
-			});
-
-			clientSocket.on('close', ()=>{
-				//resolve(false);
 			});
 
 		});

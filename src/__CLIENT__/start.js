@@ -46,6 +46,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 	let writeToDatabase = ( message )=>{ // message = [Object]
 		return new Promise((resolve, reject)=> {
+			let ids = []
 			let messages = (()=>{
 				let v_data = []
 				for(let i=0; i < message.length; ++i ) {
@@ -54,6 +55,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					let msg = message[i].message
 					let number = message[i].number
 					v_data.push([id, req_id, msg, number]);
+					ids.push( id ) 
 				}
 				return v_data;
 			})();
@@ -68,7 +70,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				}
 
 				console.log("=> REQUEST STORED IN DATABASE");
-				resolve( true );
+				resolve( {ids: ids} );
 			});
 		});
 	}
@@ -77,6 +79,20 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 		try {
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			console.log("=> SERVER CONNECTION ESTABLISHED");
+
+
+			clientSocket.on('close', async ()=>{
+				//resolve(false);
+				console.error("=> SOCKET CLOSED");
+
+				let reconnectionTimeout = 5000;
+				console.log("=> PENDING RECONNECTION - T MINUS 5 SECONDS")
+
+				await snooze( reconnectionTimeout );
+				await startSocketConnection();
+			});
+
+
 			clientSocket.on('message', async function( message ){
 				console.log("=> NEW MESSAGE");
 				if( !Array.isArray( message ) ) {
@@ -113,9 +129,9 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 				}
 
-				message.length - 1 > 1 ? 
-					console.log("=> PROCESSING [%d] MESSAGES", message.length -1) :
-					console.log("=> PROCESSING [%d] MESSAGE", message.length -1)
+				message.length > 1 ? 
+					console.log("=> PROCESSING [%d] MESSAGES", message.length ) :
+					console.log("=> PROCESSING [%d] MESSAGE", message.length)
 
 				let response = {}
 				try {
@@ -123,14 +139,14 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					response = {
 						type : 'ack',
 						message : 'processed',
-						req_id : message[message.length-1].req_id
+						ids : writeState.ids
 					}
 				}
 				catch( error ) {
 					response = {
 						type : 'ack',
 						message : 'failed process',
-						req_id : message[message.length-1].req_id,
+						ids : writeState.ids,
 						error : error
 					}
 				}
