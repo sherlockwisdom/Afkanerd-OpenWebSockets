@@ -47,8 +47,7 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 (async ()=>{
 	try {
 		sockets = new Cl_Socket(mysqlConnection);
-		let socket = await sockets.start();
-		in_cache_sockets.push( socket );
+		sockets = await sockets.start();
 	}
 	catch( error ) {
 		console.log(error);
@@ -141,8 +140,7 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	console.log("=> NUMBER OF CLIENTS: [%d]", in_cache_sockets.length );
 	
 	// TODO: Each message request could have an ID, but seems like an overkill for now
-	let socket = in_cache_sockets[0];
-	sockets.sendMessage( message, socket );
-
+	let socket = sockets.connectedClients[0]; // TODO: Search for which socket this request is being sent to
+	sockets.signal( socket );
 });
 

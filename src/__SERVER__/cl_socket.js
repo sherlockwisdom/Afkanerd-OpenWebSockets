@@ -57,6 +57,7 @@ class Cl_Sockets {
 		this.socket.on('connection', ( client )=>{
 			console.log("==================\n=> NEW CLIENT CONNECTION MADE\n===================");
 			client = new JsonSocket ( client );
+			this.connectedClients.push( client );
 
 			// Sample test messages could go here while developing
 			// Request standard 
@@ -76,21 +77,31 @@ class Cl_Sockets {
 			*/
 
 			client.on('message', async ( data )=>{
-				console.log("=> NEW MESSAGE");
+				console.log("CLIENT:=> NEW MESSAGE");
 				console.log( data );
 			})
 
 			client.on("error",async ()=>{
-				console.log("=> ERROR WITH CONNECTED CLIENT");
+				console.log("CLIENT:=> ERROR WITH CONNECTED CLIENT");
 				this.removeClient( client );
 			})
 
 			client.on("close",async ()=>{
-				console.log("=> CLIENT CONNECTION CLOSED");
+				console.log("CLIENT:=> CLIENT CONNECTION CLOSED");
 				this.removeClient( client );
 			})
+
+			client.on("request_signal", async() => {
+				console.log("CLIENT:=> NEW REQUEST SIGNAL");
+			});
 		})
 		return PromisedSocket;
+	}
+
+
+	signal( socket ) {
+		socket.emit("request_signal");
+		// TODO: Figure every message which hasn't been transmitted to the client and re-transmit them again
 	}
 
 	sendMessage( message, socket ) {
