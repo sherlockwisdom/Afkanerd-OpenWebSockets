@@ -76,6 +76,19 @@ class Cl_Sockets {
 			client.on('message', async ( data )=>{
 				console.log("CLIENT:=> NEW MESSAGE");
 				console.log( data );
+
+				if( data.hasOwnProperty( "type") ) {
+					switch( data.type ) {
+						case "notification":
+							if( data.message = "ready") {
+								console.log("=> CLIENT REQUESTING ALL PENDING REQUEST");
+							}
+						break;
+
+						default:
+						break;
+					}
+				}
 			})
 
 			client.on("error",async ()=>{
