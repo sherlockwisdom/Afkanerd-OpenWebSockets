@@ -38,6 +38,9 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 		mysqlConnection = await MySQLConnector.getConnection(mysql_env_path);
 		mysqlConnection.connect();
 		console.log("=> MYSQL CONNECTION ESTABLISHED");
+		
+		cl_sockets = new Cl_Socket(mysqlConnection);
+		socket = await cl_sockets.start();
 	}
 	catch(error) {
 		console.log(error);
@@ -45,16 +48,6 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 	}
 })();
 
-(async ()=>{
-	try {
-		cl_sockets = new Cl_Socket(mysqlConnection);
-		socket = await cl_sockets.start();
-	}
-	catch( error ) {
-		console.log(error);
-		return;
-	}
-})();
 
 //=================================
 

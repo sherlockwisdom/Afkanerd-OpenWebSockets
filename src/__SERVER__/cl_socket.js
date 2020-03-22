@@ -6,7 +6,8 @@ const Socket = require ('net');
 
 module.exports =
 class Cl_Sockets {
-	constructor(__MYSQL_CONNECTION__, __ID__, __TOKEN__){
+	constructor(mysqlConnection, __ID__, __TOKEN__){
+		this.mysqlConnection = mysqlConnection;
 	}
 
 	transmit( __MESSAGE__, __NUMBER__, __ID__ ) {
@@ -35,6 +36,23 @@ class Cl_Sockets {
 	}
 
 	get getErrorCode() {}
+
+	getAllPendingRequest() {
+		console.log(this.mysqlConnection);
+		return new Promise((resolve, reject) => {
+			let fetchAllQuery = "SELECT * FROM __DEKU_SERVER__.__REQUEST__ WHERE __STATUS__ = 'not_sent'";
+			this.mysqlConnection.query(fetchAllQuery, ( error, results ) => {
+				if( error ) {
+					reject( error );
+					return;
+				}
+
+				// TODO: Format results
+				
+				resolve( results );
+			});
+		});
+	}
 
 	start() {
 		this.socket = new Socket.Server();
@@ -82,6 +100,14 @@ class Cl_Sockets {
 						case "notification":
 							if( data.message = "ready") {
 								console.log("=> CLIENT REQUESTING ALL PENDING REQUEST");
+								try {
+									let messages = await this.getAllPendingRequest(); // This should be for a specific client
+									console.log( messages );
+								}
+								catch( error ) {
+									console.log( error ) ;
+								}
+								//client.sendMessage( messages, ()=> { console.log("=> FORWARDED ALL PENDING REQUEST TO CLIENT") );
 							}
 						break;
 
