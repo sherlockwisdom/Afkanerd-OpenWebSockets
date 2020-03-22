@@ -58,17 +58,44 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 //=================================
 
-var meta_request_write = ( message )=> {
+var request_write = ( message )=> {
 	return new Promise((resolve, reject)=> {
-		let insertQuery = "INSERT INTO __DEKU_SERVER__.REQUEST (__NUMBER__) VALUES (?)";
-		mysqlConnection.query( insertQuery, message.length, (error, result) => {
+		let messages = (()=>{
+			let v_data = []
+			for(let i=0; i < message.length -1; ++i ) { 
+				let req_id = message[message.length -1].req_id
+				let msg = message[i].message
+				let number = message[i].number
+				v_data.push([req_id, msg, number]);
+			}   
+			return v_data;
+		})();
+
+		let insertQuery = "INSERT INTO __DEKU_SERVER__.__REQUEST__ (REQ_ID, __MESSAGE__, __PHONENUMBER__) VALUES ?";
+		mysqlConnection.query( insertQuery, [messages], (error, result) => {
 			if( error ) {
 				console.error("=> FAILED TO STORE SMS REQUEST");
 				reject( error );
 				return;
 			}
 
-			console.log("=> STORED IN DATABASE");
+			console.log("=> REQUEST STORED IN DATABASE");
+			resolve( result );
+		})
+	});
+}
+
+var meta_request_write = ( message )=> {
+	return new Promise((resolve, reject)=> {
+		let insertQuery = "INSERT INTO __DEKU_SERVER__.REQUEST (__NUMBER__) VALUES (?)";
+		mysqlConnection.query( insertQuery, message.length, (error, result) => {
+			if( error ) {
+				console.error("=> FAILED TO STORE SMS REQUEST META-DATA");
+				reject( error );
+				return;
+			}
+
+			console.log("=> REQUEST META-DATA STORED IN DATABASE");
 			resolve( result );
 		})
 	});
@@ -87,29 +114,35 @@ app.post(configs.COMPONENT, async (req, res)=>{
 		res.status(400).end();
 		return;
 	}
-
 	console.log("=> PROCESSING NEW REQUEST");
-	// Store request and extract ID
-	/*
-	 * request_body.message
-	 *
-	*/
+
 	let message = request_body.messages;
+
+	// Write Requet meta information
 	try {
 		let metaRequestWriteState = await meta_request_write( message );
 		message.push( { req_id : metaRequestWriteState.insertId })
-		res.status( 200 ).send ( metaRequestWriteState );
 
-		// Send this to socket
-		// Sends to first client it can find
-		console.log("=> NUMBER OF CLIENTS: [%d]", in_cache_sockets.length );
-		let socket = in_cache_sockets[0];
-		sockets.sendMessage( message, socket );
 	}
 	catch ( error ) {
 		res.status( 400 ).send( error )
 	}
 
-	res.end();
+	// Write Request individual information
+	try {
+		await request_write( message );
+
+	}
+	catch ( error ) {
+		res.status( 400 ).send( error )
+	}
+	res.status( 200 ).end();
+
+	console.log("=> NUMBER OF CLIENTS: [%d]", in_cache_sockets.length );
+	
+	// TODO: Each message request could have an ID, but seems like an overkill for now
+	let socket = in_cache_sockets[0];
+	sockets.sendMessage( message, socket );
+
 });
 
