@@ -7,10 +7,6 @@ const Socket = require ('net');
 module.exports =
 class Cl_Sockets {
 	constructor(__MYSQL_CONNECTION__, __ID__, __TOKEN__){
-		this.__ID__ = __ID__;
-		this.__TOKEN__ = __TOKEN__;
-		this.collection = {};
-		this.__MYSQL_CONNECTION__ = __MYSQL_CONNECTION__;
 	}
 
 	transmit( __MESSAGE__, __NUMBER__, __ID__ ) {
@@ -49,6 +45,7 @@ class Cl_Sockets {
 			}
 			
 			this.socket.listen(connectionOptions, ()=>{
+				this.socket.connectedClients = []
 				resolve(this.socket);
 				console.log("=> SOCKET SERVER STARTED ON PORT [%s]", connectionOptions.port);
 			});
@@ -57,7 +54,7 @@ class Cl_Sockets {
 		this.socket.on('connection', ( client )=>{
 			console.log("==================\n=> NEW CLIENT CONNECTION MADE\n===================");
 			client = new JsonSocket ( client );
-			this.connectedClients.push( client );
+			this.socket.connectedClients.push( client );
 
 			// Sample test messages could go here while developing
 			// Request standard 
@@ -75,6 +72,8 @@ class Cl_Sockets {
 			]
 			client.sendMessage( testRequestSample, ( something ) => { console.log( "=> TEST REQUEST SENT" ) } );
 			*/
+
+			client.addListener('request_signal', client);
 
 			client.on('message', async ( data )=>{
 				console.log("CLIENT:=> NEW MESSAGE");

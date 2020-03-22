@@ -25,7 +25,8 @@ const APIOptions = {
 	port : '8000'
 }
 var mysqlConnection;
-var sockets;
+var cl_sockets;
+var socket;
 var in_cache_sockets = []
 var app = express();
 
@@ -46,8 +47,8 @@ app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 (async ()=>{
 	try {
-		sockets = new Cl_Socket(mysqlConnection);
-		sockets = await sockets.start();
+		cl_sockets = new Cl_Socket(mysqlConnection);
+		socket = await cl_sockets.start();
 	}
 	catch( error ) {
 		console.log(error);
@@ -140,7 +141,7 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	console.log("=> NUMBER OF CLIENTS: [%d]", in_cache_sockets.length );
 	
 	// TODO: Each message request could have an ID, but seems like an overkill for now
-	let socket = sockets.connectedClients[0]; // TODO: Search for which socket this request is being sent to
-	sockets.signal( socket );
+	let clientSocket = socket.connectedClients[0]; // TODO: Search for which socket this request is being sent to
+	cl_sockets.signal( clientSocket );
 });
 
