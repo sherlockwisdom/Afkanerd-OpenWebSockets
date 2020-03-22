@@ -38,7 +38,6 @@ class Cl_Sockets {
 	get getErrorCode() {}
 
 	getAllPendingRequest() {
-		console.log(this.mysqlConnection);
 		return new Promise((resolve, reject) => {
 			let fetchAllQuery = "SELECT * FROM __DEKU_SERVER__.__REQUEST__ WHERE __STATUS__ = 'not_sent'";
 			this.mysqlConnection.query(fetchAllQuery, ( error, results ) => {
@@ -48,8 +47,15 @@ class Cl_Sockets {
 				}
 
 				// TODO: Format results
-				
-				resolve( results );
+				let messages = []
+				for( let i in results ) {
+					messages.push( {
+						message : results[i].__MESSAGE__,
+						number : results[i].__PHONENUMBER__,
+						req_id : results[i].REQ_ID
+					});
+				}
+				resolve( messages );
 			});
 		});
 	}
