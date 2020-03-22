@@ -125,12 +125,12 @@ class Cl_Sockets {
 								console.log("=> CLIENT REQUESTING ALL PENDING REQUEST");
 								try {
 									let messages = await this.getAllPendingRequest(); // This should be for a specific client
-									console.log( messages );
+									// console.log( messages );
 									
 									//Once transmistted to client, should change all their states
 									client.sendMessage( messages );
 									let results = await this.changePendingStates( messages );
-									console.log( results );
+									// console.log( results );
 								}
 								catch( error ) {
 									console.log( error ) ;
