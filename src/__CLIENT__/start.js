@@ -88,7 +88,11 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 						switch( message.type ) {
 							case "notification":
 							if( message.message = "new_request" ) {
-								clientSocket.sendMessage("ready", ()=> { console.log("=> READY ACK") });
+								let readyAck = {
+									type : 'notification',
+									message : 'ready'
+								}
+								clientSocket.sendMessage(readyAck, ()=> { console.log("=> READY ACK") });
 								return;
 							}
 							break;
