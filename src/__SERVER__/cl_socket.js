@@ -50,6 +50,7 @@ class Cl_Sockets {
 				let messages = []
 				for( let i in results ) {
 					messages.push( {
+						id : results[i].__ID__,
 						message : results[i].__MESSAGE__,
 						number : results[i].__PHONENUMBER__,
 						req_id : results[i].REQ_ID
@@ -109,6 +110,10 @@ class Cl_Sockets {
 								try {
 									let messages = await this.getAllPendingRequest(); // This should be for a specific client
 									console.log( messages );
+									
+									//Once transmistted to client, should change all their states
+									client.sendMessage( messages );
+									await changePendingStates( messages );
 								}
 								catch( error ) {
 									console.log( error ) ;
