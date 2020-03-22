@@ -95,6 +95,7 @@ class Cl_Sockets {
 		this.socket.on('connection', ( client )=>{
 			console.log("==================\n=> NEW CLIENT CONNECTION MADE\n===================");
 			client = new JsonSocket ( client );
+
 			this.socket.connectedClients.push( client );
 
 			// Sample test messages could go here while developing
