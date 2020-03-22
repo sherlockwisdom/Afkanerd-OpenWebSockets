@@ -79,13 +79,32 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 			clientSocket.on('message', async function( message ){
 				console.log("=> NEW MESSAGE");
 				if( !Array.isArray( message ) ) {
-					console.error("=> INVALID REQUEST");
-					// console.log( message )
 					let response = {
 						type : 'ack',
 						message : 'invalid request',
 						data : message
 					}
+					if( message.hasOwnProperty("type") ) {
+						switch( message.type ) {
+							case "notification":
+							if( message.message = "new_request" ) {
+								clientSocket.sendMessage("ready", ()=> { console.log("=> READY ACK") });
+								return;
+							}
+							break;
+
+							default:
+							response = {
+								type : 'ack',
+								message : 'invalid request',
+								error : 'unknown type',
+								data : message
+							}
+							break;
+						}
+					}
+					else console.error("=> INVALID REQUEST");
+					// console.log( message )
 					clientSocket.sendMessage( response, ()=> { console.log("=> ACKNOWLEDGED SERVER") });
 				}
 
