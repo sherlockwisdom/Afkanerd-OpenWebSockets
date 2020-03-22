@@ -63,6 +63,7 @@ class Cl_Sockets {
 
 
 	changePendingStates( messages ) {
+		// TODO: This is very inefficient, use a loop to join all the statements and use one statement instead of multipl statements
 		return new Promise((resolve, reject) => {
 			for(let i in messages ) {
 				let changeStates = "UPDATE __DEKU_SERVER__.__REQUEST__ SET __STATUS__ = 'sent' WHERE __ID__ = ?";
