@@ -24,6 +24,11 @@ let return_values = {
 	FAILED : '400'
 }
 
+const auth_details = {
+	token : 'AFKANERD_TOKEN',
+	id : 'AFKANERD_ID'
+}
+
 var mysql_connection;
 var cl_socket = new Cl_Socket;
 
@@ -78,6 +83,9 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 	let startSocketConnection = async ()=>{
 		try {
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
+			let auth_details_msg = auth_details;
+			auth_details_msg.type = "auth";
+			clientSocket.sendMessage( auth_details_msg );
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 
 
