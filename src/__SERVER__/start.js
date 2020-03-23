@@ -108,6 +108,11 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	}
 	console.log("=> PROCESSING NEW REQUEST");
 
+	if( !request_body.hasOwnProperty("messages") || !request_body.hasOwnProperty("auth")) {
+		console.error("=> NOT VALID REQUEST!");
+		res.status(400).end();
+		return;
+	}
 	let message = request_body.messages;
 
 	// Write Requet meta information
@@ -118,6 +123,7 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	}
 	catch ( error ) {
 		res.status( 400 ).send( error )
+		return;
 	}
 
 	// Write Request individual information
@@ -127,13 +133,17 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	}
 	catch ( error ) {
 		res.status( 400 ).send( error )
+		return;
 	}
 	res.status( 200 ).end();
-
-	console.log("=> NUMBER OF CLIENTS: [%d]", in_cache_sockets.length );
 	
 	// TODO: Each message request could have an ID, but seems like an overkill for now
-	let clientSocket = socket.connectedClients[0]; // TODO: Search for which socket this request is being sent to
+	let client_key = request_body.auth.token + request_body.auth.id;
+	if(!socket.connectedClients.hasOwnProperty( client_key )) {
+		console.log("=> REQUESTED CLIENT NOT PLUGGED IN YET");
+		return;
+	}
+	let clientSocket = socket.connectedClients[ client_key ]; // TODO: Search for which socket this request is being sent to
 	
 	// Assumption: if client is currently connected
 	let new_request_notification = {

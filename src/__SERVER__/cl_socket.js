@@ -54,7 +54,7 @@ class Cl_Sockets {
 
 	removeClient( client ) {
 		delete this.socket.connectedClients[client.uAuth_key];
-		console.log("=> CLIENTS DROPPED TO [%d]", this.socket.connectedClients.length);
+		console.log("=> CLIENTS DROPPED TO [%d]", Object.keys(this.socket.connectedClients).length);
 	}
 
 	start() {
@@ -106,7 +106,7 @@ class Cl_Sockets {
 							this.socket.connectedClients[client_key] = client;
 							client.uAuth_key = client_key;
 							console.log("=> CLIENT AUTHENTICATED");
-							console.log("=> CLIENTS NOW AT [%d]", this.socket.connectedClients.length);
+							console.log("=> CLIENTS NOW AT [%d]", Object.keys(this.socket.connectedClients).length);
 						}
 						else {
 							console.error("=> INVALID AUTH REQUEST");
