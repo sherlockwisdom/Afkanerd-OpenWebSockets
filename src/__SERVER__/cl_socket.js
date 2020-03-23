@@ -10,31 +10,6 @@ class Cl_Sockets {
 		this.mysqlConnection = mysqlConnection;
 	}
 
-	transmit( __MESSAGE__, __NUMBER__, __ID__ ) {
-		//TODO: Send this information
-		let client = this.collection[this.__ID__ + this.__TOKEN_];
-		let transmission = {
-			__MESSAGE__ : __MESSAGE__,
-			__NUMBER__ : __NUMBER__,
-			__ID__ : __ID__
-		}
-		let returnValue = false;
-		client.sendMessage( transmission, ( error )=>{
-			if( error) {
-				console.log("=> SOMETHING WENT WRONG WITH TRANSMISSION...");
-				console.log( error );
-			}
-			console.log("=> TRANSMISSION SUCCESSFUL");
-			returnValue = true;
-		})
-
-		return returnValue;
-	}
-	
-	find( __ID__, __TOKEN__ ) {
-		return new SOCKETS(__ID__, __TOKEN__);
-	}
-
 	get getErrorCode() {}
 
 	getAllPendingRequest() {
@@ -86,7 +61,7 @@ class Cl_Sockets {
 			}
 			
 			this.socket.listen(connectionOptions, ()=>{
-				this.socket.connectedClients = []
+				this.socket.connectedClients = {}
 				resolve(this.socket);
 				console.log("=> SOCKET SERVER STARTED ON PORT [%s]", connectionOptions.port);
 			});
@@ -96,7 +71,6 @@ class Cl_Sockets {
 			console.log("==================\n=> NEW CLIENT CONNECTION MADE\n===================");
 			client = new JsonSocket ( client );
 
-			this.socket.connectedClients.push( client );
 
 			// Sample test messages could go here while developing
 			// Request standard 
@@ -121,23 +95,30 @@ class Cl_Sockets {
 
 				if( data.hasOwnProperty( "type") ) {
 					switch( data.type ) {
+						case "auth":
+						if( data.message == "auth" ) {
+							this.socket.connectedClients[data.token+data.id] = client;
+							console.log("=> CLIENT AUTHENTICATED");
+						}
+						break;
+
 						case "notification":
-							if( data.message = "ready") {
-								console.log("=> CLIENT REQUESTING ALL PENDING REQUEST");
-								try {
-									let messages = await this.getAllPendingRequest(); // This should be for a specific client
-									// console.log( messages );
-									
-									//Once transmistted to client, should change all their states
-									client.sendMessage( messages );
-									let results = await this.changePendingStates( messages );
-									// console.log( results );
-								}
-								catch( error ) {
-									console.log( error ) ;
-								}
-								//client.sendMessage( messages, ()=> { console.log("=> FORWARDED ALL PENDING REQUEST TO CLIENT") );
+						if( data.message == "ready") {
+							console.log("=> CLIENT REQUESTING ALL PENDING REQUEST");
+							try {
+								let messages = await this.getAllPendingRequest(); // This should be for a specific client
+								// console.log( messages );
+								
+								//Once transmistted to client, should change all their states
+								client.sendMessage( messages );
+								let results = await this.changePendingStates( messages );
+								// console.log( results );
 							}
+							catch( error ) {
+								console.log( error ) ;
+							}
+							//client.sendMessage( messages, ()=> { console.log("=> FORWARDED ALL PENDING REQUEST TO CLIENT") );
+						}
 						break;
 
 						default:
