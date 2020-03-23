@@ -52,6 +52,11 @@ class Cl_Sockets {
 		});
 	}
 
+	removeClient( client ) {
+		delete this.socket.connectedClients[client.uAuth_key];
+		console.log("=> CLIENTS DROPPED TO [%d]", this.socket.connectedClients.length);
+	}
+
 	start() {
 		this.socket = new Socket.Server();
 
@@ -96,9 +101,16 @@ class Cl_Sockets {
 				if( data.hasOwnProperty( "type") ) {
 					switch( data.type ) {
 						case "auth":
-						if( data.message == "auth" ) {
-							this.socket.connectedClients[data.token+data.id] = client;
+						if( data.hasOwnProperty("token") && data.hasOwnProperty("id")) {
+							let client_key = data.token+data.id;
+							this.socket.connectedClients[client_key] = client;
+							client.uAuth_key = client_key;
 							console.log("=> CLIENT AUTHENTICATED");
+							console.log("=> CLIENTS NOW AT [%d]", this.socket.connectedClients.length);
+						}
+						else {
+							console.error("=> INVALID AUTH REQUEST");
+							break;
 						}
 						break;
 
@@ -129,7 +141,7 @@ class Cl_Sockets {
 
 			client.on("error",async ()=>{
 				console.log("CLIENT:=> ERROR WITH CONNECTED CLIENT");
-				this.removeClient( client );
+				// this.removeClient( client );
 			})
 
 			client.on("close",async ()=>{
