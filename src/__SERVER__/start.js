@@ -154,7 +154,8 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	}
 
 	if( request_body.hasOwnProperty("query") ) {
-		let query = request_body.request;
+		console.log("=> SENDING A QUERY TO CLIENT");
+		let query = request_body.query;
 
 		try {
 			let target = query.target;

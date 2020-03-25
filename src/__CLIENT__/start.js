@@ -49,10 +49,6 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 (async ()=>{
 	
-	let writeToRequestFile( message ) {
-		
-	}
-
 	let writeToDatabase = ( message )=>{ // message = [Object]
 		return new Promise((resolve, reject)=> {
 			let ids = []
@@ -116,7 +112,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					if( message.hasOwnProperty("type") ) {
 						switch( message.type ) {
 							case "notification":
-							if( message.message = "new_request" ) {
+							if( message.message == "new_request" ) {
 								let readyAck = {
 									type : 'notification',
 									message : 'ready'
@@ -125,6 +121,11 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 								return;
 							}
 							break;
+
+							case "query":
+							if( message.target == "modem" ) {
+								//TODO: Query the database and send all modems
+							}
 
 							default:
 							response = {
@@ -147,8 +148,8 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 				let response = {}
 				try {
-					// let writeState = await writeToDatabase( message );
-					let writeState = await writeToRequestFile ( message );
+					let writeState = await writeToDatabase( message );
+					// let writeState = await writeToRequestFile ( message );
 					response = {
 						type : 'ack',
 						message : 'processed',
