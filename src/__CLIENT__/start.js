@@ -48,6 +48,10 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 
 (async ()=>{
+	
+	let writeToRequestFile( message ) {
+		
+	}
 
 	let writeToDatabase = ( message )=>{ // message = [Object]
 		return new Promise((resolve, reject)=> {
@@ -143,7 +147,8 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 				let response = {}
 				try {
-					let writeState = await writeToDatabase( message );
+					// let writeState = await writeToDatabase( message );
+					let writeState = await writeToRequestFile ( message );
 					response = {
 						type : 'ack',
 						message : 'processed',

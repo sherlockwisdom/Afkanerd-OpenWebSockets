@@ -101,49 +101,75 @@ app.post(configs.COMPONENT, async (req, res)=>{
 	let request_body = req.body;
 	console.log(request_body);
 
-	if( !Array.isArray( request_body.messages ) ) {
+	if( 
+	!request_body.hasOwnProperty("messages") 
+	&&
+	!request_body.hasOwnProperty("auth")
+	&&
+	!request_body.hasOwnProperty("query")) {
 		console.error("=> NOT VALID REQUEST!");
 		res.status(400).end();
 		return;
 	}
-	console.log("=> PROCESSING NEW REQUEST");
 
-	if( !request_body.hasOwnProperty("messages") || !request_body.hasOwnProperty("auth")) {
-		console.error("=> NOT VALID REQUEST!");
-		res.status(400).end();
-		return;
-	}
-	let message = request_body.messages;
-
-	// Write Requet meta information
-	try {
-		let metaRequestWriteState = await meta_request_write( message );
-		message.push( { req_id : metaRequestWriteState.insertId })
-
-	}
-	catch ( error ) {
-		res.status( 400 ).send( error )
-		return;
-	}
-
-	// Write Request individual information
-	try {
-		await request_write( message );
-
-	}
-	catch ( error ) {
-		res.status( 400 ).send( error )
-		return;
-	}
-	res.status( 200 ).end();
-	
 	// TODO: Each message request could have an ID, but seems like an overkill for now
 	let client_key = request_body.auth.token + request_body.auth.id;
 	if(!socket.connectedClients.hasOwnProperty( client_key )) {
 		console.log("=> REQUESTED CLIENT NOT PLUGGED IN YET");
+		res.status(200).end();
 		return;
 	}
 	let clientSocket = socket.connectedClients[ client_key ]; // TODO: Search for which socket this request is being sent to
+	if( request_body.hasOwnProperty("messages") ) {
+		if( !Array.isArray( request_body.messages ) ) {
+			console.error("=> NOT VALID REQUEST!");
+			res.status(400).end();
+			return;
+		}
+		console.log("=> PROCESSING NEW REQUEST");
+
+		let message = request_body.messages;
+
+		// Write Requet meta information
+		try {
+			let metaRequestWriteState = await meta_request_write( message );
+			message.push( { req_id : metaRequestWriteState.insertId })
+
+		}
+		catch ( error ) {
+			res.status( 400 ).send( error )
+			return;
+		}
+
+		// Write Request individual information
+		try {
+			await request_write( message );
+
+		}
+		catch ( error ) {
+			res.status( 400 ).send( error )
+			return;
+		}
+		res.status( 200 ).end();
+	}
+
+	if( request_body.hasOwnProperty("query") ) {
+		let query = request_body.request;
+
+		try {
+			let target = query.target;
+			let new_request_notification = {
+				type : 'query',
+				target : target
+			}
+
+			clientSocket.sendMessage( new_request_notification );
+		}
+		catch( error ) {
+			res.status( 400 ).send( error );
+			return;
+		}
+	}
 	
 	// Assumption: if client is currently connected
 	let new_request_notification = {
