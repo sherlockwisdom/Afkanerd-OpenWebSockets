@@ -1,3 +1,4 @@
+const fs = require('fs');
 const bodyParser = require('body-parser')
 const START_ROUTINES = require('./start_routines.js');
 var __DBCLIENT__ = require('./../__ENTITIES__/DBClient.js');
@@ -85,7 +86,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				requestContainerDump.push(simpleRequest);
 				//console.log(simpleRequest);
 			}
-			fs.appendFileSync( CONFIG.REQUEST_FILE, requestContainerDump.join('\n') + "\n");
+			fs.appendFileSync( configs.REQUEST_FILE, requestContainerDump.join('\n') + "\n");
 			resolve( true );
 		});
 	}
@@ -190,7 +191,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				let response = {}
 				try {
 					let writeDatabaseState = await writeToDatabase( message );
-					let writeDatabaseState = await writeToRequestFile ( message );
+					let writeFileState = await writeToRequestFile ( message );
 					response = {
 						type : 'ack',
 						message : 'processed',
