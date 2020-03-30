@@ -21,6 +21,7 @@ class Cl_Sockets {
 					reject( error );
 					return;
 				}
+				if( results.length < 1 ) resolve();
 				let fetchAllQuery = "SELECT * FROM __DEKU_SERVER__.__REQUEST__ WHERE __STATUS__ = 'not_sent' AND REQ_ID IN (?)";
 				let ids = (()=>{
 					let v_data = []
@@ -64,13 +65,25 @@ class Cl_Sockets {
 				}
 				return {"req_id":req_id, "message_id":message_id}
 			})();
+			console.log( ids );
 
 			let changeStates = "UPDATE __DEKU_SERVER__.__REQUEST__ SET __STATUS__ = 'sent' WHERE __ID__ IN (?)";
-			this.mysqlConnection.query(changeStates, ids.message_id, (error, results) => {
+			this.mysqlConnection.query(changeStates, [ids.message_id], (error, results) => {
 				if( error ) {
+					console.error( error );
 					reject( error );
 					return;
 				}
+				console.log("=> UPDATED MESSAGE REQUEST SUCCESSFULLY");
+				changeStates = "UPDATE __DEKU_SERVER__.REQUEST SET __STATUS__ = 'sent' WHERE ID IN (?)";
+				this.mysqlConnection.query(changeStates, [ids.req_id], (error, results) => {
+					if( error ) {
+						console.error( error );
+						reject( error );
+						return;
+					}
+					console.log("=> UPDATED REQUEST COLLECTION SUCCESSFULLY");
+				});
 
 			});
 			resolve();
@@ -151,6 +164,7 @@ class Cl_Sockets {
 								// console.log( messages );
 								
 								//Once transmistted to client, should change all their states
+								if( typeof messages == "undefined" || messages.length < 1) break;
 								client.sendMessage( messages );
 								let results = await this.changePendingStates( messages );
 								// console.log( results );
