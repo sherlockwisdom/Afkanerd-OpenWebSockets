@@ -111,7 +111,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 			let insertQuery = "INSERT INTO __DEKU__.__REQUEST__ (__ID__, REQ_ID, __MESSAGE__, __PHONENUMBER__) VALUES ?";
 			mysql_connection.query( insertQuery, [ messages ], ( error, result ) => {
 				if( error ) {
-					console.error( error );
+					//console.error( error );
 					reject( error );
 					return;
 				}
@@ -197,6 +197,8 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					console.log("=> PROCESSING [%d] MESSAGES", message.length ) :
 					console.log("=> PROCESSING [%d] MESSAGE", message.length)
 
+				if( message.length < 1) return;
+
 				let response = {}
 				try {
 					let writeDatabaseState = await writeToDatabase( message );
@@ -211,7 +213,7 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 					response = {
 						type : 'ack',
 						message : 'failed process',
-						ids : writeState.ids,
+						ids : writeDatabaseState.ids,
 						error : error
 					}
 				}
