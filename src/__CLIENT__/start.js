@@ -7,6 +7,23 @@ const MySQLConnector = require('./../MYSQL_CONNECTION.js');
 const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 'use strict';
+
+let args = process.argv.slice(2);
+var configurationFile;
+
+for(let i=0;i<args.length;++i) {
+	if( args[i] == "-c" ) {
+		configurationFile = args[i+1];
+		require('dotenv').config({path: configurationFile.toString()})
+	}
+}
+
+if( typeof configurationFile == "undefined") {
+	console.error("No configuration file passed, exiting...\nUse -c to pass configurations file");
+	return;
+}
+
+
 let configs = {
 	SOCKET_PORT : '4000',
 	DIR_REQUEST_FILE : "",
@@ -14,7 +31,8 @@ let configs = {
 	SERVER_PORT : '3000',
 	TOKEN : 'DEVELOPER_TOKEN',
 	ID : 'DEVELOPER_ID',
-	APP_TYPE : 'SMS'
+	APP_TYPE : 'SMS',
+	REQUEST_FILE : process.env.DIR_REQUEST_FILE + "/" + process.env.STD_NAME_REQUEST_FILE
 }
 
 let return_values = {
@@ -48,6 +66,27 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 
 (async ()=>{
+
+	let writeToRequestFile = ( request) => {
+		return new Promise(async(resolve, reject)=> {
+			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
+			let requestContainerDump = []; //This container takes a list of request and dumps to file
+			for(let i in request) {
+				let simpleRequest;
+				if( request[i].hasOwnProperty("number") && request[i].hasOwnProperty("message")) {
+					simpleRequest = "number=" + request[i].number + ",message=" + JSON.stringify(request[i].message);
+				}
+				else if(request[i].hasOwnProperty("phonenumber") && request[i].hasOwnProperty("message")) {
+					simpleRequest = "number=" + request[i].phonenumber + ",message="+ JSON.stringify(request[i].message);
+				}
+				requestContainerDump.push(simpleRequest);
+				//console.log(simpleRequest);
+			}
+			let HOME = process.env.HOME;
+			fs.appendFileSync( CONFIG.REQUEST_FILE, requestContainerDump.join('\n') + "\n");
+			resolve("SMS.sendBulkSMS=> done.");
+		});
+	}
 	
 	let writeToDatabase = ( message )=>{ // message = [Object]
 		return new Promise((resolve, reject)=> {
