@@ -35,6 +35,8 @@ let configs = {
 	REQUEST_FILE : process.env.DIR_REQUEST_FILE + "/" + process.env.STD_NAME_REQUEST_FILE
 }
 
+console.log( configs );
+
 let return_values = {
 	SUCCESS : '200',
 	INVALID_REQUEST : '400',
