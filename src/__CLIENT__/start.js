@@ -45,8 +45,8 @@ let return_values = {
 }
 
 const auth_details = {
-	token : 'AFKANERD_TOKEN',
-	id : 'AFKANERD_ID'
+	token : configs.TOKEN,
+	id : configs.ID
 }
 
 var mysql_connection;
@@ -70,8 +70,9 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 (async ()=>{
 
 	let writeToRequestFile = ( request) => {
-		return new Promise(async(resolve, reject)=> {
-			console.log("SMS.sendBulkSMS=> number of sms to send: ", request.length);
+		return new Promise( async(resolve, reject)=> {
+			console.log("=> WRITING TO REQUEST FILE AT: [%s]", configs.REQUEST_FILE );
+			if( request.length < 1 ) reject( false );
 			let requestContainerDump = []; //This container takes a list of request and dumps to file
 			for(let i in request) {
 				let simpleRequest;
@@ -84,9 +85,8 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 				requestContainerDump.push(simpleRequest);
 				//console.log(simpleRequest);
 			}
-			let HOME = process.env.HOME;
 			fs.appendFileSync( CONFIG.REQUEST_FILE, requestContainerDump.join('\n') + "\n");
-			resolve("SMS.sendBulkSMS=> done.");
+			resolve( true );
 		});
 	}
 	
@@ -189,12 +189,12 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 
 				let response = {}
 				try {
-					let writeState = await writeToDatabase( message );
-					// let writeState = await writeToRequestFile ( message );
+					let writeDatabaseState = await writeToDatabase( message );
+					let writeDatabaseState = await writeToRequestFile ( message );
 					response = {
 						type : 'ack',
 						message : 'processed',
-						ids : writeState.ids
+						ids : writeDatabaseState.ids
 					}
 				}
 				catch( error ) {
