@@ -79,8 +79,8 @@ var request_write = ( message )=> {
 
 var meta_request_write = ( message )=> {
 	return new Promise((resolve, reject)=> {
-		let insertQuery = "INSERT INTO __DEKU_SERVER__.REQUEST (__NUMBER__) VALUES (?)";
-		mysqlConnection.query( insertQuery, message.length, (error, result) => {
+		let insertQuery = "INSERT INTO __DEKU_SERVER__.REQUEST (CLIENT_ID, CLIENT_TOKEN, __NUMBER__) VALUES (?,?,?)";
+		mysqlConnection.query( insertQuery, [message.CLIENT_ID, message.CLIENT_TOKEN, message.length], (error, result) => {
 			if( error ) {
 				console.error("=> FAILED TO STORE SMS REQUEST META-DATA");
 				reject( error );
@@ -112,14 +112,6 @@ app.post(configs.COMPONENT, async (req, res)=>{
 		return;
 	}
 
-	// TODO: Each message request could have an ID, but seems like an overkill for now
-	let client_key = request_body.auth.token + request_body.auth.id;
-	if(!socket.connectedClients.hasOwnProperty( client_key )) {
-		console.log("=> REQUESTED CLIENT NOT PLUGGED IN YET");
-		res.status(200).end();
-		return;
-	}
-	let clientSocket = socket.connectedClients[ client_key ]; // TODO: Search for which socket this request is being sent to
 	if( request_body.hasOwnProperty("messages") ) {
 		if( !Array.isArray( request_body.messages ) ) {
 			console.error("=> NOT VALID REQUEST!");
@@ -129,10 +121,15 @@ app.post(configs.COMPONENT, async (req, res)=>{
 		console.log("=> PROCESSING NEW REQUEST");
 
 		let message = request_body.messages;
+		let messageWithAuth = request_body.messages;
+		
+		// Adding Client identification to each message
+		messageWithAuth.CLIENT_ID = request_body.auth.id;
+		messageWithAuth.CLIENT_TOKEN = request_body.auth.token;
 
 		// Write Requet meta information
 		try {
-			let metaRequestWriteState = await meta_request_write( message );
+			let metaRequestWriteState = await meta_request_write( messageWithAuth );
 			message.push( { req_id : metaRequestWriteState.insertId })
 
 		}
@@ -177,6 +174,15 @@ app.post(configs.COMPONENT, async (req, res)=>{
 		type : 'notification',
 		message : 'new_request'
 	}
+	
+	// TODO: Each message request could have an ID, but seems like an overkill for now
+	let client_key = request_body.auth.token + request_body.auth.id;
+	if(!socket.connectedClients.hasOwnProperty( client_key )) {
+		console.log("=> REQUESTED CLIENT NOT PLUGGED IN YET");
+		res.status(200).end();
+		return;
+	}
+	let clientSocket = socket.connectedClients[ client_key ]; // TODO: Search for which socket this request is being sent to
 	clientSocket.sendMessage( new_request_notification );
 });
 
