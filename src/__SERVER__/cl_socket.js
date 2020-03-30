@@ -12,26 +12,41 @@ class Cl_Sockets {
 
 	get getErrorCode() {}
 
-	getAllPendingRequest() {
+	getAllPendingRequest( client_token, client_id ) {
 		return new Promise((resolve, reject) => {
-			let fetchAllQuery = "SELECT * FROM __DEKU_SERVER__.__REQUEST__ WHERE __STATUS__ = 'not_sent'";
-			this.mysqlConnection.query(fetchAllQuery, ( error, results ) => {
+			console.log("=> GETTING PENDING FOR CLIENT WITH - ID/[%s] - TOKEN/[%s]", client_id, client_token);
+			let fetchAllRequestQuery = "SELECT ID FROM __DEKU_SERVER__.REQUEST WHERE __STATUS__ = 'not_sent' AND CLIENT_ID= ? AND CLIENT_TOKEN = ?";
+			this.mysqlConnection.query(fetchAllRequestQuery, [ client_id, client_token ], ( error, results )=> {
 				if( error ) {
 					reject( error );
 					return;
 				}
+				let fetchAllQuery = "SELECT * FROM __DEKU_SERVER__.__REQUEST__ WHERE __STATUS__ = 'not_sent' AND REQ_ID IN (?)";
+				let ids = (()=>{
+					let v_data = []
+					for(let i in results) {
+						v_data.push(results[i].ID);
+					}
+					return v_data;
+				})();
+				this.mysqlConnection.query(fetchAllQuery, [ ids ], ( error, results ) => {
+					if( error ) {
+						reject( error );
+						return;
+					}
 
-				// TODO: Format results
-				let messages = []
-				for( let i in results ) {
-					messages.push( {
-						id : results[i].__ID__,
-						message : results[i].__MESSAGE__,
-						number : results[i].__PHONENUMBER__,
-						req_id : results[i].REQ_ID
-					});
-				}
-				resolve( messages );
+					// TODO: Format results
+					let messages = []
+					for( let i in results ) {
+						messages.push( {
+							id : results[i].__ID__,
+							message : results[i].__MESSAGE__,
+							number : results[i].__PHONENUMBER__,
+							req_id : results[i].REQ_ID
+						});
+					}
+					resolve( messages );
+				});
 			});
 		});
 	}
@@ -40,14 +55,24 @@ class Cl_Sockets {
 	changePendingStates( messages ) {
 		// TODO: This is very inefficient, use a loop to join all the statements and use one statement instead of multipl statements
 		return new Promise((resolve, reject) => {
-			for(let i in messages ) {
-				let changeStates = "UPDATE __DEKU_SERVER__.__REQUEST__ SET __STATUS__ = 'sent' WHERE __ID__ = ?";
-				this.mysqlConnection.query(changeStates, messages[i].id, (error, results) => {
-					if( error ) {
-						reject( error );
-					}
-				});
-			}
+			let ids = (()=>{
+				let req_id = []
+				let message_id = []
+				for(let i in messages) {
+					message_id.push(messages[i].id);
+					req_id.push(messages[i].req_id);
+				}
+				return {"req_id":req_id, "message_id":message_id}
+			})();
+
+			let changeStates = "UPDATE __DEKU_SERVER__.__REQUEST__ SET __STATUS__ = 'sent' WHERE __ID__ IN (?)";
+			this.mysqlConnection.query(changeStates, ids.message_id, (error, results) => {
+				if( error ) {
+					reject( error );
+					return;
+				}
+
+			});
 			resolve();
 		});
 	}
@@ -104,7 +129,11 @@ class Cl_Sockets {
 						if( data.hasOwnProperty("token") && data.hasOwnProperty("id")) {
 							let client_key = data.token+data.id;
 							this.socket.connectedClients[client_key] = client;
+
 							client.uAuth_key = client_key;
+							client.client_token = data.token;
+							client.client_id = data.id;
+
 							console.log("=> CLIENT AUTHENTICATED");
 							console.log("=> CLIENTS NOW AT [%d]", Object.keys(this.socket.connectedClients).length);
 						}
@@ -118,7 +147,7 @@ class Cl_Sockets {
 						if( data.message == "ready") {
 							console.log("=> CLIENT REQUESTING ALL PENDING REQUEST");
 							try {
-								let messages = await this.getAllPendingRequest(); // This should be for a specific client
+								let messages = await this.getAllPendingRequest( client.client_token, client.client_id); // This should be for a specific client
 								// console.log( messages );
 								
 								//Once transmistted to client, should change all their states

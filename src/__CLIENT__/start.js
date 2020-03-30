@@ -127,7 +127,16 @@ const path_mysql_env = "__COMMON_FILES__/mysql.env";
 			let clientSocket = await cl_socket.connect( configs.SERVER_HOST, configs.SERVER_PORT);
 			let auth_details_msg = auth_details;
 			auth_details_msg.type = "auth";
-			clientSocket.sendMessage( auth_details_msg );
+			clientSocket.sendMessage( auth_details_msg, ()=> {
+				console.log("=> AUTH DETAILS SENT");
+				let messageRequest = {
+					type : 'notification',
+					message : 'ready'
+				}
+				clientSocket.sendMessage( messageRequest, ()=> {
+					console.log("=> REQUESTED ALL PENDING MESSAGES");
+				});
+			});
 			console.log("=> SERVER CONNECTION ESTABLISHED");
 
 
