@@ -39,6 +39,9 @@ let configs = {
 
 console.log( configs );
 
+
+// TODO: This can be changed to come from a config file
+
 let return_values = {
 	SUCCESS : '200',
 	INVALID_REQUEST : '400',

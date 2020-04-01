@@ -19,6 +19,10 @@ class Cl_Socket {
 
 			clientSocket.on('connect', ()=>{
 				resolve( clientSocket );
+
+				// TODO: I doubt the resilience of this code, so to not allow for server mutation and server not coming
+				// TODO: use cron services
+				clientSocket.setKeepAlive(true, 5000);
 			});
 
 			clientSocket.on('error', ( error )=>{
