@@ -26,13 +26,11 @@ if( typeof configurationFile == "undefined") {
 
 
 let configs = {
-	SOCKET_PORT : '4000',
-	DIR_REQUEST_FILE : "",
-	SERVER_HOST : 'localhost',
-	SERVER_PORT : '3000',
-	TOKEN : 'DEVELOPER_TOKEN',
-	ID : 'DEVELOPER_ID',
-	APP_TYPE : 'SMS',
+	SERVER_HOST : process.env.SERVER_HOST,
+	SERVER_PORT : process.env.SERVER_PORT,
+	TOKEN : process.env.CLIENT_TOKEN,
+	ID : process.env.CLIENT_ID,
+	APP_TYPE : process.env.APP_TYPE,
 	REQUEST_FILE : process.env.DIR_REQUEST_FILE + "/" + process.env.STD_NAME_REQUEST_FILE
 }
 
