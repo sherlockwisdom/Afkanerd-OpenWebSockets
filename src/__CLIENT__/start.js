@@ -34,6 +34,9 @@ let configs = {
 	REQUEST_FILE : process.env.DIR_REQUEST_FILE + "/" + process.env.STD_NAME_REQUEST_FILE
 }
 
+
+// TODO: check to make sure configs have been sucessfully added
+
 console.log( configs );
 
 let return_values = {
