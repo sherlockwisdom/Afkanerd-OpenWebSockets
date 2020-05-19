@@ -33,7 +33,9 @@ function boot() {
 	let MYSQL_PASSWORD = process.env.MYSQL_PASSWORD;
 	let MYSQL_SERVER = process.env.MYSQL_SERVER;
 
-	if( typeof MYSQL_SERVER == "undefined") {}
+	if( typeof MYSQL_SERVER == "undefined") {
+		console.log(">> EP2: ","MYSQL_SERVER Configuration not found. Exiting.");
+	}
 	if( typeof MYSQL_PASSWORD == "undefined") {}
 	if( typeof MYSQL_DATABASE == "undefined") {}
 	if( typeof MYSQL_USER == "undefined") {}
