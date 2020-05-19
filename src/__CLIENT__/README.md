@@ -1,36 +1,36 @@
-###### Client Protocols:
-###### Booting:
-1. __Checks custom configuration files__
-  * If files are absent it exits
-    * If files are present but incomplete or invalid
-    * It complains and exists
+##### Client Protocols:
+###### Booting [SP1]:
+1. __Checks custom configuration files__ __[SP2]__ __[ FP1 ]__
+    * If files are absent it exits __[ EP2 ]__
+      * If files are present but incomplete or invalid
+        * It complains and exists  __[ EP2 ]__
 
-###### Connection:
-1. __Obtains MySQL connection__
-  * If fails to obtain connection
-    * Complain and exit
-2. __Begin connection to server__
-  * If fails to connect with server
-    * Complain and exit
-3. __Send authentication details to server__
-  * If fails to send details to server
-    * Complain and exit
-  * If fails to authenticate with server
-    * Complain and exit
-4. __Begin listening to server__
-  * If connection with server is lost
-    * Complain and return to #3
-  * If error with connection with server
-    * Complain and return to #3
-5. __Begin Cron messaging to server__
-  * If fails to send message
-    * Complain and return to #3
-    
-###### Request:
-- __When obtains new request__
-  * Store in DB / Write to Request file and set state as pending / return true
-    * If fails to store request
-      * Complain
-- __Transmit IDs to server as completed and set state as completed in database__
-  * If fails to transmit ID
-    * Complain
+###### Connection [SP1]:
+1. __Obtains MySQL connection__ __[SP2]__
+    * If fails to obtain connection __[EP1]__
+      * Complain and exit __[ EP2 ]__
+2. __Begin connection to server__ __[SP2]__ __[EP1]__
+    * If fails to connect with server __[EP1]__
+      * Complain and exit __[ EP2 ]__
+3. __Send authentication details to server__ __[SP2]__
+    * If fails to send details to server __[EP1]__
+      * Complain and exit __[ EP2 ]__
+      * If fails to authenticate with server __[EP1]__
+Complain and exit [ EP3 ]
+Begin listening to server [SP2]
+If connection with server is lost [EP1]
+Complain and return to #3 [ EP2 ]
+If error with connection with server [EP1]
+Complain and return to #3 [ EP2 ]
+Begin Cron messaging to server [SP2]
+If fails to send message [EP1]
+Complain and return to #3 [ EP2 ]
+
+Request [SP1]:
+When obtains new request [SP2] 
+Store in DB / Write to Request file and set state as pending / return true [SP2] [EP1]
+If fails to store request
+Complain [ EP2 ]
+Transmit IDs to server as completed and set state as completed in database [SP2] [EP1]
+If fails to transmit ID
+Complain [ EP2 ]
