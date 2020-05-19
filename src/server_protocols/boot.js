@@ -25,12 +25,19 @@ envFileReader.config({ path : filePath_sysConfig.toString() })
 */
 
 // Boot should check if passed in configurations match enough details for server to startup
+function boot() {
+	console.log( process.env )
 
+	let MYSQL_DATABASE = process.env.MYSQL_DATABASE;
+	let MYSQL_USER = process.env.MYSQL_USER;
+	let MYSQL_PASSWORD = process.env.MYSQL_PASSWORD;
+	let MYSQL_SERVER = process.env.MYSQL_SERVER;
 
-function view() {
-	console.log(process.env);
+	if( typeof MYSQL_SERVER == "undefined") {}
+	if( typeof MYSQL_PASSWORD == "undefined") {}
+	if( typeof MYSQL_DATABASE == "undefined") {}
+	if( typeof MYSQL_USER == "undefined") {}
 }
 
-
 // Exported modules
-module.exports = view
+module.exports = boot

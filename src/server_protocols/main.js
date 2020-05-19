@@ -1,5 +1,4 @@
 // Boot up
 // boot.js
-var boot = require('.boot.js')
+const boot = require('./boot.js')
 
-boot.view();
