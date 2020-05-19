@@ -25,3 +25,12 @@ envFileReader.config({ path : filePath_sysConfig.toString() })
 */
 
 // Boot should check if passed in configurations match enough details for server to startup
+
+
+function view() {
+	console.log(process.env);
+}
+
+
+// Exported modules
+module.exports = view
