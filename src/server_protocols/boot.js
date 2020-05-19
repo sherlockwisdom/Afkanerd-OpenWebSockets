@@ -9,12 +9,19 @@
 */
 
 
+/*
+ * This method should be not implemented by default because the configurations are required to run
+ * Should rather use the --r (--require) default options in nodejs to load this file in
+*/
+/*
 const envFileReader = require('dotenv');
 
 var filePath_sysConfig = // TODO: Read this as terminal argument
-envFileReader.config(
-	{ 
-		path : filePath_sysConfig.toString() 
-	})
 
+// This loads the configurations into the process object 
+// Output becomes accessible via (process.env)
 
+envFileReader.config({ path : filePath_sysConfig.toString() })
+*/
+
+// Boot should check if passed in configurations match enough details for server to startup
