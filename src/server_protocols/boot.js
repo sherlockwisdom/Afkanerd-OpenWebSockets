@@ -8,25 +8,9 @@
       * It complains and exists __[EP2]__
 */
 
-
-/*
- * This method should be not implemented by default because the configurations are required to run
- * Should rather use the --r (--require) default options in nodejs to load this file in
-*/
-/*
-const envFileReader = require('dotenv');
-
-var filePath_sysConfig = // TODO: Read this as terminal argument
-
-// This loads the configurations into the process object 
-// Output becomes accessible via (process.env)
-
-envFileReader.config({ path : filePath_sysConfig.toString() })
-*/
-
 // Boot should check if passed in configurations match enough details for server to startup
 function boot() {
-	console.log( process.env )
+	// console.log( process.env )
 
 	let MYSQL_DATABASE = process.env.MYSQL_DATABASE;
 	let MYSQL_USER = process.env.MYSQL_USER;
@@ -34,14 +18,26 @@ function boot() {
 	let MYSQL_SERVER = process.env.MYSQL_SERVER;
 
 	if( typeof MYSQL_SERVER == "undefined")
-		console.error(">> EP2: ","MYSQL_SERVER Configuration not found. Exiting.");
+		console.error(">> EP2: ","MYSQL_SERVER Configuration not found. Exiting.")
 	if( typeof MYSQL_PASSWORD == "undefined")
-		console.error(">> EP2: ","MYSQL_PASSWORD Configuration not found. Exiting.");
+		console.error(">> EP2: ","MYSQL_PASSWORD Configuration not found. Exiting.")
 	if( typeof MYSQL_DATABASE == "undefined")
-		console.error(">> EP2: ","MYSQL_DATABASE Configuration not found. Exiting.");
+		console.error(">> EP2: ","MYSQL_DATABASE Configuration not found. Exiting.")
 	if( typeof MYSQL_USER == "undefined")
-		console.error(">> EP2: ","MYSQL_USER Configuration not found. Exiting.");
+		console.error(">> EP2: ","MYSQL_USER Configuration not found. Exiting.")
+
+	return {
+		MYSQL_DATABASE : MYSQL_DATABASE,
+		MYSQL_USER : MYSQL_USER,
+		MYSQL_PASSWORD : MYSQL_PASSWORD,
+		MYSQL_SERVER : MYSQL_SERVER
+	};
+}
+
+
+var Boots = {
+	boot : function() { return boot() }
 }
 
 // Exported modules
-module.exports = boot
+module.exports = Boots

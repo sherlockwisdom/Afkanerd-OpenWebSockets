@@ -16,6 +16,6 @@ for( let i in process.argv ) {
 }
 
 require('dotenv').config( { path: CONFIG_PATH } )
-const boot = require('./boot.js')
+const Boots = require('./boot.js')
 
-boot();
+console.log ( Boots.boot() )
