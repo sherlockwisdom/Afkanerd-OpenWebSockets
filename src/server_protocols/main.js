@@ -18,4 +18,12 @@ for( let i in process.argv ) {
 require('dotenv').config( { path: CONFIG_PATH } )
 const Boots = require('./boot.js')
 
-console.log ( Boots.boot() )
+// console.log ( Boots.boot() )
+var sysDetails = Boots.boot();
+
+const Connection = require('./connection.js')
+const connectionDetails = {
+	connectionType : "server",
+	listeningPort : sysDetails.CON_PORT
+}
+Connection.beginSocketConnection( connectionDetails );
